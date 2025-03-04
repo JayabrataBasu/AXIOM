@@ -12,7 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Axiom"
         tools:targetApi="31">
-        <!-- Welcome is your main activity and serves as the entry point -->
+        <activity
+            android:name=".MedicationReminder"
+            android:exported="false" />
+        <activity
+            android:name=".Triage"
+            android:exported="false" /> <!-- Welcome is your main activity and serves as the entry point -->
         <activity
             android:name=".Welcome"
             android:exported="true"
@@ -20,6 +25,7 @@
             android:theme="@style/Theme.Axiom">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
