@@ -1,6 +1,5 @@
 package com.example.axiom
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,27 +16,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+// Keep only one Welcome class
 class Welcome : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            WelcomeApp()
-        }
-    }
-}
-
-@Composable
-fun WelcomeApp() {
-    MaterialTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            WelcomeScreen(
-                onInsuranceClick = { /* TODO: Implement navigation */ },
-                onTriageClick = { /* TODO: Implement navigation */ },
-                onMedicationReminderClick = { /* TODO: Implement navigation */ }
-            )
+            MaterialTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AxiomNavGraph()
+                }
+            }
         }
     }
 }
@@ -147,5 +138,11 @@ fun WelcomeScreen(
 @Preview(showBackground = true)
 @Composable
 fun WelcomeScreenPreview() {
-    WelcomeApp()
+    MaterialTheme {
+        WelcomeScreen(
+            onInsuranceClick = {},
+            onTriageClick = {},
+            onMedicationReminderClick = {}
+        )
+    }
 }
