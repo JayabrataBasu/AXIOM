@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Add these permissions -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -16,21 +15,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Axiom"
         tools:targetApi="31">
-
+        <activity
+            android:name=".AppointmentTracker"
+            android:exported="false" />
         <!-- Add these receiver registrations -->
         <receiver
             android:name=".MedicationReminderReceiver"
             android:exported="false" />
-
         <receiver
             android:name=".MedicationTakenReceiver"
-            android:exported="false" />
-
-        <!-- Your existing activities -->
+            android:exported="false" /> <!-- Your existing activities -->
         <activity
             android:name=".MedicationReminder"
             android:exported="false" />
-
         <activity
             android:name=".Triage"
             android:exported="false" />
@@ -41,8 +38,10 @@
             android:theme="@style/Theme.Axiom">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

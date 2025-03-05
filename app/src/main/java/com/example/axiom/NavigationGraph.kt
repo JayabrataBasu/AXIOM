@@ -26,7 +26,8 @@ fun AxiomNavGraph(
             WelcomeScreen(
                 onInsuranceClick = { navController.navigate(Destinations.INSURANCE_SCREEN) },
                 onTriageClick = { navController.navigate(Destinations.TRIAGE_SCREEN) },
-                onMedicationReminderClick = { navController.navigate(Destinations.MEDICATION_REMINDER_SCREEN) }
+                onMedicationReminderClick = { navController.navigate(Destinations.MEDICATION_REMINDER_SCREEN) },
+                onAppointmentTrackerClick = { navController.navigate(Destinations.MEDICATION_REMINDER_SCREEN) }
             )
         }
         composable(Destinations.INSURANCE_SCREEN) {
@@ -44,6 +45,9 @@ fun AxiomNavGraph(
             // Placeholder for now - you'll implement this later
             MedicationReminderScreen(onBackClick = { navController.navigateUp() },
                 highlightMedicationId = null)
+        }
+        composable("appointment_tracker"){
+            AppointmentTrackerScreen(onBackClick = { navController.navigateUp() })
         }
     }
 }

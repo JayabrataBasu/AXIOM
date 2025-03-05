@@ -5,9 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HealthAndSafety
-import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 // Keep only one Welcome class
 class Welcome : ComponentActivity() {
@@ -38,7 +39,8 @@ class Welcome : ComponentActivity() {
 fun WelcomeScreen(
     onInsuranceClick: () -> Unit,
     onTriageClick: () -> Unit,
-    onMedicationReminderClick: () -> Unit
+    onMedicationReminderClick: () -> Unit,
+    onAppointmentTrackerClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -129,8 +131,54 @@ fun WelcomeScreen(
                         )
                         Text("Medication Reminder")
                     }
+
+                    // Appointment Tracker Button
+                    Button(
+                        onClick = onAppointmentTrackerClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(vertical = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text("Appointment Tracker")
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun AxiomNavGraph() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "welcome") {
+        composable("welcome") {
+            WelcomeScreen(
+                onInsuranceClick = { navController.navigate("insurance") },
+                onTriageClick = { navController.navigate("triage") },
+                onMedicationReminderClick = { navController.navigate("medication_reminder") },
+                onAppointmentTrackerClick = { navController.navigate("appointment_tracker") }
+            )
+        }
+
+        composable("insurance") {
+            InsuranceScreen(onBackClick = { navController.navigateUp() })
+        }
+
+        composable("triage") {
+            TriageScreen(onBackClick = { navController.navigateUp() })
+        }
+
+        composable("medication_reminder") {
+            MedicationReminderScreen(onBackClick = { navController.navigateUp() })
+        }
+
+        composable("appointment_tracker") {
+            AppointmentTrackerScreen(onBackClick = { navController.navigateUp() })
         }
     }
 }
@@ -142,7 +190,8 @@ fun WelcomeScreenPreview() {
         WelcomeScreen(
             onInsuranceClick = {},
             onTriageClick = {},
-            onMedicationReminderClick = {}
+            onMedicationReminderClick = {},
+            onAppointmentTrackerClick = {}
         )
     }
 }
