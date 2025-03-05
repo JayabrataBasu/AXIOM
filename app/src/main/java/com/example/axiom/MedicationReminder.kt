@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.example.axiom.ui.theme.AxiomTheme
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.random.Random
@@ -74,7 +75,7 @@ class MedicationReminder : ComponentActivity() {
                 intent.getBooleanExtra("OPEN_MEDICATION_TAB", false)
 
         setContent {
-            MaterialTheme {
+            AxiomTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.axiom.ui.theme.AxiomTheme
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -427,7 +428,7 @@ fun ClaimItem(
 @Preview(showBackground = true)
 @Composable
 fun InsuranceScreenPreview() {
-    MaterialTheme {
+    com.example.axiom.ui.theme.AxiomTheme {
         InsuranceScreen()
     }
 }
