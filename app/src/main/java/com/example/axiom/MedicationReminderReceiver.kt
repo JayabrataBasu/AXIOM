@@ -21,7 +21,9 @@ class MedicationReminderReceiver : BroadcastReceiver() {
         // Create an intent to open the medication details when notification is tapped
         val contentIntent = Intent(context, MedicationReminder::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("MEDICATION_ID", medicationId)  // Pass the medication ID to show the correct details
+            putExtra("MEDICATION_ID", medicationId)
+            putExtra("OPEN_MEDICATION_TAB", true)  // Flag to indicate we want to show medication details
+            action = "OPEN_MEDICATION_DETAILS"  // Specific action to distinguish from other intents
         }
 
         val pendingIntent = PendingIntent.getActivity(

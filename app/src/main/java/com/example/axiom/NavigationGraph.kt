@@ -42,7 +42,8 @@ fun AxiomNavGraph(
         // You can add the medication reminder screen later
         composable(Destinations.MEDICATION_REMINDER_SCREEN) {
             // Placeholder for now - you'll implement this later
-            InsuranceScreen(onBackClick = { navController.navigateUp() }) // Temporary placeholder
+            MedicationReminderScreen(onBackClick = { navController.navigateUp() },
+                highlightMedicationId = null)
         }
     }
 }

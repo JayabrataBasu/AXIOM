@@ -37,11 +37,41 @@ import java.util.*
 import kotlin.random.Random
 
 class MedicationReminder : ComponentActivity() {
+    // Create the permission launcher at the Activity level
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permission granted
+            Toast.makeText(this, "Notifications permission granted", Toast.LENGTH_SHORT).show()
+        } else {
+            // Permission denied
+            Toast.makeText(this,
+                "Medication reminders require notification permission",
+                Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Create notification channel for reminders
         createNotificationChannel()
+
+        // Check notification permission if needed
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        // Check if we're opening from a notification
+        val medicationId = intent.getIntExtra("MEDICATION_ID", -1)
+        val openFromNotification = intent.action == "OPEN_MEDICATION_DETAILS" ||
+                intent.getBooleanExtra("OPEN_MEDICATION_TAB", false)
 
         setContent {
             MaterialTheme {
@@ -50,7 +80,8 @@ class MedicationReminder : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MedicationReminderScreen(
-                        onBackClick = { finish() }
+                        onBackClick = { finish() },
+                        highlightMedicationId = if (openFromNotification) medicationId else null
                     )
                 }
             }
@@ -83,7 +114,8 @@ data class MedicationRemindItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicationReminderScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    highlightMedicationId: Int? = null
 ) {
     val context = LocalContext.current
 
@@ -99,21 +131,7 @@ fun MedicationReminderScreen(
     var selectedHour by remember { mutableStateOf(8) }
     var selectedMinute by remember { mutableStateOf(0) }
 
-    // Request permission for notifications
-    val requestPermissionLauncher = rememberSaveable {
-        ActivityResultContracts.RequestPermission()
-    }
-
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= 33) {
-            if (ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED) {
-                // We don't have the launcher directly in Compose, would need to be set up in the Activity
-            }
-        }
-    }
+    // Remove the problematic code that was using rememberSaveable with ActivityResultContracts.RequestPermission
 
     Scaffold(
         topBar = {
@@ -137,12 +155,14 @@ fun MedicationReminderScreen(
             }
         }
     ) { paddingValues ->
+        // Rest of your existing code remains the same
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+            // Existing code continues... {
             if (medicationsList.isEmpty()) {
                 // Empty state
                 Box(
