@@ -1,1 +1,15 @@
+# .gitignore in project root
+# Exclude local network security config
+app/src/main/res/xml/network_security_config_local.xml
+
+# Android standard ignores
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
 /build
+/captures
+.externalNativeBuild
+.cxx
+local.properties

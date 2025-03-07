@@ -1,15 +1,49 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Gradle files
+.gradle/
+gradle/
+build/
+*/build/
+.caches/
+caches/
+**/caches/
+**/*.lock
+**/*.bin
+
+# Local configuration file
 local.properties
+**/local.properties
+
+# IntelliJ IDEA/Android Studio
+.idea/
+**/.idea/
+*.iml
+**/*.iml
+*.iws
+**/*.iws
+*.ipr
+**/*.ipr
+out/
+**/out/
+
+# Android Studio captures folder
+captures/
+**/captures/
+
+# External native build folder
+.externalNativeBuild/
+**/.externalNativeBuild/
+.cxx/
+**/.cxx/
+
+# Network security config
+app/src/main/res/xml/network_security_config_local.xml
+
+# OS-specific files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+**/Thumbs.db
+
+# Keep Gradle wrapper
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties

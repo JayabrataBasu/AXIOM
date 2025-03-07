@@ -3,6 +3,21 @@ package com.example.axiom
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.example.axiom.api.ApiClient
+import com.example.axiom.model.InsuranceDto
+import com.example.axiom.model.UserDto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -34,6 +49,95 @@ fun InsuranceScreen(onBackClick: () -> Unit = {}) {
     var memberName by remember { mutableStateOf("John Doe") }
     var insuranceProvider by remember { mutableStateOf("HealthGuard Insurance") }
 
+    // Add date-related variables
+    var validFrom by remember { mutableStateOf(LocalDate.now()) }
+    var validUntil by remember { mutableStateOf(LocalDate.now().plusYears(1)) }
+
+    // State for API integration
+    var userId by remember { mutableStateOf<Long?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var successMessage by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    fun saveInsuranceForUser(userId: Long?) {
+        if (userId == null) {
+            errorMessage = "User ID is missing"
+            isLoading = false
+            return
+        }
+
+        val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+        val insurance = InsuranceDto(
+            policyNumber = policyNumber,
+            provider = insuranceProvider,
+            validFrom = validFrom.format(dateFormatter),
+            validUntil = validUntil.format(dateFormatter)
+        )
+
+        coroutineScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    ApiClient.apiService.createInsurance(userId, insurance).execute()
+                }
+                withContext(Dispatchers.Main) {
+                    isLoading = false
+                    if (response.isSuccessful) {
+                        successMessage = "Insurance information saved successfully!"
+                        Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
+                    } else {
+                        errorMessage = "Error saving insurance: ${response.errorBody()?.string() ?: "Unknown error"}"
+                        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    isLoading = false
+                    errorMessage = "Error: ${e.message ?: "Unknown error"}"
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    // Function to save insurance info by first creating a user if needed
+    fun saveInsuranceInfo() {
+        isLoading = true
+        errorMessage = null
+        successMessage = null
+
+        // First create or get a user
+        val user = UserDto(
+            name = memberName,
+            email = "$memberName@example.com".replace(" ", "").lowercase()
+        )
+
+        coroutineScope.launch {
+            try {
+                val userResponse = withContext(Dispatchers.IO) {
+                    ApiClient.apiService.createUser(user).execute()
+                }
+
+                if (userResponse.isSuccessful && userResponse.body() != null) {
+                    val createdUser = userResponse.body()!!
+                    userId = createdUser.id
+                    saveInsuranceForUser(createdUser.id)
+                } else {
+                    withContext(Dispatchers.Main) {
+                        errorMessage = "Error creating user: ${userResponse.errorBody()?.string() ?: "Unknown error"}"
+                        isLoading = false
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    errorMessage = "Error: ${e.message ?: "Unknown error"}"
+                    isLoading = false
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -51,7 +155,6 @@ fun InsuranceScreen(onBackClick: () -> Unit = {}) {
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
@@ -64,9 +167,6 @@ fun InsuranceScreen(onBackClick: () -> Unit = {}) {
                 insuranceProvider = insuranceProvider
             )
 
-            // Coverage Information
-            CoverageInformation()
-
             // Insurance Details Form
             InsuranceDetailsForm(
                 policyNumber = policyNumber,
@@ -77,17 +177,59 @@ fun InsuranceScreen(onBackClick: () -> Unit = {}) {
                 onInsuranceProviderChange = { insuranceProvider = it }
             )
 
+            // Coverage Information
+            CoverageInformation()
+
             // Claims Section
             ClaimsSection()
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Loading indicator
+            if (isLoading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
 
+            // Error message
+            errorMessage?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                )
+            }
+
+            // Success message
+            successMessage?.let {
+                Text(
+                    text = it,
+                    color = Color(0xFF1B5E20),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .background(
+                            color = Color(0xFFDCEDC8),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                )
+            }
+
+            // Save button
             Button(
-                onClick = { /* Save data */ },
-                modifier = Modifier.fillMaxWidth()
+                onClick = { saveInsuranceInfo() },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
             ) {
                 Text("Save Insurance Information")
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -99,78 +241,57 @@ fun InsuranceCard(
     insuranceProvider: String
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        ),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = insuranceProvider,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Icon(
                     imageVector = Icons.Default.LocalHospital,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 text = memberName,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Policy: $policyNumber",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ) {
-                Column {
-                    Text(
-                        text = "Valid From",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                        text = "01/01/2023",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = "Valid Until",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                        text = "12/31/2023",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = "MEMBER",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                )
             }
         }
     }
@@ -178,7 +299,7 @@ fun InsuranceCard(
 
 @Composable
 fun CoverageInformation() {
-    ElevatedCard(
+    Card(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -186,35 +307,17 @@ fun CoverageInformation() {
         ) {
             Text(
                 text = "Coverage Information",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            CoverageItem(
-                title = "Primary Care",
-                coverage = "Covered with $30 co-pay"
-            )
-
-            CoverageItem(
-                title = "Specialist",
-                coverage = "Covered with $50 co-pay"
-            )
-
-            CoverageItem(
-                title = "Emergency",
-                coverage = "Covered with $250 co-pay"
-            )
-
-            CoverageItem(
-                title = "Hospitalization",
-                coverage = "20% co-insurance after deductible"
-            )
-
-            CoverageItem(
-                title = "Prescription Drugs",
-                coverage = "Tier 1: $10, Tier 2: $30, Tier 3: $50"
-            )
+            CoverageItem(title = "Primary Care Visit", coverage = "$25 copay")
+            CoverageItem(title = "Specialist Visit", coverage = "$50 copay")
+            CoverageItem(title = "Emergency Room", coverage = "$300 copay")
+            CoverageItem(title = "Urgent Care", coverage = "$75 copay")
+            CoverageItem(title = "Annual Deductible", coverage = "$1,500")
+            CoverageItem(title = "Out-of-Pocket Maximum", coverage = "$7,000")
         }
     }
 }
@@ -224,7 +327,7 @@ fun CoverageItem(title: String, coverage: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -234,14 +337,9 @@ fun CoverageItem(title: String, coverage: String) {
         Text(
             text = coverage,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary
+            fontWeight = FontWeight.Bold
         )
     }
-
-    Divider(
-        modifier = Modifier.padding(vertical = 4.dp),
-        color = MaterialTheme.colorScheme.outlineVariant
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -254,37 +352,47 @@ fun InsuranceDetailsForm(
     insuranceProvider: String,
     onInsuranceProviderChange: (String) -> Unit
 ) {
-    ElevatedCard(
+    Card(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = "Insurance Details",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             OutlinedTextField(
                 value = policyNumber,
                 onValueChange = onPolicyNumberChange,
                 label = { Text("Policy Number") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                singleLine = true
             )
 
             OutlinedTextField(
                 value = memberName,
                 onValueChange = onMemberNameChange,
                 label = { Text("Member Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                singleLine = true
             )
 
             OutlinedTextField(
                 value = insuranceProvider,
                 onValueChange = onInsuranceProviderChange,
                 label = { Text("Insurance Provider") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                singleLine = true
             )
         }
     }
@@ -292,7 +400,7 @@ fun InsuranceDetailsForm(
 
 @Composable
 fun ClaimsSection() {
-    ElevatedCard(
+    Card(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -300,48 +408,39 @@ fun ClaimsSection() {
         ) {
             Text(
                 text = "Recent Claims",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (true) { // Replace with actual claims check
-                ClaimItem(
-                    date = "10/15/2023",
-                    provider = "City Medical Center",
-                    amount = "$350.00",
-                    status = "Approved"
-                )
-
-                ClaimItem(
-                    date = "09/28/2023",
-                    provider = "Primary Care Clinic",
-                    amount = "$120.00",
-                    status = "Pending"
-                )
-
-                ClaimItem(
-                    date = "08/14/2023",
-                    provider = "Pharmacy",
-                    amount = "$45.75",
-                    status = "Approved"
-                )
+            if (true) { // Replace with actual check for claims
+                Column {
+                    ClaimItem(
+                        date = "May 15, 2023",
+                        provider = "General Hospital",
+                        amount = "$750.00",
+                        status = "Paid"
+                    )
+                    ClaimItem(
+                        date = "April 3, 2023",
+                        provider = "City Medical Center",
+                        amount = "$1,200.00",
+                        status = "Processing"
+                    )
+                    ClaimItem(
+                        date = "March 22, 2023",
+                        provider = "Dr. Smith Office",
+                        amount = "$175.00",
+                        status = "Paid"
+                    )
+                }
             } else {
                 Text(
-                    text = "No recent claims found",
+                    text = "No recent claims",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = { /* Navigate to claims history */ },
-                modifier = Modifier.fillMaxWidth(),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-            ) {
-                Text("View All Claims")
             }
         }
     }
@@ -354,67 +453,44 @@ fun ClaimItem(
     amount: String,
     status: String
 ) {
-    val statusColor = when (status) {
-        "Approved" -> Color(0xFF4CAF50)
-        "Pending" -> Color(0xFFFFC107)
-        "Rejected" -> Color(0xFFF44336)
-        else -> MaterialTheme.colorScheme.outline
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = date,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Text(
+                text = provider,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
         Column(
+            horizontalAlignment = Alignment.End,
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = provider,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = date,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline
-            )
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.AttachMoney,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
                 text = amount,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
+                fontWeight = FontWeight.SemiBold
             )
-        }
 
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Box(
-            modifier = Modifier
-                .background(
-                    color = statusColor.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(4.dp)
-                )
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
             Text(
                 text = status,
                 style = MaterialTheme.typography.bodySmall,
-                color = statusColor
+                color = when(status) {
+                    "Approved" -> Color(0xFF4CAF50) // Green
+                    "Pending" -> Color(0xFFFFA000)  // Amber
+                    "Denied" -> Color(0xFFF44336)   // Red
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                }
             )
         }
     }
@@ -428,7 +504,7 @@ fun ClaimItem(
 @Preview(showBackground = true)
 @Composable
 fun InsuranceScreenPreview() {
-    com.example.axiom.ui.theme.AxiomTheme {
+    AxiomTheme {
         InsuranceScreen()
     }
 }
