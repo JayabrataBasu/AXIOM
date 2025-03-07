@@ -47,3 +47,6 @@ Thumbs.db
 # Keep Gradle wrapper
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
+
+# Network security configs
+app/src/main/res/xml/network_security_config.xml
