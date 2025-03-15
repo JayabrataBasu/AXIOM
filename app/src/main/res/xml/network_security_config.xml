@@ -5,6 +5,7 @@
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
-        <domain includeSubdomains="true">use ur own ip bro</domain>
+        <domain includeSubdomains="true">ww.x.yyy.zz</domain>
+
     </domain-config>
 </network-security-config>

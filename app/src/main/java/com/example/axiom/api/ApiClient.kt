@@ -8,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    private const val BASE_URL = "http://192.168.0.100:8081/" // Default for Android emulator to localhost
+    private const val BASE_URL = "http://www.z.yyy.xx:8081/" // Default for Android emulator to localhost
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor().apply {

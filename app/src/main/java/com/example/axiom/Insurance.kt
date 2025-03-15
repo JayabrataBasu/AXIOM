@@ -40,6 +40,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.axiom.ui.theme.AxiomTheme
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,7 +181,11 @@ fun InsuranceScreen(onBackClick: () -> Unit = {}) {
                 memberName = memberName,
                 onMemberNameChange = { memberName = it },
                 insuranceProvider = insuranceProvider,
-                onInsuranceProviderChange = { insuranceProvider = it }
+                onInsuranceProviderChange = { insuranceProvider = it },
+                validFrom = validFrom,
+                onValidFromChange = { validFrom = it },
+                validUntil = validUntil,
+                onValidUntilChange = { validUntil = it }
             )
 
             // Coverage Information
@@ -350,8 +361,15 @@ fun InsuranceDetailsForm(
     memberName: String,
     onMemberNameChange: (String) -> Unit,
     insuranceProvider: String,
-    onInsuranceProviderChange: (String) -> Unit
+    onInsuranceProviderChange: (String) -> Unit,
+    validFrom: LocalDate,
+    onValidFromChange: (LocalDate) -> Unit,
+    validUntil: LocalDate,
+    onValidUntilChange: (LocalDate) -> Unit
 ) {
+    var showValidFromPicker by remember { mutableStateOf(false) }
+    var showValidUntilPicker by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -394,9 +412,116 @@ fun InsuranceDetailsForm(
                     .padding(vertical = 8.dp),
                 singleLine = true
             )
+
+            // Valid From Date Field
+            OutlinedTextField(
+                value = validFrom.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
+                onValueChange = { },
+                label = { Text("Valid From") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { showValidFromPicker = true }) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Select date"
+                        )
+                    }
+                }
+            )
+
+            // Valid Until Date Field
+            OutlinedTextField(
+                value = validUntil.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
+                onValueChange = { },
+                label = { Text("Valid Until") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { showValidUntilPicker = true }) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Select date"
+                        )
+                    }
+                }
+            )
+
+            // Date Pickers
+            // Date Pickers
+            if (showValidFromPicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showValidFromPicker = false },
+                    confirmButton = {
+                        Button(onClick = { showValidFromPicker = false }) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showValidFromPicker = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                ) {
+                    val datePickerState = rememberDatePickerState(
+                        initialSelectedDateMillis = validFrom.toEpochDay() * 24 * 60 * 60 * 1000
+                    )
+                    DatePicker(
+                        state = datePickerState
+                    )
+
+                    // Handle date selection when dialog is confirmed
+                    LaunchedEffect(showValidFromPicker) {
+                        if (!showValidFromPicker && datePickerState.selectedDateMillis != null) {
+                            val date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)
+                                .atZone(ZoneId.systemDefault()).toLocalDate()
+                            onValidFromChange(date)
+                        }
+                    }
+                }
+            }
+
+            if (showValidUntilPicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showValidUntilPicker = false },
+                    confirmButton = {
+                        Button(onClick = { showValidUntilPicker = false }) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showValidUntilPicker = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                ) {
+                    val datePickerState = rememberDatePickerState(
+                        initialSelectedDateMillis = validUntil.toEpochDay() * 24 * 60 * 60 * 1000
+                    )
+                    DatePicker(
+                        state = datePickerState
+                    )
+
+                    // Handle date selection when dialog is confirmed
+                    LaunchedEffect(showValidUntilPicker) {
+                        if (!showValidUntilPicker && datePickerState.selectedDateMillis != null) {
+                            val date = Instant.ofEpochMilli(datePickerState.selectedDateMillis!!)
+                                .atZone(ZoneId.systemDefault()).toLocalDate()
+                            onValidUntilChange(date)
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
+
+
 
 @Composable
 fun ClaimsSection() {
@@ -483,8 +608,7 @@ fun ClaimItem(
             )
 
             Text(
-                text = status,
-                style = MaterialTheme.typography.bodySmall,
+                status, style = MaterialTheme.typography.bodySmall,
                 color = when(status) {
                     "Approved" -> Color(0xFF4CAF50) // Green
                     "Pending" -> Color(0xFFFFA000)  // Amber

@@ -5,9 +5,6 @@ import com.example.axiom.model.*
 import retrofit2.Call
 import retrofit2.http.*
 
-/**
- *
- */
 interface ApiService {
     // User endpoints
     @GET("api/users")
