@@ -1,6 +1,8 @@
-# Axiom
-
 # Axiom — Project Memo & Design Manifesto
+
+## Author - Jayabrata Basu
+
+## Developer -  Jayabrata Basu
 
 ## 1. Purpose
 
@@ -253,4 +255,3 @@ It prioritizes:
 This memo serves as the **design constitution** of the project.
 
 Any future feature or implementation decision must be defensible against this document.
-
