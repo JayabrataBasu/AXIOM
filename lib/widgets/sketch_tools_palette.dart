@@ -15,7 +15,7 @@ class SketchToolsPalette extends ConsumerStatefulWidget {
 class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
   Offset _position = const Offset(1300, 20); // Default position
   final _settingsService = SettingsService.instance;
-  bool _isExpanded = false;
+  bool _isExpanded = true;
 
   @override
   void initState() {
@@ -141,8 +141,10 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.spaceEvenly,
                             children: [
                               _ToolButton(
                                 icon: Icons.edit,
@@ -150,6 +152,30 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                                 isSelected: toolState.tool == SketchTool.pen,
                                 onPressed: () {
                                   ref.read(sketchToolsProvider.notifier).setTool(SketchTool.pen);
+                                },
+                              ),
+                              _ToolButton(
+                                icon: Icons.brush,
+                                label: 'Brush',
+                                isSelected: toolState.tool == SketchTool.brush,
+                                onPressed: () {
+                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.brush);
+                                },
+                              ),
+                              _ToolButton(
+                                icon: Icons.border_color,
+                                label: 'Marker',
+                                isSelected: toolState.tool == SketchTool.marker,
+                                onPressed: () {
+                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.marker);
+                                },
+                              ),
+                              _ToolButton(
+                                icon: Icons.edit_outlined,
+                                label: 'Pencil',
+                                isSelected: toolState.tool == SketchTool.pencil,
+                                onPressed: () {
+                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.pencil);
                                 },
                               ),
                               _ToolButton(

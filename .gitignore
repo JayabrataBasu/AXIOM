@@ -149,6 +149,17 @@ linux/Build/
 target/
 
 # -----------------------------
+# Markdown
+# -----------------------------
+# Ignore all markdown documentation files by default — keep repository README(s) tracked
+*.md
+SKETCH_MODE_UPDATE.md
+STAGE_5_IMPLEMENTATION.md
+STAGE_6_FINALIZATION.md
+!README.md
+!**/README.md
+
+# -----------------------------
 # Final notes
 # -----------------------------
 # If a file is already tracked by git, adding it to .gitignore will NOT stop it being tracked.

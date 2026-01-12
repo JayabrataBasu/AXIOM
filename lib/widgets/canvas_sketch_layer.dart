@@ -19,8 +19,8 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   void _onPointerDown(PointerDownEvent details) {
     final toolState = ref.read(sketchToolsProvider);
     
-    // Only draw if pen tool is selected
-    if (toolState.tool != SketchTool.pen) return;
+    // Only draw with drawing tools (not selector or eraser on empty canvas)
+    if (toolState.tool == SketchTool.selector) return;
     
     _currentStroke = [
       CanvasSketchPoint(
@@ -34,8 +34,8 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   void _onPointerMove(PointerMoveEvent details) {
     final toolState = ref.read(sketchToolsProvider);
     
-    // Only draw if pen tool is selected
-    if (toolState.tool != SketchTool.pen) return;
+    // Only draw with drawing tools
+    if (toolState.tool == SketchTool.selector) return;
     
     if (_currentStroke.isNotEmpty) {
       setState(() {

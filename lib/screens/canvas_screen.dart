@@ -19,6 +19,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
   Offset _originInScene = Offset.zero;
+  bool _sketchMode = false;
 
   @override
   void dispose() {
@@ -85,8 +86,8 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               right: 0,
               child: _buildToolbar(context, theme),
             ),
-            // Sketch tools palette
-            const SketchToolsPalette(),
+            // Sketch tools palette (only visible in sketch mode)
+            if (_sketchMode) const SketchToolsPalette(),
             // Zoom indicator
             Positioned(
               bottom: 16,
@@ -128,6 +129,16 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
             ),
             const Spacer(),
+            // Sketch mode toggle
+            IconButton(
+              icon: Icon(_sketchMode ? Icons.brush : Icons.brush_outlined),
+              tooltip: _sketchMode ? 'Exit sketch mode' : 'Enter sketch mode',
+              color: _sketchMode ? theme.colorScheme.primary : null,
+              onPressed: () {
+                setState(() => _sketchMode = !_sketchMode);
+              },
+            ),
+            const SizedBox(width: 8),
             // Center on origin
             IconButton(
               icon: const Icon(Icons.center_focus_strong),

@@ -4,7 +4,10 @@ import '../services/settings_service.dart';
 
 /// Enum defining available sketch tools.
 enum SketchTool {
-  pen,
+  pen,      // Standard pen (size 1-10, thinning 0.5)
+  marker,   // Wide marker (size 8-20, thinning 0.2, semi-transparent)
+  pencil,   // Thin pencil (size 1-3, thinning 0.8, precise)
+  brush,    // Artistic brush (size 10-30, thinning 0.5, smooth)
   eraser,
   selector, // For future selection/transformation
 }
