@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
@@ -54,6 +55,11 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
             title: const Text('Edit Node'),
             actions: [
               IconButton(
+                icon: const Icon(Icons.add_link),
+                tooltip: 'Add link',
+                onPressed: () => _showAddLinkDialog(node),
+              ),
+              IconButton(
                 icon: const Icon(Icons.delete_outline),
                 tooltip: 'Delete node',
                 onPressed: () => _confirmDelete(node),
@@ -99,6 +105,72 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                   ],
                 ),
               ),
+              // Links section
+              if (node.links.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerLow,
+                    border: Border(
+                      bottom: BorderSide(color: theme.colorScheme.outlineVariant),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.link,
+                            size: 16,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Linked to ${node.links.length} node${node.links.length != 1 ? 's' : ''}',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: node.links.map((link) {
+                          final targetNode = nodes.firstWhereOrNull((n) => n.id == link.targetNodeId);
+                          final label = link.label.isNotEmpty
+                              ? link.label
+                              : (targetNode != null && targetNode.previewText.isNotEmpty
+                                  ? targetNode.previewText
+                                  : 'Node ${link.targetNodeId.substring(0, 6)}...');
+
+                          return InputChip(
+                            avatar: const Icon(Icons.arrow_forward, size: 16),
+                            label: Text(
+                              label,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onPressed: () {
+                              // Navigate to linked node
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => NodeEditorScreen(nodeId: link.targetNodeId),
+                                ),
+                              );
+                            },
+                            onDeleted: () => _removeLink(node.id, link.targetNodeId),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
               // Block list
               Expanded(
                 child: node.blocks.isEmpty
@@ -288,5 +360,105 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       await ref.read(nodesNotifierProvider.notifier).deleteNode(node.id);
       if (mounted) Navigator.pop(context);
     }
+  }
+
+  Future<void> _showAddLinkDialog(IdeaNode node) async {
+    final nodesAsync = ref.read(nodesNotifierProvider);
+    final allNodes = nodesAsync.valueOrNull ?? [];
+    
+    // Filter out current node and already linked nodes
+    final availableNodes = allNodes.where((n) {
+      return n.id != node.id && !node.links.any((link) => link.targetNodeId == n.id);
+    }).toList();
+
+    if (availableNodes.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No other nodes available to link')),
+        );
+      }
+      return;
+    }
+
+    final selected = await showDialog<IdeaNode>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Link to Node'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: availableNodes.length,
+            itemBuilder: (context, index) {
+              final targetNode = availableNodes[index];
+              return ListTile(
+                leading: const Icon(Icons.note_outlined),
+                title: Text(
+                  targetNode.previewText.isEmpty
+                      ? 'Node ${targetNode.id.substring(0, 8)}...'
+                      : targetNode.previewText,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  '${targetNode.blocks.length} blocks • ${targetNode.links.length} links',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                onTap: () => Navigator.of(context).pop(targetNode),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null) {
+      // Optionally prompt for label
+      final label = await showDialog<String>(
+        context: context,
+        builder: (context) {
+          final controller = TextEditingController();
+          return AlertDialog(
+            title: const Text('Link Label (optional)'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'e.g., "related to", "depends on"',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, ''),
+                child: const Text('Skip'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Add'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (label != null) {
+        await ref.read(nodesNotifierProvider.notifier).addLink(
+              node.id,
+              selected.id,
+              label: label,
+            );
+      }
+    }
+  }
+
+  void _removeLink(String nodeId, String targetNodeId) {
+    ref.read(nodesNotifierProvider.notifier).removeLink(nodeId, targetNodeId);
   }
 }

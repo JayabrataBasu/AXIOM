@@ -19,6 +19,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   vector_math: ^2.1.4
+  window_manager: ^0.5.1
 
   # Data Classes
   freezed_annotation: ^2.4.4

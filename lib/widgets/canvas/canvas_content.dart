@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
 import '../nodes/idea_node_card.dart';
+import 'node_connections_painter.dart';
 
 /// The content layer of the canvas that renders positioned IdeaNodes.
 class CanvasContent extends ConsumerStatefulWidget {
@@ -201,6 +202,16 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
               painter: _GridPainter(
                 color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
                 gridSize: 50,
+              ),
+            ),
+            // Connection lines between nodes
+            CustomPaint(
+              size: Size(width, height),
+              painter: NodeConnectionsPainter(
+                nodes: widget.nodes,
+                minX: minX,
+                minY: minY,
+                selectedNodeId: widget.selectedNodeId,
               ),
             ),
             // Origin marker

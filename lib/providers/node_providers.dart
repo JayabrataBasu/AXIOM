@@ -297,6 +297,57 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     await updateNode(updated);
   }
 
+  /// Add a link to another node.
+  Future<void> addLink(String nodeId, String targetNodeId, {String label = ''}) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final newLink = NodeLink(
+      targetNodeId: targetNodeId,
+      label: label,
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(
+      links: [...node.links, newLink],
+    );
+    await updateNode(updated);
+  }
+
+  /// Remove a link to another node.
+  Future<void> removeLink(String nodeId, String targetNodeId) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final updated = node.copyWith(
+      links: node.links.where((link) => link.targetNodeId != targetNodeId).toList(),
+    );
+    await updateNode(updated);
+  }
+
+  /// Update a link's label.
+  Future<void> updateLinkLabel(String nodeId, String targetNodeId, String label) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final updatedLinks = node.links.map((link) {
+      if (link.targetNodeId == targetNodeId) {
+        return link.copyWith(label: label);
+      }
+      return link;
+    }).toList();
+
+    final updated = node.copyWith(links: updatedLinks);
+    await updateNode(updated);
+  }
+
   /// Reload all nodes from disk.
   Future<void> reload() async {
     state = const AsyncLoading();

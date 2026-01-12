@@ -54,6 +54,16 @@ sealed class ContentBlock with _$ContentBlock {
     required DateTime createdAt,
   }) = QuoteBlock;
 
-  factory ContentBlock.fromJson(Map<String, dynamic> json) =>
-      _$ContentBlockFromJson(json);
+  factory ContentBlock.fromJson(Map<String, dynamic> json) {
+    // Migration: Handle legacy blocks without explicit 'type' field
+    if (!json.containsKey('type') || json['type'] == null) {
+      // Old format: assume it's a text block
+      return ContentBlock.text(
+        id: json['id'] as String,
+        content: json['content'] as String? ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      );
+    }
+    return _$ContentBlockFromJson(json);
+  }
 }
