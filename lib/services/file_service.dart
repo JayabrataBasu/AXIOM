@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -75,8 +76,11 @@ class FileService {
       final content = await file.readAsString();
       return jsonDecode(content) as Map<String, dynamic>;
     } catch (e) {
-      // Log error but don't crash - corruption isolation
-      print('Error reading JSON from $filePath: $e');
+      // Log error but don't crash - corruption isolation (debug-only)
+      assert(() {
+        debugPrint('Error reading JSON from $filePath: $e');
+        return true;
+      }());
       return null;
     }
   }

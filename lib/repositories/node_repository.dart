@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/file_service.dart';
 
@@ -65,8 +66,11 @@ class NodeRepository {
           final node = IdeaNode.fromJson(json);
           _cache[node.id] = node;
         } catch (e) {
-          // Skip corrupted files - corruption isolation
-          print('Error parsing node from ${file.path}: $e');
+          // Skip corrupted files - corruption isolation (debug-only)
+          assert(() {
+            debugPrint('Error parsing node from ${file.path}: $e');
+            return true;
+          }());
         }
       }
     }

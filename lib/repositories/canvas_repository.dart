@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/file_service.dart';
 
@@ -17,7 +18,11 @@ class CanvasRepository {
       try {
         return CanvasState.fromJson(json);
       } catch (e) {
-        print('Error parsing canvas state: $e');
+        // Debug-only logging to avoid production prints
+        assert(() {
+          debugPrint('Error parsing canvas state: $e');
+          return true;
+        }());
       }
     }
 

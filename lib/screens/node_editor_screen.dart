@@ -73,14 +73,14 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                       'ID: ${node.id.substring(0, 8)}...',
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontFamily: 'monospace',
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Position: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -96,13 +96,13 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                             Icon(
                               Icons.note_add_outlined,
                               size: 48,
-                              color: theme.colorScheme.onSurface.withOpacity(0.3),
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'No blocks yet',
                               style: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -280,7 +280,7 @@ class _BlockEditorState extends State<_BlockEditor> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

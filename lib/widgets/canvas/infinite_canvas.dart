@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 /// An infinite, pannable, zoomable canvas surface.
 class InfiniteCanvas extends StatefulWidget {
@@ -93,8 +94,8 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
     final newY = viewportSize.height / 2 - position.dy * scale;
 
     final matrix = Matrix4.identity()
-      ..translate(newX, newY)
-      ..scale(scale);
+      ..translateByVector3(Vector3(newX, newY, 0))
+      ..scaleByVector3(Vector3(scale, scale, 1));
 
     _controller.value = matrix;
   }
@@ -112,8 +113,8 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
     final newY = viewportSize.height / 2 - center.dy * clampedScale;
 
     final matrix = Matrix4.identity()
-      ..translate(newX, newY)
-      ..scale(clampedScale);
+      ..translateByVector3(Vector3(newX, newY, 0))
+      ..scaleByVector3(Vector3(clampedScale, clampedScale, 1));
 
     _controller.value = matrix;
     widget.onScaleChanged?.call(clampedScale);
@@ -135,9 +136,9 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
           final focalPointScene = screenToCanvas(focalPoint);
 
           final matrix = Matrix4.identity()
-            ..translate(focalPoint.dx, focalPoint.dy)
-            ..scale(newScale)
-            ..translate(-focalPointScene.dx, -focalPointScene.dy);
+            ..translateByVector3(Vector3(focalPoint.dx, focalPoint.dy, 0))
+            ..scaleByVector3(Vector3(newScale, newScale, 1))
+            ..translateByVector3(Vector3(-focalPointScene.dx, -focalPointScene.dy, 0));
 
           _controller.value = matrix;
           widget.onScaleChanged?.call(newScale);

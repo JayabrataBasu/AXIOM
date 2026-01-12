@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
-import '../../providers/providers.dart';
 
 /// Visual card representation of an IdeaNode on the canvas.
 class IdeaNodeCard extends ConsumerStatefulWidget {
@@ -39,6 +38,10 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         onDoubleTap: widget.onDoubleTap,
+        // Consume double-tap at the down phase to prevent canvas from also handling it
+        onDoubleTapDown: (_) {
+          // Do nothing - just consume the event
+        },
         onPanStart: (_) {
           setState(() {
             _isDragging = true;
@@ -78,7 +81,7 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(_isDragging ? 0.2 : 0.08),
+                color: Colors.black.withValues(alpha: _isDragging ? 0.2 : 0.08),
                 blurRadius: _isDragging ? 12 : 6,
                 offset: Offset(0, _isDragging ? 6 : 2),
               ),
@@ -106,7 +109,7 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                     Text(
                       'Empty node',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface.withOpacity(0.5),
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -118,13 +121,13 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                       Icon(
                         Icons.layers_outlined,
                         size: 14,
-                        color: colorScheme.onSurface.withOpacity(0.5),
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${widget.node.blocks.length} block${widget.node.blocks.length != 1 ? 's' : ''}',
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurface.withOpacity(0.5),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ],

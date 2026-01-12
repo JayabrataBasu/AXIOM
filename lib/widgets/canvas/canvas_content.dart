@@ -1,10 +1,12 @@
+import 'dart:ui' show PointerDeviceKind;
+import 'package:flutter/gestures.dart' show kSecondaryMouseButton;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
 import '../nodes/idea_node_card.dart';
 
 /// The content layer of the canvas that renders positioned IdeaNodes.
-class CanvasContent extends ConsumerWidget {
+class CanvasContent extends ConsumerStatefulWidget {
   const CanvasContent({
     super.key,
     required this.nodes,
@@ -31,15 +33,109 @@ class CanvasContent extends ConsumerWidget {
   static const double padding = 2000.0;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CanvasContent> createState() => _CanvasContentState();
+}
+
+class _CanvasContentState extends ConsumerState<CanvasContent> {
+  DateTime? _lastSecondaryDown;
+  Offset? _contextMenuPosition;
+  OverlayEntry? _contextMenuEntry;
+
+  @override
+  void dispose() {
+    _removeContextMenu();
+    super.dispose();
+  }
+
+  void _removeContextMenu() {
+    _contextMenuEntry?.remove();
+    _contextMenuEntry = null;
+    if (mounted) {
+      setState(() {
+        _contextMenuPosition = null;
+      });
+    }
+  }
+
+  void _showContextMenu(BuildContext context, Offset position, Offset scenePos) {
+    _removeContextMenu();
+
+    final overlay = Overlay.of(context);
+    final renderBox = context.findRenderObject() as RenderBox;
+    final globalPosition = renderBox.localToGlobal(position);
+
+    _contextMenuEntry = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          // Invisible barrier to close menu on tap
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _removeContextMenu,
+              onSecondaryTap: _removeContextMenu,
+            ),
+          ),
+          // Context menu
+          Positioned(
+            left: globalPosition.dx,
+            top: globalPosition.dy,
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(8),
+              child: InkWell(
+                onTap: () {
+                  _removeContextMenu();
+                  widget.onCanvasDoubleTap(scenePos);
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.add_circle_outline,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Create Node Here',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    overlay.insert(_contextMenuEntry!);
+    setState(() {
+      _contextMenuPosition = position;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Calculate canvas bounds based on node positions
     // Add padding around the content
+    const padding = CanvasContent.padding;
     double minX = -padding;
     double minY = -padding;
     double maxX = padding;
     double maxY = padding;
 
-    for (final node in nodes) {
+    for (final node in widget.nodes) {
       minX = minX < node.position.x - padding ? minX : node.position.x - padding;
       minY = minY < node.position.y - padding ? minY : node.position.y - padding;
       maxX = maxX > node.position.x + padding ? maxX : node.position.x + padding;
@@ -54,17 +150,46 @@ class CanvasContent extends ConsumerWidget {
     
     // Report canvas info after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      onCanvasInfoChanged?.call(originInScene);
+      widget.onCanvasInfoChanged?.call(originInScene);
     });
 
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: onCanvasTap,
-      onDoubleTapDown: (details) {
-        // Convert local position to canvas coordinates
-        onCanvasDoubleTap(details.localPosition + Offset(minX, minY));
+    return Listener(
+      onPointerDown: (event) {
+        // Close context menu on any click
+        if (_contextMenuEntry != null) {
+          _removeContextMenu();
+        }
+
+        // Only handle mouse right-button for creation
+        if (event.kind == PointerDeviceKind.mouse &&
+            (event.buttons & kSecondaryMouseButton) != 0) {
+          final now = DateTime.now();
+          final scenePos = event.localPosition + Offset(minX, minY);
+          
+          if (_lastSecondaryDown != null &&
+              now.difference(_lastSecondaryDown!) < const Duration(milliseconds: 550)) {
+            // Double-click: create node immediately
+            widget.onCanvasDoubleTap(scenePos);
+            _lastSecondaryDown = null;
+          } else {
+            // Single click: schedule context menu
+            _lastSecondaryDown = now;
+            final clickTime = now;
+            final clickPosition = event.localPosition;
+            
+            // Show context menu after delay if it wasn't a double-click
+            Future.delayed(const Duration(milliseconds: 600), () {
+              if (mounted && _lastSecondaryDown == clickTime) {
+                _showContextMenu(context, clickPosition, scenePos);
+              }
+            });
+          }
+        }
       },
-      child: SizedBox(
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: widget.onCanvasTap,
+        child: SizedBox(
         width: width,
         height: height,
         child: Stack(
@@ -74,7 +199,7 @@ class CanvasContent extends ConsumerWidget {
             CustomPaint(
               size: Size(width, height),
               painter: _GridPainter(
-                color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
                 gridSize: 50,
               ),
             ),
@@ -87,30 +212,31 @@ class CanvasContent extends ConsumerWidget {
                 height: 20,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                   ),
                 ),
               ),
             ),
             // Render nodes
-            ...nodes.map((node) {
-              final isSelected = node.id == selectedNodeId;
+            ...widget.nodes.map((node) {
+              final isSelected = node.id == widget.selectedNodeId;
               return Positioned(
                 left: node.position.x - minX,
                 top: node.position.y - minY,
                 child: IdeaNodeCard(
                   node: node,
                   isSelected: isSelected,
-                  onTap: () => onNodeTap(node.id),
-                  onDoubleTap: () => onNodeDoubleTap(node.id),
-                  onDragEnd: (delta) => onNodeDragEnd(node.id, delta),
+                  onTap: () => widget.onNodeTap(node.id),
+                  onDoubleTap: () => widget.onNodeDoubleTap(node.id),
+                  onDragEnd: (delta) => widget.onNodeDragEnd(node.id, delta),
                 ),
               );
             }),
           ],
         ),
+      ),
       ),
     );
   }
