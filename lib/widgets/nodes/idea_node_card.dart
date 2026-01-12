@@ -36,6 +36,7 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
     return Transform.translate(
       offset: _isDragging ? _dragOffset : Offset.zero,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         onDoubleTap: widget.onDoubleTap,
         onPanStart: (_) {

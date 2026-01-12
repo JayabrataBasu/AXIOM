@@ -14,6 +14,7 @@ class CanvasContent extends ConsumerWidget {
     required this.onNodeDragEnd,
     required this.onCanvasTap,
     required this.onCanvasDoubleTap,
+    this.onCanvasInfoChanged,
   });
 
   final List<IdeaNode> nodes;
@@ -23,12 +24,16 @@ class CanvasContent extends ConsumerWidget {
   final void Function(String nodeId, Offset delta) onNodeDragEnd;
   final VoidCallback onCanvasTap;
   final ValueChanged<Offset> onCanvasDoubleTap;
+  /// Callback to report the origin position in scene coordinates
+  final ValueChanged<Offset>? onCanvasInfoChanged;
+
+  /// Constant padding around content
+  static const double padding = 2000.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Calculate canvas bounds based on node positions
     // Add padding around the content
-    const padding = 2000.0;
     double minX = -padding;
     double minY = -padding;
     double maxX = padding;
@@ -43,6 +48,14 @@ class CanvasContent extends ConsumerWidget {
 
     final width = maxX - minX;
     final height = maxY - minY;
+    
+    // Origin position in scene coordinates (where 0,0 is rendered)
+    final originInScene = Offset(-minX, -minY);
+    
+    // Report canvas info after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onCanvasInfoChanged?.call(originInScene);
+    });
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,

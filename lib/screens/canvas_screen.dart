@@ -18,6 +18,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _canvasKey = GlobalKey<InfiniteCanvasState>();
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
+  Offset _originInScene = Offset.zero;
 
   @override
   void dispose() {
@@ -71,6 +72,9 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   onNodeDragEnd: _onNodeDragEnd,
                   onCanvasTap: _onCanvasTap,
                   onCanvasDoubleTap: _onCanvasDoubleTap,
+                  onCanvasInfoChanged: (origin) {
+                    _originInScene = origin;
+                  },
                 ),
               ),
             ),
@@ -127,7 +131,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               icon: const Icon(Icons.center_focus_strong),
               tooltip: 'Center on origin',
               onPressed: () {
-                _canvasKey.currentState?.centerOn(Offset.zero);
+                _canvasKey.currentState?.centerOn(_originInScene);
               },
             ),
             // Zoom controls
