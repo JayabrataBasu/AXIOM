@@ -306,29 +306,12 @@ class _SketchCanvasPainter extends CustomPainter {
       return;
     }
 
-    // Use getSmoothedPoints for smooth strokes (perfect_freehand)
-    try {
-      final smoothed = getSmoothedPoints(
-        points.map((p) => [p.x, p.y, p.pressure]).toList(),
-      );
-
-      if (smoothed.isEmpty) return;
-
-      final path = Path()..moveTo(smoothed[0][0] as double, smoothed[0][1] as double);
-
-      for (int i = 1; i < smoothed.length; i++) {
-        path.lineTo(smoothed[i][0] as double, smoothed[i][1] as double);
-      }
-
-      canvas.drawPath(path, paint);
-    } catch (_) {
-      // Fallback to simple line path if smoothing fails
-      final path = Path()..moveTo(points[0].x, points[0].y);
-      for (int i = 1; i < points.length; i++) {
-        path.lineTo(points[i].x, points[i].y);
-      }
-      canvas.drawPath(path, paint);
+    // Simple line path (perfect_freehand integration deferred)
+    final path = Path()..moveTo(points[0].x, points[0].y);
+    for (int i = 1; i < points.length; i++) {
+      path.lineTo(points[i].x, points[i].y);
     }
+    canvas.drawPath(path, paint);
   }
 
   @override

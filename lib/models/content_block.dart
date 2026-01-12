@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'content_block.freezed.dart';
-part 'content_block.g.dart';
 
 /// Sealed class representing different types of content blocks.
 /// Stage 3 adds multiple block types for rich content editing.
@@ -64,15 +63,57 @@ sealed class ContentBlock with _$ContentBlock {
   }) = SketchBlock;
 
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
+    final type = json['type'] as String?;
+
     // Migration: Handle legacy blocks without explicit 'type' field
-    if (!json.containsKey('type') || json['type'] == null) {
-      // Old format: assume it's a text block
+    if (type == null) {
       return ContentBlock.text(
         id: json['id'] as String,
         content: json['content'] as String? ?? '',
         createdAt: DateTime.parse(json['createdAt'] as String),
       );
     }
-    return _$ContentBlockFromJson(json);
+
+    return switch (type) {
+      'text' => ContentBlock.text(
+        id: json['id'] as String,
+        content: json['content'] as String? ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'heading' => ContentBlock.heading(
+        id: json['id'] as String,
+        content: json['content'] as String? ?? '',
+        level: (json['level'] as int?) ?? 1,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'bulletList' => ContentBlock.bulletList(
+        id: json['id'] as String,
+        items: List<String>.from((json['items'] as List<dynamic>?) ?? []),
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'code' => ContentBlock.code(
+        id: json['id'] as String,
+        content: json['content'] as String? ?? '',
+        language: (json['language'] as String?) ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'quote' => ContentBlock.quote(
+        id: json['id'] as String,
+        content: json['content'] as String? ?? '',
+        attribution: (json['attribution'] as String?) ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'sketch' => ContentBlock.sketch(
+        id: json['id'] as String,
+        strokeFile: json['strokeFile'] as String,
+        thumbnailFile: (json['thumbnailFile'] as String?) ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      _ => ContentBlock.text(
+        id: json['id'] as String,
+        content: '',
+        createdAt: DateTime.now(),
+      ),
+    };
   }
 }

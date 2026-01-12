@@ -5,6 +5,65 @@ import 'position.dart';
 part 'idea_node.freezed.dart';
 part 'idea_node.g.dart';
 
+/// Custom JSON converter for List<ContentBlock> to handle the sealed union.
+class ContentBlockListConverter
+    implements JsonConverter<List<ContentBlock>, List<dynamic>> {
+  const ContentBlockListConverter();
+
+  @override
+  List<ContentBlock> fromJson(List<dynamic> json) {
+    return json
+        .map((e) => ContentBlock.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  List<dynamic> toJson(List<ContentBlock> object) {
+    return object.map((b) => switch (b) {
+      TextBlock(:final id, :final content, :final createdAt) => {
+        'type': 'text',
+        'id': id,
+        'content': content,
+        'createdAt': createdAt.toIso8601String(),
+      },
+      HeadingBlock(:final id, :final content, :final level, :final createdAt) => {
+        'type': 'heading',
+        'id': id,
+        'content': content,
+        'level': level,
+        'createdAt': createdAt.toIso8601String(),
+      },
+      BulletListBlock(:final id, :final items, :final createdAt) => {
+        'type': 'bulletList',
+        'id': id,
+        'items': items,
+        'createdAt': createdAt.toIso8601String(),
+      },
+      CodeBlock(:final id, :final content, :final language, :final createdAt) => {
+        'type': 'code',
+        'id': id,
+        'content': content,
+        'language': language,
+        'createdAt': createdAt.toIso8601String(),
+      },
+      QuoteBlock(:final id, :final content, :final attribution, :final createdAt) => {
+        'type': 'quote',
+        'id': id,
+        'content': content,
+        'attribution': attribution,
+        'createdAt': createdAt.toIso8601String(),
+      },
+      SketchBlock(:final id, :final strokeFile, :final thumbnailFile, :final createdAt) => {
+        'type': 'sketch',
+        'id': id,
+        'strokeFile': strokeFile,
+        'thumbnailFile': thumbnailFile,
+        'createdAt': createdAt.toIso8601String(),
+      },
+    }).toList();
+  }
+}
+
 /// The one primary entity in Axiom.
 /// Everything else (text, math, sketches, audio, PDFs, calculations, references)
 /// must attach to or reference an IdeaNode.
@@ -26,7 +85,9 @@ class IdeaNode with _$IdeaNode {
     @Default(Position()) Position position,
 
     /// Ordered list of content blocks
-    @Default([]) List<ContentBlock> blocks,
+    @ContentBlockListConverter()
+    @Default([])
+    List<ContentBlock> blocks,
 
     /// Links to other IdeaNodes (Stage 9)
     @Default([]) List<NodeLink> links,

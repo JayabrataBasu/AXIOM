@@ -230,6 +230,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         CodeBlock() => block.copyWith(content: content),
         QuoteBlock() => block.copyWith(content: content),
         BulletListBlock() => block, // Use updateBulletListItems instead
+        SketchBlock() => block, // Use SketchService for strokes
       };
     }).toList();
 

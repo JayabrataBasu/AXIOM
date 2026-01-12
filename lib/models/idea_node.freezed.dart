@@ -34,6 +34,7 @@ mixin _$IdeaNode {
   Position get position => throw _privateConstructorUsedError;
 
   /// Ordered list of content blocks
+  @ContentBlockListConverter()
   List<ContentBlock> get blocks => throw _privateConstructorUsedError;
 
   /// Links to other IdeaNodes (Stage 9)
@@ -59,7 +60,7 @@ abstract class $IdeaNodeCopyWith<$Res> {
     DateTime createdAt,
     DateTime updatedAt,
     Position position,
-    List<ContentBlock> blocks,
+    @ContentBlockListConverter() List<ContentBlock> blocks,
     List<NodeLink> links,
   });
 
@@ -144,7 +145,7 @@ abstract class _$$IdeaNodeImplCopyWith<$Res>
     DateTime createdAt,
     DateTime updatedAt,
     Position position,
-    List<ContentBlock> blocks,
+    @ContentBlockListConverter() List<ContentBlock> blocks,
     List<NodeLink> links,
   });
 
@@ -212,7 +213,7 @@ class _$IdeaNodeImpl extends _IdeaNode {
     required this.createdAt,
     required this.updatedAt,
     this.position = const Position(),
-    final List<ContentBlock> blocks = const [],
+    @ContentBlockListConverter() final List<ContentBlock> blocks = const [],
     final List<NodeLink> links = const [],
   }) : _blocks = blocks,
        _links = links,
@@ -244,6 +245,7 @@ class _$IdeaNodeImpl extends _IdeaNode {
   /// Ordered list of content blocks
   @override
   @JsonKey()
+  @ContentBlockListConverter()
   List<ContentBlock> get blocks {
     if (_blocks is EqualUnmodifiableListView) return _blocks;
     // ignore: implicit_dynamic_type
@@ -315,7 +317,7 @@ abstract class _IdeaNode extends IdeaNode {
     required final DateTime createdAt,
     required final DateTime updatedAt,
     final Position position,
-    final List<ContentBlock> blocks,
+    @ContentBlockListConverter() final List<ContentBlock> blocks,
     final List<NodeLink> links,
   }) = _$IdeaNodeImpl;
   const _IdeaNode._() : super._();
@@ -341,6 +343,7 @@ abstract class _IdeaNode extends IdeaNode {
 
   /// Ordered list of content blocks
   @override
+  @ContentBlockListConverter()
   List<ContentBlock> get blocks;
 
   /// Links to other IdeaNodes (Stage 9)

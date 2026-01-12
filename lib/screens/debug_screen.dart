@@ -241,6 +241,7 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
       BulletListBlock(:final items) => ('LIST', Colors.green, items.join('\n')),
       CodeBlock(:final content, :final language) => ('CODE${language.isNotEmpty ? ' ($language)' : ''}', Colors.orange, content),
       QuoteBlock(:final content) => ('QUOTE', Colors.teal, content),
+      SketchBlock() => ('SKETCH', Colors.deepOrange, '[drawing]'),
     };
 
     return Card(
