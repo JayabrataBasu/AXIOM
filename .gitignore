@@ -1,0 +1,59 @@
+# Ignore the project plan and other common files
+# Keep Plan.md local (not tracked)
+Plan.md
+
+# Ignore manifest backups
+*.bak
+*.tmp
+*.swp
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+.venv/
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Databases
+*.sqlite3
+*.db
+
+# Misc
+*.zip
+*.tar.gz
+*.tgz
+
+# Ignore credentials and secrets files
+secrets.yml
+credentials.json
+
+# End of .gitignore
