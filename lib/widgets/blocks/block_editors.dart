@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:perfect_freehand/perfect_freehand.dart';
 import '../../models/models.dart';
+import '../../services/sketch_service.dart';
 
 /// Enum representing the available block types for the add block menu.
 enum BlockType {
@@ -7,7 +9,8 @@ enum BlockType {
   heading(Icons.title, 'Heading', 'Section header'),
   bulletList(Icons.format_list_bulleted, 'Bullet List', 'Unordered list'),
   code(Icons.code, 'Code', 'Code snippet'),
-  quote(Icons.format_quote, 'Quote', 'Citation or callout');
+  quote(Icons.format_quote, 'Quote', 'Citation or callout'),
+  sketch(Icons.gesture, 'Sketch', 'Freehand drawing');
 
   const BlockType(this.icon, this.label, this.description);
   final IconData icon;

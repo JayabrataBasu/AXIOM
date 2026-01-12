@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
+import '../widgets/blocks/sketch_block_editor.dart';
 
 /// Full-screen editor for an IdeaNode.
 class NodeEditorScreen extends ConsumerStatefulWidget {
@@ -267,6 +268,12 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           onAttributionChanged: (attr) => _updateQuoteAttribution(node.id, block.id, attr),
           onDelete: () => _deleteBlock(node.id, block.id),
         ),
+      SketchBlock() => SketchBlockEditor(
+          key: ValueKey(block.id),
+          block: block,
+          dragIndex: index,
+          onDelete: () => _deleteBlock(node.id, block.id),
+        ),
     };
   }
 
@@ -290,6 +297,8 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         notifier.addCodeBlock(node.id);
       case BlockType.quote:
         notifier.addQuoteBlock(node.id);
+      case BlockType.sketch:
+        notifier.addSketchBlock(node.id);
     }
   }
 

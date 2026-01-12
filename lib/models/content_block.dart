@@ -54,6 +54,15 @@ sealed class ContentBlock with _$ContentBlock {
     required DateTime createdAt,
   }) = QuoteBlock;
 
+  /// A sketch block for freehand drawings.
+  @FreezedUnionValue('sketch')
+  const factory ContentBlock.sketch({
+    required String id,
+    required String strokeFile,
+    @Default('') String thumbnailFile,
+    required DateTime createdAt,
+  }) = SketchBlock;
+
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     // Migration: Handle legacy blocks without explicit 'type' field
     if (!json.containsKey('type') || json['type'] == null) {

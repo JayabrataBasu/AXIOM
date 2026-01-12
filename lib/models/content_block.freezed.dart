@@ -15,29 +15,6 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-ContentBlock _$ContentBlockFromJson(Map<String, dynamic> json) {
-  switch (json['type']) {
-    case 'text':
-      return TextBlock.fromJson(json);
-    case 'heading':
-      return HeadingBlock.fromJson(json);
-    case 'bulletList':
-      return BulletListBlock.fromJson(json);
-    case 'code':
-      return CodeBlock.fromJson(json);
-    case 'quote':
-      return QuoteBlock.fromJson(json);
-
-    default:
-      throw CheckedFromJsonException(
-        json,
-        'type',
-        'ContentBlock',
-        'Invalid union type "${json['type']}"!',
-      );
-  }
-}
-
 /// @nodoc
 mixin _$ContentBlock {
   String get id => throw _privateConstructorUsedError;
@@ -69,6 +46,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )
     quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -91,6 +75,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -113,6 +104,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -122,6 +120,7 @@ mixin _$ContentBlock {
     required TResult Function(BulletListBlock value) bulletList,
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -130,6 +129,7 @@ mixin _$ContentBlock {
     TResult? Function(BulletListBlock value)? bulletList,
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -138,11 +138,9 @@ mixin _$ContentBlock {
     TResult Function(BulletListBlock value)? bulletList,
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
-
-  /// Serializes this ContentBlock to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of ContentBlock
   /// with the given fields replaced by the non-null parameter values.
@@ -242,18 +240,13 @@ class __$$TextBlockImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$TextBlockImpl extends TextBlock {
   const _$TextBlockImpl({
     required this.id,
     this.content = '',
     required this.createdAt,
-    final String? $type,
-  }) : $type = $type ?? 'text',
-       super._();
-
-  factory _$TextBlockImpl.fromJson(Map<String, dynamic> json) =>
-      _$$TextBlockImplFromJson(json);
+  }) : super._();
 
   @override
   final String id;
@@ -262,9 +255,6 @@ class _$TextBlockImpl extends TextBlock {
   final String content;
   @override
   final DateTime createdAt;
-
-  @JsonKey(name: 'type')
-  final String $type;
 
   @override
   String toString() {
@@ -282,7 +272,6 @@ class _$TextBlockImpl extends TextBlock {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, content, createdAt);
 
@@ -322,6 +311,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )
     quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
   }) {
     return text(id, content, createdAt);
   }
@@ -348,6 +344,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
   }) {
     return text?.call(id, content, createdAt);
   }
@@ -374,6 +377,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -390,6 +400,7 @@ class _$TextBlockImpl extends TextBlock {
     required TResult Function(BulletListBlock value) bulletList,
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
   }) {
     return text(this);
   }
@@ -402,6 +413,7 @@ class _$TextBlockImpl extends TextBlock {
     TResult? Function(BulletListBlock value)? bulletList,
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
   }) {
     return text?.call(this);
   }
@@ -414,17 +426,13 @@ class _$TextBlockImpl extends TextBlock {
     TResult Function(BulletListBlock value)? bulletList,
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
     required TResult orElse(),
   }) {
     if (text != null) {
       return text(this);
     }
     return orElse();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$TextBlockImplToJson(this);
   }
 }
 
@@ -435,9 +443,6 @@ abstract class TextBlock extends ContentBlock {
     required final DateTime createdAt,
   }) = _$TextBlockImpl;
   const TextBlock._() : super._();
-
-  factory TextBlock.fromJson(Map<String, dynamic> json) =
-      _$TextBlockImpl.fromJson;
 
   @override
   String get id;
@@ -508,19 +513,14 @@ class __$$HeadingBlockImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$HeadingBlockImpl extends HeadingBlock {
   const _$HeadingBlockImpl({
     required this.id,
     this.content = '',
     this.level = 1,
     required this.createdAt,
-    final String? $type,
-  }) : $type = $type ?? 'heading',
-       super._();
-
-  factory _$HeadingBlockImpl.fromJson(Map<String, dynamic> json) =>
-      _$$HeadingBlockImplFromJson(json);
+  }) : super._();
 
   @override
   final String id;
@@ -532,9 +532,6 @@ class _$HeadingBlockImpl extends HeadingBlock {
   final int level;
   @override
   final DateTime createdAt;
-
-  @JsonKey(name: 'type')
-  final String $type;
 
   @override
   String toString() {
@@ -553,7 +550,6 @@ class _$HeadingBlockImpl extends HeadingBlock {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, content, level, createdAt);
 
@@ -593,6 +589,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )
     quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
   }) {
     return heading(id, content, level, createdAt);
   }
@@ -619,6 +622,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
   }) {
     return heading?.call(id, content, level, createdAt);
   }
@@ -645,6 +655,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -661,6 +678,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     required TResult Function(BulletListBlock value) bulletList,
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
   }) {
     return heading(this);
   }
@@ -673,6 +691,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult? Function(BulletListBlock value)? bulletList,
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
   }) {
     return heading?.call(this);
   }
@@ -685,17 +704,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult Function(BulletListBlock value)? bulletList,
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
     required TResult orElse(),
   }) {
     if (heading != null) {
       return heading(this);
     }
     return orElse();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$HeadingBlockImplToJson(this);
   }
 }
 
@@ -707,9 +722,6 @@ abstract class HeadingBlock extends ContentBlock {
     required final DateTime createdAt,
   }) = _$HeadingBlockImpl;
   const HeadingBlock._() : super._();
-
-  factory HeadingBlock.fromJson(Map<String, dynamic> json) =
-      _$HeadingBlockImpl.fromJson;
 
   @override
   String get id;
@@ -776,19 +788,14 @@ class __$$BulletListBlockImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$BulletListBlockImpl extends BulletListBlock {
   const _$BulletListBlockImpl({
     required this.id,
     final List<String> items = const [],
     required this.createdAt,
-    final String? $type,
   }) : _items = items,
-       $type = $type ?? 'bulletList',
        super._();
-
-  factory _$BulletListBlockImpl.fromJson(Map<String, dynamic> json) =>
-      _$$BulletListBlockImplFromJson(json);
 
   @override
   final String id;
@@ -803,9 +810,6 @@ class _$BulletListBlockImpl extends BulletListBlock {
 
   @override
   final DateTime createdAt;
-
-  @JsonKey(name: 'type')
-  final String $type;
 
   @override
   String toString() {
@@ -823,7 +827,6 @@ class _$BulletListBlockImpl extends BulletListBlock {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
@@ -871,6 +874,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )
     quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
   }) {
     return bulletList(id, items, createdAt);
   }
@@ -897,6 +907,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
   }) {
     return bulletList?.call(id, items, createdAt);
   }
@@ -923,6 +940,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -939,6 +963,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     required TResult Function(BulletListBlock value) bulletList,
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
   }) {
     return bulletList(this);
   }
@@ -951,6 +976,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult? Function(BulletListBlock value)? bulletList,
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
   }) {
     return bulletList?.call(this);
   }
@@ -963,17 +989,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult Function(BulletListBlock value)? bulletList,
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
       return bulletList(this);
     }
     return orElse();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$BulletListBlockImplToJson(this);
   }
 }
 
@@ -984,9 +1006,6 @@ abstract class BulletListBlock extends ContentBlock {
     required final DateTime createdAt,
   }) = _$BulletListBlockImpl;
   const BulletListBlock._() : super._();
-
-  factory BulletListBlock.fromJson(Map<String, dynamic> json) =
-      _$BulletListBlockImpl.fromJson;
 
   @override
   String get id;
@@ -1057,19 +1076,14 @@ class __$$CodeBlockImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$CodeBlockImpl extends CodeBlock {
   const _$CodeBlockImpl({
     required this.id,
     this.content = '',
     this.language = '',
     required this.createdAt,
-    final String? $type,
-  }) : $type = $type ?? 'code',
-       super._();
-
-  factory _$CodeBlockImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CodeBlockImplFromJson(json);
+  }) : super._();
 
   @override
   final String id;
@@ -1081,9 +1095,6 @@ class _$CodeBlockImpl extends CodeBlock {
   final String language;
   @override
   final DateTime createdAt;
-
-  @JsonKey(name: 'type')
-  final String $type;
 
   @override
   String toString() {
@@ -1103,7 +1114,6 @@ class _$CodeBlockImpl extends CodeBlock {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
       Object.hash(runtimeType, id, content, language, createdAt);
@@ -1144,6 +1154,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )
     quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
   }) {
     return code(id, content, language, createdAt);
   }
@@ -1170,6 +1187,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
   }) {
     return code?.call(id, content, language, createdAt);
   }
@@ -1196,6 +1220,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1212,6 +1243,7 @@ class _$CodeBlockImpl extends CodeBlock {
     required TResult Function(BulletListBlock value) bulletList,
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
   }) {
     return code(this);
   }
@@ -1224,6 +1256,7 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult? Function(BulletListBlock value)? bulletList,
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
   }) {
     return code?.call(this);
   }
@@ -1236,17 +1269,13 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult Function(BulletListBlock value)? bulletList,
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
     required TResult orElse(),
   }) {
     if (code != null) {
       return code(this);
     }
     return orElse();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CodeBlockImplToJson(this);
   }
 }
 
@@ -1258,9 +1287,6 @@ abstract class CodeBlock extends ContentBlock {
     required final DateTime createdAt,
   }) = _$CodeBlockImpl;
   const CodeBlock._() : super._();
-
-  factory CodeBlock.fromJson(Map<String, dynamic> json) =
-      _$CodeBlockImpl.fromJson;
 
   @override
   String get id;
@@ -1337,19 +1363,14 @@ class __$$QuoteBlockImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$QuoteBlockImpl extends QuoteBlock {
   const _$QuoteBlockImpl({
     required this.id,
     this.content = '',
     this.attribution = '',
     required this.createdAt,
-    final String? $type,
-  }) : $type = $type ?? 'quote',
-       super._();
-
-  factory _$QuoteBlockImpl.fromJson(Map<String, dynamic> json) =>
-      _$$QuoteBlockImplFromJson(json);
+  }) : super._();
 
   @override
   final String id;
@@ -1361,9 +1382,6 @@ class _$QuoteBlockImpl extends QuoteBlock {
   final String attribution;
   @override
   final DateTime createdAt;
-
-  @JsonKey(name: 'type')
-  final String $type;
 
   @override
   String toString() {
@@ -1383,7 +1401,6 @@ class _$QuoteBlockImpl extends QuoteBlock {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
       Object.hash(runtimeType, id, content, attribution, createdAt);
@@ -1424,6 +1441,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )
     quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
   }) {
     return quote(id, content, attribution, createdAt);
   }
@@ -1450,6 +1474,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
   }) {
     return quote?.call(id, content, attribution, createdAt);
   }
@@ -1476,6 +1507,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -1492,6 +1530,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     required TResult Function(BulletListBlock value) bulletList,
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
   }) {
     return quote(this);
   }
@@ -1504,6 +1543,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult? Function(BulletListBlock value)? bulletList,
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
   }) {
     return quote?.call(this);
   }
@@ -1516,17 +1556,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult Function(BulletListBlock value)? bulletList,
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
     required TResult orElse(),
   }) {
     if (quote != null) {
       return quote(this);
     }
     return orElse();
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$QuoteBlockImplToJson(this);
   }
 }
 
@@ -1538,9 +1574,6 @@ abstract class QuoteBlock extends ContentBlock {
     required final DateTime createdAt,
   }) = _$QuoteBlockImpl;
   const QuoteBlock._() : super._();
-
-  factory QuoteBlock.fromJson(Map<String, dynamic> json) =
-      _$QuoteBlockImpl.fromJson;
 
   @override
   String get id;
@@ -1554,5 +1587,292 @@ abstract class QuoteBlock extends ContentBlock {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$QuoteBlockImplCopyWith<_$QuoteBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$SketchBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$SketchBlockImplCopyWith(
+    _$SketchBlockImpl value,
+    $Res Function(_$SketchBlockImpl) then,
+  ) = __$$SketchBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String id,
+    String strokeFile,
+    String thumbnailFile,
+    DateTime createdAt,
+  });
+}
+
+/// @nodoc
+class __$$SketchBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$SketchBlockImpl>
+    implements _$$SketchBlockImplCopyWith<$Res> {
+  __$$SketchBlockImplCopyWithImpl(
+    _$SketchBlockImpl _value,
+    $Res Function(_$SketchBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? strokeFile = null,
+    Object? thumbnailFile = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$SketchBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        strokeFile: null == strokeFile
+            ? _value.strokeFile
+            : strokeFile // ignore: cast_nullable_to_non_nullable
+                  as String,
+        thumbnailFile: null == thumbnailFile
+            ? _value.thumbnailFile
+            : thumbnailFile // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$SketchBlockImpl extends SketchBlock {
+  const _$SketchBlockImpl({
+    required this.id,
+    required this.strokeFile,
+    this.thumbnailFile = '',
+    required this.createdAt,
+  }) : super._();
+
+  @override
+  final String id;
+  @override
+  final String strokeFile;
+  @override
+  @JsonKey()
+  final String thumbnailFile;
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'ContentBlock.sketch(id: $id, strokeFile: $strokeFile, thumbnailFile: $thumbnailFile, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SketchBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.strokeFile, strokeFile) ||
+                other.strokeFile == strokeFile) &&
+            (identical(other.thumbnailFile, thumbnailFile) ||
+                other.thumbnailFile == thumbnailFile) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, strokeFile, thumbnailFile, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SketchBlockImplCopyWith<_$SketchBlockImpl> get copyWith =>
+      __$$SketchBlockImplCopyWithImpl<_$SketchBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
+  }) {
+    return sketch(id, strokeFile, thumbnailFile, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+  }) {
+    return sketch?.call(id, strokeFile, thumbnailFile, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    required TResult orElse(),
+  }) {
+    if (sketch != null) {
+      return sketch(id, strokeFile, thumbnailFile, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
+  }) {
+    return sketch(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
+  }) {
+    return sketch?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
+    required TResult orElse(),
+  }) {
+    if (sketch != null) {
+      return sketch(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class SketchBlock extends ContentBlock {
+  const factory SketchBlock({
+    required final String id,
+    required final String strokeFile,
+    final String thumbnailFile,
+    required final DateTime createdAt,
+  }) = _$SketchBlockImpl;
+  const SketchBlock._() : super._();
+
+  @override
+  String get id;
+  String get strokeFile;
+  String get thumbnailFile;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SketchBlockImplCopyWith<_$SketchBlockImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

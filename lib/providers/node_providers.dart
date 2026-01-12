@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 import '../repositories/repositories.dart';
+import '../services/sketch_service.dart';
 
 /// Provider for the NodeRepository singleton.
 final nodeRepositoryProvider = Provider<NodeRepository>((ref) {
@@ -18,6 +19,7 @@ final nodesProvider = FutureProvider<List<IdeaNode>>((ref) async {
 class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   late NodeRepository _repository;
   final _uuid = const Uuid();
+  final SketchService _sketchService = SketchService.instance;
 
   @override
   Future<List<IdeaNode>> build() async {
@@ -185,6 +187,29 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     await updateNode(updated);
   }
 
+  /// Add a sketch block to a node.
+  Future<void> addSketchBlock(String nodeId) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final blockId = _uuid.v4();
+    final strokeFile = await _sketchService.ensureStrokeFile(blockId);
+    final thumbnailFile = await _sketchService.thumbnailFilePath(blockId);
+
+    final newBlock = ContentBlock.sketch(
+      id: blockId,
+      strokeFile: strokeFile,
+      thumbnailFile: thumbnailFile,
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
+    await updateNode(updated);
+  }
+
   /// Update a block's content (supports all block types).
   Future<void> updateBlockContent(
     String nodeId,
@@ -291,6 +316,23 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     if (nodeIndex == -1) return;
 
     final node = currentNodes[nodeIndex];
+    final block = node.blocks.firstWhere((b) => b.id == blockId);
+    
+    if (block.runtimeType.toString().contains('SketchBlock')) {
+      // Safely check and cast for SketchBlock
+      final stroke = switch (block) {
+        _ when block.runtimeType.toString() == 'SketchBlock' => block as dynamic,
+        _ => null,
+      };
+      if (stroke != null) {
+        await _sketchService.deleteSketchAssets(
+          blockId: block.id,
+          strokeFile: stroke.strokeFile as String,
+          thumbnailFile: (stroke.thumbnailFile as String).isNotEmpty ? stroke.thumbnailFile as String : null,
+        );
+      }
+    }
+
     final updated = node.copyWith(
       blocks: node.blocks.where((b) => b.id != blockId).toList(),
     );
@@ -346,6 +388,15 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
 
     final updated = node.copyWith(links: updatedLinks);
     await updateNode(updated);
+  }
+
+  /// Touch a node to bump updatedAt when external assets change.
+  Future<void> touchNode(String nodeId) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    await updateNode(currentNodes[nodeIndex]);
   }
 
   /// Reload all nodes from disk.

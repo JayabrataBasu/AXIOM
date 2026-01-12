@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/file_service.dart';
+import '../services/sketch_service.dart';
 
 /// Repository for IdeaNode CRUD operations.
 /// Uses FileService for persistence - one JSON file per node.
@@ -49,6 +50,21 @@ class NodeRepository {
 
   /// Delete a node by ID.
   Future<void> delete(String id) async {
+    final node = _cache[id];
+    if (node != null) {
+      for (final block in node.blocks) {
+        // Check if block is SketchBlock by runtimeType
+        if (block.runtimeType.toString().contains('SketchBlock')) {
+          final sketch = block as dynamic;
+          await SketchService.instance.deleteSketchAssets(
+            blockId: block.id,
+            strokeFile: sketch.strokeFile as String,
+            thumbnailFile: (sketch.thumbnailFile as String).isNotEmpty ? sketch.thumbnailFile as String : null,
+          );
+        }
+      }
+    }
+
     final filePath = await _fileService.nodeFilePath(id);
     await _fileService.deleteFile(filePath);
     _cache.remove(id);

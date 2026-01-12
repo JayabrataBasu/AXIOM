@@ -44,6 +44,7 @@ class IdeaNode with _$IdeaNode {
         BulletListBlock(:final items) when items.isNotEmpty => items.first,
         CodeBlock(:final content) when content.isNotEmpty => content,
         QuoteBlock(:final content) when content.isNotEmpty => '"$content"',
+        _ when block.runtimeType.toString().contains('SketchBlock') => '[Sketch]',
         _ => null,
       };
       if (text != null) {
