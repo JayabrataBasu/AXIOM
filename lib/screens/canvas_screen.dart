@@ -85,6 +85,8 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               right: 0,
               child: _buildToolbar(context, theme),
             ),
+            // Sketch tools palette
+            const SketchToolsPalette(),
             // Zoom indicator
             Positioned(
               bottom: 16,

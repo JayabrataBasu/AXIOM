@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
 import '../../providers/providers.dart';
 import '../nodes/idea_node_card.dart';
+import '../canvas_sketch_layer.dart';
 import 'node_connections_painter.dart';
 
 /// The content layer of the canvas that renders positioned IdeaNodes.
@@ -337,6 +338,12 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
                 color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
                 gridSize: 50,
               ),
+            ),
+            // Canvas sketch layer (beneath nodes)
+            SizedBox(
+              width: width,
+              height: height,
+              child: CanvasSketchLayer(),
             ),
             // Connection lines between nodes
             CustomPaint(

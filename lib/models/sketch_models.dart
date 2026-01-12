@@ -29,21 +29,34 @@ class SketchPoint {
       };
 }
 
-/// A stroke composed of multiple sampled points.
+/// A stroke composed of multiple sampled points with color and width.
 class SketchStroke {
-  SketchStroke({required this.points});
+  SketchStroke({
+    required this.points,
+    this.color = const Color(0xFF000000),
+    this.width = 2.0,
+  });
 
   final List<SketchPoint> points;
+  final Color color;
+  final double width;
 
   factory SketchStroke.fromJson(Map<String, dynamic> json) {
     final rawPoints = json['points'] as List<dynamic>? ?? [];
     return SketchStroke(
       points: rawPoints.map((p) => SketchPoint.fromJson(p as Map<String, dynamic>)).toList(),
+      // Support new format with color
+      color: json['color'] != null 
+        ? Color(json['color'] as int) 
+        : const Color(0xFF000000),
+      width: (json['width'] as num?)?.toDouble() ?? 2.0,
     );
   }
 
   Map<String, dynamic> toJson() => {
         'points': points.map((p) => p.toJson()).toList(),
+        'color': color.value,
+        'width': width,
       };
 }
 
@@ -55,3 +68,4 @@ List<Map<String, dynamic>> sketchStrokesToJson(List<SketchStroke> strokes) {
 List<SketchStroke> sketchStrokesFromJson(List<dynamic> raw) {
   return raw.map((e) => SketchStroke.fromJson(e as Map<String, dynamic>)).toList();
 }
+

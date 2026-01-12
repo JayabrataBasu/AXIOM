@@ -3,9 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'screens/screens.dart';
+import 'services/settings_service.dart';
+import 'services/canvas_sketch_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize settings service
+  await SettingsService.instance.initialize();
+  
+  // Initialize canvas sketch service
+  await CanvasSketchService.instance.initialize();
 
   // Configure window for desktop platforms
   await windowManager.ensureInitialized();
