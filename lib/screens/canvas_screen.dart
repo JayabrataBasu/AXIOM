@@ -62,6 +62,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
               data: (nodes) => InfiniteCanvas(
                 key: _canvasKey,
+                panEnabled: !_sketchMode,
                 onScaleChanged: (scale) {
                   setState(() => _currentZoom = scale);
                 },

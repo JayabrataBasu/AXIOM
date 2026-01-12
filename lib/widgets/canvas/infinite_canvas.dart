@@ -12,6 +12,7 @@ class InfiniteCanvas extends StatefulWidget {
     this.maxScale = 4.0,
     this.onScaleChanged,
     this.transformationController,
+    this.panEnabled = true,
   });
 
   final Widget child;
@@ -20,6 +21,7 @@ class InfiniteCanvas extends StatefulWidget {
   final double maxScale;
   final ValueChanged<double>? onScaleChanged;
   final TransformationController? transformationController;
+  final bool panEnabled;
 
   @override
   State<InfiniteCanvas> createState() => InfiniteCanvasState();
@@ -150,7 +152,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
         minScale: widget.minScale,
         maxScale: widget.maxScale,
         constrained: false,
-        panEnabled: true,
+        panEnabled: widget.panEnabled,
         scaleEnabled: true,
         onInteractionEnd: (details) {
           widget.onScaleChanged?.call(currentScale);

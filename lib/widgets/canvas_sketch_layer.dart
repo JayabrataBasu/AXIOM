@@ -19,16 +19,18 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   void _onPointerDown(PointerDownEvent details) {
     final toolState = ref.read(sketchToolsProvider);
     
-    // Only draw with drawing tools (not selector or eraser on empty canvas)
+    // Only draw with drawing tools (not selector)
     if (toolState.tool == SketchTool.selector) return;
     
-    _currentStroke = [
-      CanvasSketchPoint(
-        x: details.position.dx,
-        y: details.position.dy,
-        pressure: details.pressure,
-      ),
-    ];
+    setState(() {
+      _currentStroke = [
+        CanvasSketchPoint(
+          x: details.position.dx,
+          y: details.position.dy,
+          pressure: details.pressure,
+        ),
+      ];
+    });
   }
 
   void _onPointerMove(PointerMoveEvent details) {
@@ -78,18 +80,21 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
       data: (sketch) {
-        return Listener(
-          onPointerDown: _onPointerDown,
-          onPointerMove: _onPointerMove,
-          onPointerUp: _onPointerUp,
-          child: CustomPaint(
-            painter: _CanvasSketchLayerPainter(
-              strokes: sketch.strokes,
-              currentStroke: _currentStroke,
-              currentColor: toolState.color,
-              currentWidth: toolState.brushSize,
+        return RepaintBoundary(
+          child: Listener(
+            onPointerDown: _onPointerDown,
+            onPointerMove: _onPointerMove,
+            onPointerUp: _onPointerUp,
+            behavior: HitTestBehavior.translucent,
+            child: CustomPaint(
+              painter: _CanvasSketchLayerPainter(
+                strokes: sketch.strokes,
+                currentStroke: _currentStroke,
+                currentColor: toolState.color,
+                currentWidth: toolState.brushSize,
+              ),
+              size: Size.infinite,
             ),
-            size: Size.infinite,
           ),
         );
       },

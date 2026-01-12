@@ -69,6 +69,18 @@ class CanvasSketchStroke {
       'width': width,
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! CanvasSketchStroke) return false;
+    return other.points == points &&
+        other.color == color &&
+        other.width == width;
+  }
+
+  @override
+  int get hashCode => points.hashCode ^ color.hashCode ^ width.hashCode;
 }
 
 /// A point in canvas-relative coordinates.
@@ -98,4 +110,16 @@ class CanvasSketchPoint {
       'pressure': pressure,
     };
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is CanvasSketchPoint &&
+        other.x == x &&
+        other.y == y &&
+        other.pressure == pressure;
+  }
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode ^ pressure.hashCode;
 }

@@ -57,39 +57,6 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
     await _sketchService.saveStrokes(block.id, _strokes);
   }
 
-  void _onPointerDown(PointerDownEvent details) {
-    _currentStroke = [
-      SketchPoint.fromOffset(details.localPosition, pressure: details.pressure),
-    ];
-  }
-
-  void _onPointerMove(PointerMoveEvent details) {
-    if (_currentStroke.isNotEmpty) {
-      setState(() {
-        _currentStroke.add(
-          SketchPoint.fromOffset(details.localPosition, pressure: details.pressure),
-        );
-      });
-    }
-  }
-
-  void _onPointerUp(PointerUpEvent details) {
-    if (_currentStroke.isNotEmpty) {
-      final toolState = ref.read(sketchToolsProvider);
-      
-      setState(() {
-        // Create stroke with current tool settings
-        _strokes.add(SketchStroke(
-          points: _currentStroke,
-          color: toolState.color,
-          width: toolState.brushSize,
-        ));
-        _currentStroke = [];
-      });
-      _saveStrokes();
-    }
-  }
-
   void _undo() {
     if (_strokes.isNotEmpty) {
       setState(() {
@@ -197,18 +164,64 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
           ),
           child: SizedBox(
             height: 300,
-            child: Listener(
-              onPointerDown: _onPointerDown,
-              onPointerMove: _onPointerMove,
-              onPointerUp: _onPointerUp,
-              child: CustomPaint(
-                painter: _SketchCanvasPainter(
-                  strokes: _strokes,
-                  currentStroke: _currentStroke,
-                  currentColor: toolState.color,
-                  currentWidth: toolState.brushSize,
-                ),
-                size: Size.infinite,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onPanStart: (details) {
+                debugPrint('[SKETCH] Pan start: ${details.localPosition}');
+                final toolState = ref.read(sketchToolsProvider);
+                if (toolState.tool != SketchTool.pen && 
+                    toolState.tool != SketchTool.marker && 
+                    toolState.tool != SketchTool.pencil && 
+                    toolState.tool != SketchTool.brush) {
+                  return;
+                }
+                setState(() {
+                  _currentStroke = [
+                    SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
+                  ];
+                });
+              },
+              onPanUpdate: (details) {
+                if (_currentStroke.isNotEmpty) {
+                  setState(() {
+                    _currentStroke.add(
+                      SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
+                    );
+                  });
+                }
+              },
+              onPanEnd: (details) {
+                debugPrint('[SKETCH] Pan end: ${_currentStroke.length} points');
+                if (_currentStroke.isNotEmpty) {
+                  final toolState = ref.read(sketchToolsProvider);
+                  setState(() {
+                    _strokes.add(SketchStroke(
+                      points: _currentStroke,
+                      color: toolState.color,
+                      width: toolState.brushSize,
+                    ));
+                    _currentStroke = [];
+                  });
+                  _saveStrokes();
+                }
+              },
+              child: Stack(
+                children: [
+                  // Background
+                  Container(color: Colors.white),
+                  // Canvas
+                  RepaintBoundary(
+                    child: CustomPaint(
+                      painter: _SketchCanvasPainter(
+                        strokes: _strokes,
+                        currentStroke: _currentStroke,
+                        currentColor: toolState.color,
+                        currentWidth: toolState.brushSize,
+                      ),
+                      size: Size.infinite,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -325,12 +338,8 @@ class _SketchCanvasPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Draw background
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = Colors.white,
-    );
-
+    // Background is now handled by the Container, just draw strokes
+    
     // Draw completed strokes with their own colors and widths
     for (final stroke in strokes) {
       final paint = Paint()

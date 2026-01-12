@@ -27,6 +27,18 @@ class SketchPoint {
         'y': y,
         'pressure': pressure,
       };
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is SketchPoint &&
+        other.x == x &&
+        other.y == y &&
+        other.pressure == pressure;
+  }
+
+  @override
+  int get hashCode => x.hashCode ^ y.hashCode ^ pressure.hashCode;
 }
 
 /// A stroke composed of multiple sampled points with color and width.
@@ -58,6 +70,18 @@ class SketchStroke {
         'color': color.value,
         'width': width,
       };
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SketchStroke) return false;
+    return other.points == points &&
+        other.color == color &&
+        other.width == width;
+  }
+
+  @override
+  int get hashCode => points.hashCode ^ color.hashCode ^ width.hashCode;
 }
 
 /// Helper to serialize a list of strokes.
