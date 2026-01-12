@@ -1,23 +1,32 @@
-# Ignore the project plan and other common files
+# Project-specific ignores
 # Keep Plan.md local (not tracked)
 Plan.md
 
-# Ignore manifest backups
+# -----------------------------
+# General backups / temp files
+# -----------------------------
 *.bak
 *.tmp
 *.swp
 *.log
+*.lock
 
 # OS generated files
 .DS_Store
 Thumbs.db
+.Trash-
+desktop.ini
 
-# Editor/IDE
+# Editor / IDE
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.iml
 
+# -----------------------------
+# Language / package managers
+# -----------------------------
 # Python
 __pycache__/
 *.py[cod]
@@ -55,5 +64,95 @@ yarn-error.log*
 # Ignore credentials and secrets files
 secrets.yml
 credentials.json
+
+# -----------------------------
+# Flutter / Dart
+# -----------------------------
+# Generated tools and build outputs
+.dart_tool/
+.packages
+build/
+
+# Generated plugin registrant and helper files
+.flutter-plugins
+.flutter-plugins-dependencies
+.generated_plugin_registrant.dart
+
+# Flutter tool cache (local only)
+.flutter-*
+
+# Pub cache (if present locally)
+.pub-cache/
+
+# Note: For Flutter applications, do NOT ignore `pubspec.lock` — commit it for apps to
+# ensure consistent dependency resolution. Also keep `pubspec.yaml` and `.metadata` tracked.
+
+# -----------------------------
+# Android
+# -----------------------------
+# Gradle
+.gradle/
+**/local.properties
+**/android/**/build/
+**/build/
+android/.gradle/
+
+# Android Studio
+*.apk
+*.ap_
+captures/
+
+# Do NOT ignore Gradle wrapper config or scripts (gradlew, gradlew.bat, gradle/wrapper/**)
+
+# -----------------------------
+# iOS / CocoaPods / Xcode
+# -----------------------------
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/ServiceDefinitions.json
+ios/Flutter/ephemeral/
+xcuserdata/
+*.xcuserstate
+
+# Keep Podfile and Podfile.lock committed for reproducible iOS builds
+
+# -----------------------------
+# macOS
+# -----------------------------
+macos/Flutter/ephemeral/
+macos/Build/
+macos/Pods/
+
+# -----------------------------
+# Windows
+# -----------------------------
+windows/Flutter/ephemeral/
+windows/Build/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# -----------------------------
+# Linux
+# -----------------------------
+linux/Flutter/ephemeral/
+linux/Build/
+
+# -----------------------------
+# CI / tooling
+# -----------------------------
+# Ignore build artifacts and caches created by CI or tools
+.cargo/
+target/
+
+# -----------------------------
+# Final notes
+# -----------------------------
+# If a file is already tracked by git, adding it to .gitignore will NOT stop it being tracked.
+# To stop tracking a file already committed, remove it from the index, e.g.:
+#   git rm --cached <file>
 
 # End of .gitignore
