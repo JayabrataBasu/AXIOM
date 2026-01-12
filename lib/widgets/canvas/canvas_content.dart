@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart' show kSecondaryMouseButton;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
+import '../../providers/providers.dart';
 import '../nodes/idea_node_card.dart';
 import 'node_connections_painter.dart';
 
@@ -41,6 +42,8 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
   DateTime? _lastSecondaryDown;
   Offset? _contextMenuPosition;
   OverlayEntry? _contextMenuEntry;
+  String? _hoveredLinkId;
+  bool _tapConsumed = false;
 
   @override
   void dispose() {
@@ -56,6 +59,97 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
         _contextMenuPosition = null;
       });
     }
+  }
+
+  _LinkHit? _hitTestLinks(Offset localPosition, double minX, double minY) {
+    const threshold = 12.0;
+    const w = NodeConnectionsPainter.nodeWidth;
+    const h = NodeConnectionsPainter.nodeHeight;
+
+    // Quick lookup for targets
+    final nodeMap = {for (final node in widget.nodes) node.id: node};
+
+    _LinkHit? closest;
+
+    for (final source in widget.nodes) {
+      for (final link in source.links) {
+        final target = nodeMap[link.targetNodeId];
+        if (target == null) continue;
+
+        final start = Offset(source.position.x - minX + w / 2, source.position.y - minY + h / 2);
+        final end = Offset(target.position.x - minX + w / 2, target.position.y - minY + h / 2);
+
+        final distance = _distanceToSegment(localPosition, start, end);
+        if (distance <= threshold && (closest == null || distance < closest.distance)) {
+          closest = _LinkHit(source: source, target: target, link: link, start: start, end: end, distance: distance);
+        }
+      }
+    }
+
+    return closest;
+  }
+
+  double _distanceToSegment(Offset p, Offset a, Offset b) {
+    final ap = p - a;
+    final ab = b - a;
+    final abLen2 = ab.dx * ab.dx + ab.dy * ab.dy;
+    if (abLen2 == 0) return ap.distance;
+    final t = ((ap.dx * ab.dx) + (ap.dy * ab.dy)) / abLen2;
+    final clampedT = t.clamp(0.0, 1.0);
+    final projection = Offset(a.dx + ab.dx * clampedT, a.dy + ab.dy * clampedT);
+    return (p - projection).distance;
+  }
+
+  Future<void> _showLinkDetails(_LinkHit hit) async {
+    final label = hit.link.label.isNotEmpty ? hit.link.label : 'Link';
+    final previewFrom = hit.source.previewText.isNotEmpty ? hit.source.previewText : hit.source.id;
+    final previewTo = hit.target.previewText.isNotEmpty ? hit.target.previewText : hit.target.id;
+
+    await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Text('From: $previewFrom', style: Theme.of(context).textTheme.bodyMedium),
+              Text('To: $previewTo', style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      widget.onNodeDoubleTap(hit.target.id);
+                    },
+                    icon: const Icon(Icons.open_in_new),
+                    label: const Text('Open target'),
+                  ),
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      _removeLink(hit);
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.link_off),
+                    label: const Text('Remove link'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _removeLink(_LinkHit hit) {
+    ref.read(nodesNotifierProvider.notifier).removeLink(hit.source.id, hit.link.targetNodeId);
   }
 
   void _showContextMenu(BuildContext context, Offset position, Offset scenePos) {
@@ -164,6 +258,16 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
         // Only handle mouse right-button for creation
         if (event.kind == PointerDeviceKind.mouse &&
             (event.buttons & kSecondaryMouseButton) != 0) {
+          final hit = _hitTestLinks(event.localPosition, minX, minY);
+          if (hit != null) {
+            _removeLink(hit);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Link removed')),
+            );
+            _lastSecondaryDown = null;
+            return;
+          }
+
           final now = DateTime.now();
           final scenePos = event.localPosition + Offset(minX, minY);
           
@@ -187,9 +291,39 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
           }
         }
       },
+      onPointerHover: (event) {
+        final hit = _hitTestLinks(event.localPosition, minX, minY);
+        final linkId = hit == null ? null : '${hit.source.id}-${hit.link.targetNodeId}';
+        if (linkId != _hoveredLinkId) {
+          setState(() => _hoveredLinkId = linkId);
+        }
+      },
+      onPointerMove: (event) {
+        if (event.kind != PointerDeviceKind.mouse) return;
+        final hit = _hitTestLinks(event.localPosition, minX, minY);
+        final linkId = hit == null ? null : '${hit.source.id}-${hit.link.targetNodeId}';
+        if (linkId != _hoveredLinkId) {
+          setState(() => _hoveredLinkId = linkId);
+        }
+      },
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: widget.onCanvasTap,
+        onTapDown: (details) {
+          final hit = _hitTestLinks(details.localPosition, minX, minY);
+          if (hit != null) {
+            _tapConsumed = true;
+            _showLinkDetails(hit);
+            return;
+          }
+          _tapConsumed = false;
+        },
+        onTap: () {
+          if (_tapConsumed) {
+            _tapConsumed = false;
+            return;
+          }
+          widget.onCanvasTap();
+        },
         child: SizedBox(
         width: width,
         height: height,
@@ -212,6 +346,7 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
                 minX: minX,
                 minY: minY,
                 selectedNodeId: widget.selectedNodeId,
+                hoveredLinkId: _hoveredLinkId,
               ),
             ),
             // Origin marker
@@ -284,4 +419,22 @@ class _GridPainter extends CustomPainter {
   bool shouldRepaint(_GridPainter oldDelegate) {
     return oldDelegate.color != color || oldDelegate.gridSize != gridSize;
   }
+}
+
+class _LinkHit {
+  _LinkHit({
+    required this.source,
+    required this.target,
+    required this.link,
+    required this.start,
+    required this.end,
+    required this.distance,
+  });
+
+  final IdeaNode source;
+  final IdeaNode target;
+  final NodeLink link;
+  final Offset start;
+  final Offset end;
+  final double distance;
 }
