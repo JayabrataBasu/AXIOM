@@ -44,9 +44,8 @@ class AxiomApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      // Stage 1: Use debug screen to test persistence
-      // Stage 2: Replace with CanvasScreen
-      home: const DebugScreen(),
+      // Stage 2: Canvas is now the primary thinking surface
+      home: const CanvasScreen(),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
-import '../../providers/providers.dart';
 import '../nodes/idea_node_card.dart';
 
 /// The content layer of the canvas that renders positioned IdeaNodes.
