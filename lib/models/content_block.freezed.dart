@@ -16,39 +16,128 @@ final _privateConstructorUsedError = UnsupportedError(
 );
 
 ContentBlock _$ContentBlockFromJson(Map<String, dynamic> json) {
-  return TextBlock.fromJson(json);
+  switch (json['type']) {
+    case 'text':
+      return TextBlock.fromJson(json);
+    case 'heading':
+      return HeadingBlock.fromJson(json);
+    case 'bulletList':
+      return BulletListBlock.fromJson(json);
+    case 'code':
+      return CodeBlock.fromJson(json);
+    case 'quote':
+      return QuoteBlock.fromJson(json);
+
+    default:
+      throw CheckedFromJsonException(
+        json,
+        'type',
+        'ContentBlock',
+        'Invalid union type "${json['type']}"!',
+      );
+  }
 }
 
 /// @nodoc
 mixin _$ContentBlock {
   String get id => throw _privateConstructorUsedError;
-  String get content => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String id, String content, DateTime createdAt)
     text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 
@@ -69,7 +158,7 @@ abstract class $ContentBlockCopyWith<$Res> {
     $Res Function(ContentBlock) then,
   ) = _$ContentBlockCopyWithImpl<$Res, ContentBlock>;
   @useResult
-  $Res call({String id, String content, DateTime createdAt});
+  $Res call({String id, DateTime createdAt});
 }
 
 /// @nodoc
@@ -86,20 +175,12 @@ class _$ContentBlockCopyWithImpl<$Res, $Val extends ContentBlock>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = null,
-    Object? content = null,
-    Object? createdAt = null,
-  }) {
+  $Res call({Object? id = null, Object? createdAt = null}) {
     return _then(
       _value.copyWith(
             id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            content: null == content
-                ? _value.content
-                : content // ignore: cast_nullable_to_non_nullable
                       as String,
             createdAt: null == createdAt
                 ? _value.createdAt
@@ -167,7 +248,9 @@ class _$TextBlockImpl extends TextBlock {
     required this.id,
     this.content = '',
     required this.createdAt,
-  }) : super._();
+    final String? $type,
+  }) : $type = $type ?? 'text',
+       super._();
 
   factory _$TextBlockImpl.fromJson(Map<String, dynamic> json) =>
       _$$TextBlockImplFromJson(json);
@@ -179,6 +262,9 @@ class _$TextBlockImpl extends TextBlock {
   final String content;
   @override
   final DateTime createdAt;
+
+  @JsonKey(name: 'type')
+  final String $type;
 
   @override
   String toString() {
@@ -213,6 +299,29 @@ class _$TextBlockImpl extends TextBlock {
   TResult when<TResult extends Object?>({
     required TResult Function(String id, String content, DateTime createdAt)
     text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
   }) {
     return text(id, content, createdAt);
   }
@@ -221,6 +330,24 @@ class _$TextBlockImpl extends TextBlock {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
   }) {
     return text?.call(id, content, createdAt);
   }
@@ -229,6 +356,24 @@ class _$TextBlockImpl extends TextBlock {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -241,6 +386,10 @@ class _$TextBlockImpl extends TextBlock {
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
   }) {
     return text(this);
   }
@@ -249,6 +398,10 @@ class _$TextBlockImpl extends TextBlock {
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
   }) {
     return text?.call(this);
   }
@@ -257,6 +410,10 @@ class _$TextBlockImpl extends TextBlock {
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -284,7 +441,6 @@ abstract class TextBlock extends ContentBlock {
 
   @override
   String get id;
-  @override
   String get content;
   @override
   DateTime get createdAt;
@@ -294,5 +450,1109 @@ abstract class TextBlock extends ContentBlock {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$TextBlockImplCopyWith<_$TextBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$HeadingBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$HeadingBlockImplCopyWith(
+    _$HeadingBlockImpl value,
+    $Res Function(_$HeadingBlockImpl) then,
+  ) = __$$HeadingBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String id, String content, int level, DateTime createdAt});
+}
+
+/// @nodoc
+class __$$HeadingBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$HeadingBlockImpl>
+    implements _$$HeadingBlockImplCopyWith<$Res> {
+  __$$HeadingBlockImplCopyWithImpl(
+    _$HeadingBlockImpl _value,
+    $Res Function(_$HeadingBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? content = null,
+    Object? level = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$HeadingBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        content: null == content
+            ? _value.content
+            : content // ignore: cast_nullable_to_non_nullable
+                  as String,
+        level: null == level
+            ? _value.level
+            : level // ignore: cast_nullable_to_non_nullable
+                  as int,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$HeadingBlockImpl extends HeadingBlock {
+  const _$HeadingBlockImpl({
+    required this.id,
+    this.content = '',
+    this.level = 1,
+    required this.createdAt,
+    final String? $type,
+  }) : $type = $type ?? 'heading',
+       super._();
+
+  factory _$HeadingBlockImpl.fromJson(Map<String, dynamic> json) =>
+      _$$HeadingBlockImplFromJson(json);
+
+  @override
+  final String id;
+  @override
+  @JsonKey()
+  final String content;
+  @override
+  @JsonKey()
+  final int level;
+  @override
+  final DateTime createdAt;
+
+  @JsonKey(name: 'type')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'ContentBlock.heading(id: $id, content: $content, level: $level, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$HeadingBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.content, content) || other.content == content) &&
+            (identical(other.level, level) || other.level == level) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, content, level, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$HeadingBlockImplCopyWith<_$HeadingBlockImpl> get copyWith =>
+      __$$HeadingBlockImplCopyWithImpl<_$HeadingBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+  }) {
+    return heading(id, content, level, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+  }) {
+    return heading?.call(id, content, level, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    required TResult orElse(),
+  }) {
+    if (heading != null) {
+      return heading(id, content, level, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+  }) {
+    return heading(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+  }) {
+    return heading?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    required TResult orElse(),
+  }) {
+    if (heading != null) {
+      return heading(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$HeadingBlockImplToJson(this);
+  }
+}
+
+abstract class HeadingBlock extends ContentBlock {
+  const factory HeadingBlock({
+    required final String id,
+    final String content,
+    final int level,
+    required final DateTime createdAt,
+  }) = _$HeadingBlockImpl;
+  const HeadingBlock._() : super._();
+
+  factory HeadingBlock.fromJson(Map<String, dynamic> json) =
+      _$HeadingBlockImpl.fromJson;
+
+  @override
+  String get id;
+  String get content;
+  int get level;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$HeadingBlockImplCopyWith<_$HeadingBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$BulletListBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$BulletListBlockImplCopyWith(
+    _$BulletListBlockImpl value,
+    $Res Function(_$BulletListBlockImpl) then,
+  ) = __$$BulletListBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String id, List<String> items, DateTime createdAt});
+}
+
+/// @nodoc
+class __$$BulletListBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$BulletListBlockImpl>
+    implements _$$BulletListBlockImplCopyWith<$Res> {
+  __$$BulletListBlockImplCopyWithImpl(
+    _$BulletListBlockImpl _value,
+    $Res Function(_$BulletListBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? items = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$BulletListBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        items: null == items
+            ? _value._items
+            : items // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$BulletListBlockImpl extends BulletListBlock {
+  const _$BulletListBlockImpl({
+    required this.id,
+    final List<String> items = const [],
+    required this.createdAt,
+    final String? $type,
+  }) : _items = items,
+       $type = $type ?? 'bulletList',
+       super._();
+
+  factory _$BulletListBlockImpl.fromJson(Map<String, dynamic> json) =>
+      _$$BulletListBlockImplFromJson(json);
+
+  @override
+  final String id;
+  final List<String> _items;
+  @override
+  @JsonKey()
+  List<String> get items {
+    if (_items is EqualUnmodifiableListView) return _items;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_items);
+  }
+
+  @override
+  final DateTime createdAt;
+
+  @JsonKey(name: 'type')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'ContentBlock.bulletList(id: $id, items: $items, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BulletListBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            const DeepCollectionEquality().equals(other._items, _items) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    const DeepCollectionEquality().hash(_items),
+    createdAt,
+  );
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BulletListBlockImplCopyWith<_$BulletListBlockImpl> get copyWith =>
+      __$$BulletListBlockImplCopyWithImpl<_$BulletListBlockImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+  }) {
+    return bulletList(id, items, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+  }) {
+    return bulletList?.call(id, items, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    required TResult orElse(),
+  }) {
+    if (bulletList != null) {
+      return bulletList(id, items, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+  }) {
+    return bulletList(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+  }) {
+    return bulletList?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    required TResult orElse(),
+  }) {
+    if (bulletList != null) {
+      return bulletList(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$BulletListBlockImplToJson(this);
+  }
+}
+
+abstract class BulletListBlock extends ContentBlock {
+  const factory BulletListBlock({
+    required final String id,
+    final List<String> items,
+    required final DateTime createdAt,
+  }) = _$BulletListBlockImpl;
+  const BulletListBlock._() : super._();
+
+  factory BulletListBlock.fromJson(Map<String, dynamic> json) =
+      _$BulletListBlockImpl.fromJson;
+
+  @override
+  String get id;
+  List<String> get items;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$BulletListBlockImplCopyWith<_$BulletListBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$CodeBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$CodeBlockImplCopyWith(
+    _$CodeBlockImpl value,
+    $Res Function(_$CodeBlockImpl) then,
+  ) = __$$CodeBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String id, String content, String language, DateTime createdAt});
+}
+
+/// @nodoc
+class __$$CodeBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$CodeBlockImpl>
+    implements _$$CodeBlockImplCopyWith<$Res> {
+  __$$CodeBlockImplCopyWithImpl(
+    _$CodeBlockImpl _value,
+    $Res Function(_$CodeBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? content = null,
+    Object? language = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$CodeBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        content: null == content
+            ? _value.content
+            : content // ignore: cast_nullable_to_non_nullable
+                  as String,
+        language: null == language
+            ? _value.language
+            : language // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$CodeBlockImpl extends CodeBlock {
+  const _$CodeBlockImpl({
+    required this.id,
+    this.content = '',
+    this.language = '',
+    required this.createdAt,
+    final String? $type,
+  }) : $type = $type ?? 'code',
+       super._();
+
+  factory _$CodeBlockImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CodeBlockImplFromJson(json);
+
+  @override
+  final String id;
+  @override
+  @JsonKey()
+  final String content;
+  @override
+  @JsonKey()
+  final String language;
+  @override
+  final DateTime createdAt;
+
+  @JsonKey(name: 'type')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'ContentBlock.code(id: $id, content: $content, language: $language, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CodeBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.content, content) || other.content == content) &&
+            (identical(other.language, language) ||
+                other.language == language) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, content, language, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CodeBlockImplCopyWith<_$CodeBlockImpl> get copyWith =>
+      __$$CodeBlockImplCopyWithImpl<_$CodeBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+  }) {
+    return code(id, content, language, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+  }) {
+    return code?.call(id, content, language, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    required TResult orElse(),
+  }) {
+    if (code != null) {
+      return code(id, content, language, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+  }) {
+    return code(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+  }) {
+    return code?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    required TResult orElse(),
+  }) {
+    if (code != null) {
+      return code(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$CodeBlockImplToJson(this);
+  }
+}
+
+abstract class CodeBlock extends ContentBlock {
+  const factory CodeBlock({
+    required final String id,
+    final String content,
+    final String language,
+    required final DateTime createdAt,
+  }) = _$CodeBlockImpl;
+  const CodeBlock._() : super._();
+
+  factory CodeBlock.fromJson(Map<String, dynamic> json) =
+      _$CodeBlockImpl.fromJson;
+
+  @override
+  String get id;
+  String get content;
+  String get language;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$CodeBlockImplCopyWith<_$CodeBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$QuoteBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$QuoteBlockImplCopyWith(
+    _$QuoteBlockImpl value,
+    $Res Function(_$QuoteBlockImpl) then,
+  ) = __$$QuoteBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String id,
+    String content,
+    String attribution,
+    DateTime createdAt,
+  });
+}
+
+/// @nodoc
+class __$$QuoteBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$QuoteBlockImpl>
+    implements _$$QuoteBlockImplCopyWith<$Res> {
+  __$$QuoteBlockImplCopyWithImpl(
+    _$QuoteBlockImpl _value,
+    $Res Function(_$QuoteBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? content = null,
+    Object? attribution = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$QuoteBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        content: null == content
+            ? _value.content
+            : content // ignore: cast_nullable_to_non_nullable
+                  as String,
+        attribution: null == attribution
+            ? _value.attribution
+            : attribution // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$QuoteBlockImpl extends QuoteBlock {
+  const _$QuoteBlockImpl({
+    required this.id,
+    this.content = '',
+    this.attribution = '',
+    required this.createdAt,
+    final String? $type,
+  }) : $type = $type ?? 'quote',
+       super._();
+
+  factory _$QuoteBlockImpl.fromJson(Map<String, dynamic> json) =>
+      _$$QuoteBlockImplFromJson(json);
+
+  @override
+  final String id;
+  @override
+  @JsonKey()
+  final String content;
+  @override
+  @JsonKey()
+  final String attribution;
+  @override
+  final DateTime createdAt;
+
+  @JsonKey(name: 'type')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'ContentBlock.quote(id: $id, content: $content, attribution: $attribution, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$QuoteBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.content, content) || other.content == content) &&
+            (identical(other.attribution, attribution) ||
+                other.attribution == attribution) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, content, attribution, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$QuoteBlockImplCopyWith<_$QuoteBlockImpl> get copyWith =>
+      __$$QuoteBlockImplCopyWithImpl<_$QuoteBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+  }) {
+    return quote(id, content, attribution, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+  }) {
+    return quote?.call(id, content, attribution, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    required TResult orElse(),
+  }) {
+    if (quote != null) {
+      return quote(id, content, attribution, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+  }) {
+    return quote(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+  }) {
+    return quote?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    required TResult orElse(),
+  }) {
+    if (quote != null) {
+      return quote(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$QuoteBlockImplToJson(this);
+  }
+}
+
+abstract class QuoteBlock extends ContentBlock {
+  const factory QuoteBlock({
+    required final String id,
+    final String content,
+    final String attribution,
+    required final DateTime createdAt,
+  }) = _$QuoteBlockImpl;
+  const QuoteBlock._() : super._();
+
+  factory QuoteBlock.fromJson(Map<String, dynamic> json) =
+      _$QuoteBlockImpl.fromJson;
+
+  @override
+  String get id;
+  String get content;
+  String get attribution;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$QuoteBlockImplCopyWith<_$QuoteBlockImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

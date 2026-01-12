@@ -102,7 +102,90 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     await updateNode(updated);
   }
 
-  /// Update a block's content.
+  /// Add a heading block to a node.
+  Future<void> addHeadingBlock(String nodeId, {int level = 1, String content = ''}) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final newBlock = ContentBlock.heading(
+      id: _uuid.v4(),
+      content: content,
+      level: level,
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(
+      blocks: [...node.blocks, newBlock],
+    );
+    await updateNode(updated);
+  }
+
+  /// Add a bullet list block to a node.
+  Future<void> addBulletListBlock(String nodeId, {List<String>? items}) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final newBlock = ContentBlock.bulletList(
+      id: _uuid.v4(),
+      items: items ?? [''],
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(
+      blocks: [...node.blocks, newBlock],
+    );
+    await updateNode(updated);
+  }
+
+  /// Add a code block to a node.
+  Future<void> addCodeBlock(String nodeId, {String language = '', String content = ''}) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final newBlock = ContentBlock.code(
+      id: _uuid.v4(),
+      content: content,
+      language: language,
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(
+      blocks: [...node.blocks, newBlock],
+    );
+    await updateNode(updated);
+  }
+
+  /// Add a quote block to a node.
+  Future<void> addQuoteBlock(String nodeId, {String content = '', String attribution = ''}) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final newBlock = ContentBlock.quote(
+      id: _uuid.v4(),
+      content: content,
+      attribution: attribution,
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(
+      blocks: [...node.blocks, newBlock],
+    );
+    await updateNode(updated);
+  }
+
+  /// Update a block's content (supports all block types).
   Future<void> updateBlockContent(
     String nodeId,
     String blockId,
@@ -114,8 +197,85 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
 
     final node = currentNodes[nodeIndex];
     final updatedBlocks = node.blocks.map((block) {
-      if (block.id == blockId && block is TextBlock) {
-        return block.copyWith(content: content);
+      if (block.id != blockId) return block;
+      
+      return switch (block) {
+        TextBlock() => block.copyWith(content: content),
+        HeadingBlock() => block.copyWith(content: content),
+        CodeBlock() => block.copyWith(content: content),
+        QuoteBlock() => block.copyWith(content: content),
+        BulletListBlock() => block, // Use updateBulletListItems instead
+      };
+    }).toList();
+
+    final updated = node.copyWith(blocks: updatedBlocks);
+    await updateNode(updated);
+  }
+
+  /// Update a heading block's level.
+  Future<void> updateHeadingLevel(String nodeId, String blockId, int level) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final updatedBlocks = node.blocks.map((block) {
+      if (block.id == blockId && block is HeadingBlock) {
+        return block.copyWith(level: level.clamp(1, 3));
+      }
+      return block;
+    }).toList();
+
+    final updated = node.copyWith(blocks: updatedBlocks);
+    await updateNode(updated);
+  }
+
+  /// Update a bullet list block's items.
+  Future<void> updateBulletListItems(String nodeId, String blockId, List<String> items) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final updatedBlocks = node.blocks.map((block) {
+      if (block.id == blockId && block is BulletListBlock) {
+        return block.copyWith(items: items);
+      }
+      return block;
+    }).toList();
+
+    final updated = node.copyWith(blocks: updatedBlocks);
+    await updateNode(updated);
+  }
+
+  /// Update a code block's language.
+  Future<void> updateCodeLanguage(String nodeId, String blockId, String language) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final updatedBlocks = node.blocks.map((block) {
+      if (block.id == blockId && block is CodeBlock) {
+        return block.copyWith(language: language);
+      }
+      return block;
+    }).toList();
+
+    final updated = node.copyWith(blocks: updatedBlocks);
+    await updateNode(updated);
+  }
+
+  /// Update a quote block's attribution.
+  Future<void> updateQuoteAttribution(String nodeId, String blockId, String attribution) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final updatedBlocks = node.blocks.map((block) {
+      if (block.id == blockId && block is QuoteBlock) {
+        return block.copyWith(attribution: attribution);
       }
       return block;
     }).toList();

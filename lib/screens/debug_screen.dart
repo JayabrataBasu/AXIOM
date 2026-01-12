@@ -235,69 +235,75 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
   }
 
   Widget _buildBlockEditor(IdeaNode node, ContentBlock block) {
-    return switch (block) {
-      TextBlock(:final id, :final content) => Card(
-          color: Colors.grey[100],
-          margin: const EdgeInsets.only(bottom: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final (typeName, typeColor, content) = switch (block) {
+      TextBlock(:final content) => ('TEXT', Colors.blue, content),
+      HeadingBlock(:final content, :final level) => ('H$level', Colors.purple, content),
+      BulletListBlock(:final items) => ('LIST', Colors.green, items.join('\n')),
+      CodeBlock(:final content, :final language) => ('CODE${language.isNotEmpty ? ' ($language)' : ''}', Colors.orange, content),
+      QuoteBlock(:final content) => ('QUOTE', Colors.teal, content),
+    };
+
+    return Card(
+      color: Colors.grey[100],
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[100],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'TEXT',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'ID: ${id.substring(0, 8)}...',
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 10,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.delete, size: 18),
-                      onPressed: () => _deleteBlock(node.id, id),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  initialValue: content,
-                  maxLines: null,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter text...',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
                   ),
-                  onChanged: (value) => _updateBlockContent(node.id, id, value),
+                  decoration: BoxDecoration(
+                    color: typeColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    typeName,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: typeColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'ID: ${block.id.substring(0, 8)}...',
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 10,
+                    color: Colors.grey,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.delete, size: 18),
+                  onPressed: () => _deleteBlock(node.id, block.id),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 8),
+            TextFormField(
+              initialValue: content,
+              maxLines: null,
+              decoration: const InputDecoration(
+                hintText: 'Enter text...',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (value) => _updateBlockContent(node.id, block.id, value),
+            ),
+          ],
         ),
-    };
+      ),
+    );
   }
 
   Future<void> _deleteNode(String id) async {

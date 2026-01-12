@@ -35,11 +35,18 @@ class IdeaNode with _$IdeaNode {
   factory IdeaNode.fromJson(Map<String, dynamic> json) =>
       _$IdeaNodeFromJson(json);
 
-  /// Returns preview text from the first text block, or empty string.
+  /// Returns preview text from the first content block, or empty string.
   String get previewText {
     for (final block in blocks) {
-      if (block is TextBlock && block.content.isNotEmpty) {
-        final text = block.content;
+      final text = switch (block) {
+        TextBlock(:final content) when content.isNotEmpty => content,
+        HeadingBlock(:final content) when content.isNotEmpty => content,
+        BulletListBlock(:final items) when items.isNotEmpty => items.first,
+        CodeBlock(:final content) when content.isNotEmpty => content,
+        QuoteBlock(:final content) when content.isNotEmpty => '"$content"',
+        _ => null,
+      };
+      if (text != null) {
         return text.length > 100 ? '${text.substring(0, 100)}...' : text;
       }
     }
