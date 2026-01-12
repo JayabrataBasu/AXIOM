@@ -16,61 +16,6 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   List<CanvasSketchPoint> _currentStroke = [];
   final LayerLink _layerLink = LayerLink();
 
-  void _onPointerDown(PointerDownEvent details) {
-    final toolState = ref.read(sketchToolsProvider);
-    
-    // Only draw with drawing tools (not selector)
-    if (toolState.tool == SketchTool.selector) return;
-    
-    setState(() {
-      _currentStroke = [
-        CanvasSketchPoint(
-          x: details.position.dx,
-          y: details.position.dy,
-          pressure: details.pressure,
-        ),
-      ];
-    });
-  }
-
-  void _onPointerMove(PointerMoveEvent details) {
-    final toolState = ref.read(sketchToolsProvider);
-    
-    // Only draw with drawing tools
-    if (toolState.tool == SketchTool.selector) return;
-    
-    if (_currentStroke.isNotEmpty) {
-      setState(() {
-        _currentStroke.add(
-          CanvasSketchPoint(
-            x: details.position.dx,
-            y: details.position.dy,
-            pressure: details.pressure,
-          ),
-        );
-      });
-    }
-  }
-
-  void _onPointerUp(PointerUpEvent details) {
-    if (_currentStroke.isEmpty) return;
-    
-    final toolState = ref.read(sketchToolsProvider);
-    final notifier = ref.read(canvasSketchNotifierProvider.notifier);
-
-    // Create stroke with current tool settings
-    final stroke = CanvasSketchStroke(
-      points: _currentStroke,
-      color: toolState.color.value,
-      width: toolState.brushSize,
-    );
-
-    notifier.addStroke(stroke);
-    setState(() {
-      _currentStroke = [];
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final sketchAsync = ref.watch(canvasSketchNotifierProvider);
@@ -80,12 +25,57 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
       data: (sketch) {
-        return RepaintBoundary(
-          child: Listener(
-            onPointerDown: _onPointerDown,
-            onPointerMove: _onPointerMove,
-            onPointerUp: _onPointerUp,
-            behavior: HitTestBehavior.translucent,
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onPanStart: (details) {
+            final toolState = ref.read(sketchToolsProvider);
+            if (toolState.tool == SketchTool.selector) return;
+            
+            setState(() {
+              _currentStroke = [
+                CanvasSketchPoint(
+                  x: details.globalPosition.dx,
+                  y: details.globalPosition.dy,
+                  pressure: 1.0,
+                ),
+              ];
+            });
+          },
+          onPanUpdate: (details) {
+            final toolState = ref.read(sketchToolsProvider);
+            if (toolState.tool == SketchTool.selector) return;
+            
+            if (_currentStroke.isNotEmpty) {
+              setState(() {
+                _currentStroke.add(
+                  CanvasSketchPoint(
+                    x: details.globalPosition.dx,
+                    y: details.globalPosition.dy,
+                    pressure: 1.0,
+                  ),
+                );
+              });
+            }
+          },
+          onPanEnd: (details) {
+            if (_currentStroke.isEmpty) return;
+            
+            final toolState = ref.read(sketchToolsProvider);
+            final notifier = ref.read(canvasSketchNotifierProvider.notifier);
+
+            // Create stroke with current tool settings
+            final stroke = CanvasSketchStroke(
+              points: _currentStroke,
+              color: toolState.color.value,
+              width: toolState.brushSize,
+            );
+
+            notifier.addStroke(stroke);
+            setState(() {
+              _currentStroke = [];
+            });
+          },
+          child: RepaintBoundary(
             child: CustomPaint(
               painter: _CanvasSketchLayerPainter(
                 strokes: sketch.strokes,

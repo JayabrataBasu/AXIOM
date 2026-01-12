@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
+import '../widgets/canvas_sketch_overlay.dart';
 import 'node_editor_screen.dart';
 
 /// The main canvas screen - the primary thinking surface.
@@ -80,6 +81,13 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 ),
               ),
             ),
+            // Canvas sketch overlay (only active in sketch mode, above the canvas)
+            if (_sketchMode)
+              Positioned.fill(
+                child: CanvasSketchOverlay(
+                  canvasKey: _canvasKey,
+                ),
+              ),
             // Top toolbar
             Positioned(
               top: 0,

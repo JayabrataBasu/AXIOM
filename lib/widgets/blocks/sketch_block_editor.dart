@@ -167,7 +167,6 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onPanStart: (details) {
-                debugPrint('[SKETCH] Pan start: ${details.localPosition}');
                 final toolState = ref.read(sketchToolsProvider);
                 if (toolState.tool != SketchTool.pen && 
                     toolState.tool != SketchTool.marker && 
@@ -175,33 +174,30 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                     toolState.tool != SketchTool.brush) {
                   return;
                 }
-                setState(() {
-                  _currentStroke = [
-                    SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
-                  ];
-                });
+                _currentStroke = [
+                  SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
+                ];
+                setState(() {});
               },
               onPanUpdate: (details) {
                 if (_currentStroke.isNotEmpty) {
-                  setState(() {
-                    _currentStroke.add(
-                      SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
-                    );
-                  });
+                  _currentStroke.add(
+                    SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
+                  );
+                  // Minimal repaint trigger
+                  (context as Element).markNeedsBuild();
                 }
               },
               onPanEnd: (details) {
-                debugPrint('[SKETCH] Pan end: ${_currentStroke.length} points');
                 if (_currentStroke.isNotEmpty) {
                   final toolState = ref.read(sketchToolsProvider);
-                  setState(() {
-                    _strokes.add(SketchStroke(
-                      points: _currentStroke,
-                      color: toolState.color,
-                      width: toolState.brushSize,
-                    ));
-                    _currentStroke = [];
-                  });
+                  _strokes.add(SketchStroke(
+                    points: List.from(_currentStroke),
+                    color: toolState.color,
+                    width: toolState.brushSize,
+                  ));
+                  _currentStroke = [];
+                  setState(() {});
                   _saveStrokes();
                 }
               },
