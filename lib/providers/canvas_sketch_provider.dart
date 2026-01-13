@@ -35,7 +35,8 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
     try {
       await _service.addStroke(stroke);
       final sketch = await _service.getCanvasSketch();
-      state = AsyncValue.data(sketch);
+      // Ensure a new instance (deep copy) so listeners always get a changed reference
+      state = AsyncValue.data(CanvasSketch.fromJson(sketch.toJson()));
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }
@@ -46,7 +47,8 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
     try {
       await _service.undoStroke();
       final sketch = await _service.getCanvasSketch();
-      state = AsyncValue.data(sketch);
+      // Use a fresh instance to guarantee provider notifications
+      state = AsyncValue.data(CanvasSketch.fromJson(sketch.toJson()));
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }
@@ -57,7 +59,7 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
     try {
       await _service.clearCanvas();
       final sketch = await _service.getCanvasSketch();
-      state = AsyncValue.data(sketch);
+      state = AsyncValue.data(CanvasSketch.fromJson(sketch.toJson()));
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }
@@ -68,12 +70,18 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
     try {
       await state.whenData((sketch) async {
         if (index >= 0 && index < sketch.strokes.length) {
-          sketch.strokes.removeAt(index);
-          await _service.setCanvasSketch(sketch);
+          final newStrokes = List<CanvasSketchStroke>.from(sketch.strokes)..removeAt(index);
+          final newSketch = CanvasSketch(
+            id: sketch.id,
+            strokes: newStrokes,
+            createdAt: sketch.createdAt,
+            updatedAt: DateTime.now(),
+          );
+          await _service.setCanvasSketch(newSketch);
         }
       });
       final sketch = await _service.getCanvasSketch();
-      state = AsyncValue.data(sketch);
+      state = AsyncValue.data(CanvasSketch.fromJson(sketch.toJson()));
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }
