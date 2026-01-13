@@ -8,6 +8,7 @@ import '../widgets/widgets.dart';
 import '../widgets/blocks/sketch_block_editor.dart';
 import '../widgets/blocks/math_block_editor.dart';
 import '../widgets/blocks/audio_block_editor.dart';
+import '../widgets/blocks/workspace_ref_block.dart';
 
 /// Full-screen editor for an IdeaNode.
 class NodeEditorScreen extends ConsumerStatefulWidget {
@@ -294,6 +295,15 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
             durationMs: block.durationMs,
           ),
         ),
+      WorkspaceRefBlock() => BlockEditorCard(
+          blockType: 'Workspace',
+          dragIndex: index,
+          onDelete: () => _deleteBlock(node.id, block.id),
+          child: WorkspaceRefBlockDisplay(
+            sessionId: block.sessionId,
+            label: block.label,
+          ),
+        ),
     };
   }
 
@@ -325,6 +335,10 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         // TODO: Implement audio recording UI
         // For now, create a placeholder audio block
         notifier.addAudioBlock(node.id, audioFile: '', durationMs: 0);
+      case BlockType.workspaceRef:
+        // TODO: Show session picker dialog
+        // For now, skip
+        break;
     }
   }
 

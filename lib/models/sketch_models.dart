@@ -67,7 +67,7 @@ class SketchStroke {
 
   Map<String, dynamic> toJson() => {
         'points': points.map((p) => p.toJson()).toList(),
-        'color': color.value,
+        'color': color.toARGB32(),
         'width': width,
       };
 

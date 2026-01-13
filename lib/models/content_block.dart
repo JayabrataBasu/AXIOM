@@ -79,6 +79,15 @@ sealed class ContentBlock with _$ContentBlock {
     required DateTime createdAt,
   }) = AudioBlock;
 
+  /// A workspace reference block linking to a session (Stage 7).
+  @FreezedUnionValue('workspace_ref')
+  const factory ContentBlock.workspaceRef({
+    required String id,
+    required String sessionId,
+    @Default('') String label,
+    required DateTime createdAt,
+  }) = WorkspaceRefBlock;
+
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String?;
 
@@ -135,6 +144,12 @@ sealed class ContentBlock with _$ContentBlock {
         id: json['id'] as String,
         audioFile: json['audioFile'] as String,
         durationMs: (json['durationMs'] as int?) ?? 0,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'workspace_ref' => ContentBlock.workspaceRef(
+        id: json['id'] as String,
+        sessionId: json['sessionId'] as String,
+        label: (json['label'] as String?) ?? '',
         createdAt: DateTime.parse(json['createdAt'] as String),
       ),
       _ => ContentBlock.text(

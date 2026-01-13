@@ -244,6 +244,7 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
       SketchBlock() => ('SKETCH', Colors.deepOrange, '[drawing]'),
       MathBlock(:final latex) => ('MATH', Colors.indigo, latex),
       AudioBlock(:final durationMs) => ('AUDIO', Colors.cyan, '${(durationMs / 1000).toStringAsFixed(1)}s'),
+      WorkspaceRefBlock(:final label, :final sessionId) => ('WORKSPACE', Colors.lime, label.isNotEmpty ? label : 'Session: ${sessionId.substring(0, 6)}...'),
     };
 
     return Card(

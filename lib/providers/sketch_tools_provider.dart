@@ -45,7 +45,7 @@ class SketchToolState {
   Map<String, dynamic> toJson() {
     return {
       'tool': tool.toString().split('.').last,
-      'colorValue': color.value,
+      'colorValue': color.toARGB32(),
       'brushSize': brushSize,
       'opacity': opacity,
     };

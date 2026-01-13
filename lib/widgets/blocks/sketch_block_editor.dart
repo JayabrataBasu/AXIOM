@@ -1,9 +1,6 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:perfect_freehand/perfect_freehand.dart';
 import '../../models/models.dart';
-import '../../models/content_block.dart';
 import '../../providers/sketch_tools_provider.dart';
 import '../../services/sketch_service.dart';
 
@@ -409,7 +406,7 @@ class _SketchCanvasPainter extends CustomPainter {
         final point = points[0];
         final pressureWidth = (paint.strokeWidth * point.pressure).clamp(0.5, 50.0);
         final pressurePaint = Paint()
-          ..color = paint.color.withValues(alpha: paint.color.alpha * point.pressure)
+          ..color = paint.color.withOpacity((paint.color.a * point.pressure).clamp(0, 1))
           ..strokeCap = paint.strokeCap
           ..strokeJoin = paint.strokeJoin
           ..strokeWidth = pressureWidth;
@@ -428,7 +425,7 @@ class _SketchCanvasPainter extends CustomPainter {
       final pressureWidth = (paint.strokeWidth * avgPressure).clamp(0.5, 50.0);
       
       final segmentPaint = Paint()
-        ..color = paint.color.withValues(alpha: paint.color.alpha * avgPressure)
+        ..color = paint.color.withOpacity((paint.color.a * avgPressure).clamp(0, 1))
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = pressureWidth;

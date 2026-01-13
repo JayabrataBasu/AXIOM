@@ -5,8 +5,8 @@ class CanvasSketch {
     required this.id,
     required this.strokes,
     required this.createdAt,
-    required DateTime updatedAt,
-  }) : updatedAt = updatedAt;
+    required this.updatedAt,
+  });
 
   final String id;
   final List<CanvasSketchStroke> strokes;

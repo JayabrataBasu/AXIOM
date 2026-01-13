@@ -14,7 +14,7 @@ class CanvasSketchLayer extends ConsumerStatefulWidget {
 
 class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   List<CanvasSketchPoint> _currentStroke = [];
-  final LayerLink _layerLink = LayerLink();
+
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +137,7 @@ class _CanvasSketchLayerPainter extends CustomPainter {
         final point = points[0];
         final pressureWidth = (paint.strokeWidth * point.pressure).clamp(0.5, 50.0);
         final pressurePaint = Paint()
-          ..color = paint.color.withValues(alpha: paint.color.alpha * point.pressure)
+          ..color = paint.color.withOpacity((paint.color.a * point.pressure).clamp(0, 1))
           ..strokeCap = paint.strokeCap
           ..strokeJoin = paint.strokeJoin
           ..strokeWidth = pressureWidth;
@@ -160,7 +160,7 @@ class _CanvasSketchLayerPainter extends CustomPainter {
       final pressureWidth = (paint.strokeWidth * avgPressure).clamp(0.5, 50.0);
       
       final segmentPaint = Paint()
-        ..color = paint.color.withValues(alpha: paint.color.alpha * avgPressure)
+        ..color = paint.color.withOpacity((paint.color.a * avgPressure).clamp(0, 1))
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = pressureWidth;

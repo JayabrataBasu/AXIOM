@@ -15,7 +15,7 @@ final canvasSketchProvider = FutureProvider<CanvasSketch>((ref) async {
 
 /// Notifier for managing canvas sketch operations.
 class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
-  late CanvasSketchService _service;
+  final CanvasSketchService _service;
 
   CanvasSketchNotifier(this._service) : super(const AsyncValue.loading()) {
     _loadSketch();

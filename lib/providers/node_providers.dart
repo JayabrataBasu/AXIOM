@@ -233,6 +233,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         SketchBlock() => block, // Use SketchService for strokes
         MathBlock() => block, // Use updateBlockLatex instead
         AudioBlock() => block, // Audio is read-only after creation
+        WorkspaceRefBlock() => block, // Read-only workspace references
       };
     }).toList();
 

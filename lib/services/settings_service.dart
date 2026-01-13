@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'dart:convert';
@@ -46,7 +47,7 @@ class SettingsService {
         _cache = {};
       }
     } catch (e) {
-      print('Error loading settings: $e');
+      debugPrint('Error loading settings: $e');
       _cache = {};
     }
   }
@@ -57,7 +58,7 @@ class SettingsService {
       final file = File(path.join(_dataDir.path, 'settings.json'));
       await file.writeAsString(jsonEncode(_cache));
     } catch (e) {
-      print('Error saving settings: $e');
+      debugPrint('Error saving settings: $e');
     }
   }
 

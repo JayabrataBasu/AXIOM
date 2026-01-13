@@ -41,7 +41,7 @@ class CanvasContent extends ConsumerStatefulWidget {
 
 class _CanvasContentState extends ConsumerState<CanvasContent> {
   DateTime? _lastSecondaryDown;
-  Offset? _contextMenuPosition;
+
   OverlayEntry? _contextMenuEntry;
   String? _hoveredLinkId;
   bool _tapConsumed = false;
@@ -55,11 +55,6 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
   void _removeContextMenu() {
     _contextMenuEntry?.remove();
     _contextMenuEntry = null;
-    if (mounted) {
-      setState(() {
-        _contextMenuPosition = null;
-      });
-    }
   }
 
   _LinkHit? _hitTestLinks(Offset localPosition, double minX, double minY) {
@@ -216,9 +211,6 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
     );
 
     overlay.insert(_contextMenuEntry!);
-    setState(() {
-      _contextMenuPosition = position;
-    });
   }
 
   @override
@@ -285,7 +277,7 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
             
             // Show context menu after delay if it wasn't a double-click
             Future.delayed(const Duration(milliseconds: 600), () {
-              if (mounted && _lastSecondaryDown == clickTime) {
+              if (mounted && _lastSecondaryDown == clickTime && context.mounted) {
                 _showContextMenu(context, clickPosition, scenePos);
               }
             });

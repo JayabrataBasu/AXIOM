@@ -61,6 +61,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -98,6 +105,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -135,6 +149,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -147,6 +168,7 @@ mixin _$ContentBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -158,6 +180,7 @@ mixin _$ContentBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -169,6 +192,7 @@ mixin _$ContentBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 
@@ -356,6 +380,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return text(id, content, createdAt);
   }
@@ -397,6 +428,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return text?.call(id, content, createdAt);
   }
@@ -438,6 +476,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -457,6 +502,7 @@ class _$TextBlockImpl extends TextBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return text(this);
   }
@@ -472,6 +518,7 @@ class _$TextBlockImpl extends TextBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return text?.call(this);
   }
@@ -487,6 +534,7 @@ class _$TextBlockImpl extends TextBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -664,6 +712,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return heading(id, content, level, createdAt);
   }
@@ -705,6 +760,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return heading?.call(id, content, level, createdAt);
   }
@@ -746,6 +808,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -765,6 +834,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return heading(this);
   }
@@ -780,6 +850,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return heading?.call(this);
   }
@@ -795,6 +866,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -979,6 +1051,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return bulletList(id, items, createdAt);
   }
@@ -1020,6 +1099,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return bulletList?.call(id, items, createdAt);
   }
@@ -1061,6 +1147,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -1080,6 +1173,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return bulletList(this);
   }
@@ -1095,6 +1189,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return bulletList?.call(this);
   }
@@ -1110,6 +1205,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -1289,6 +1385,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return code(id, content, language, createdAt);
   }
@@ -1330,6 +1433,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return code?.call(id, content, language, createdAt);
   }
@@ -1371,6 +1481,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1390,6 +1507,7 @@ class _$CodeBlockImpl extends CodeBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return code(this);
   }
@@ -1405,6 +1523,7 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return code?.call(this);
   }
@@ -1420,6 +1539,7 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1606,6 +1726,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return quote(id, content, attribution, createdAt);
   }
@@ -1647,6 +1774,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return quote?.call(id, content, attribution, createdAt);
   }
@@ -1688,6 +1822,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -1707,6 +1848,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return quote(this);
   }
@@ -1722,6 +1864,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return quote?.call(this);
   }
@@ -1737,6 +1880,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -1923,6 +2067,13 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return sketch(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -1964,6 +2115,13 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return sketch?.call(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -2005,6 +2163,13 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -2024,6 +2189,7 @@ class _$SketchBlockImpl extends SketchBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return sketch(this);
   }
@@ -2039,6 +2205,7 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return sketch?.call(this);
   }
@@ -2054,6 +2221,7 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -2223,6 +2391,13 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return math(id, latex, createdAt);
   }
@@ -2264,6 +2439,13 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return math?.call(id, latex, createdAt);
   }
@@ -2305,6 +2487,13 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (math != null) {
@@ -2324,6 +2513,7 @@ class _$MathBlockImpl extends MathBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return math(this);
   }
@@ -2339,6 +2529,7 @@ class _$MathBlockImpl extends MathBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return math?.call(this);
   }
@@ -2354,6 +2545,7 @@ class _$MathBlockImpl extends MathBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (math != null) {
@@ -2533,6 +2725,13 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )
     audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
   }) {
     return audio(id, audioFile, durationMs, createdAt);
   }
@@ -2574,6 +2773,13 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
   }) {
     return audio?.call(id, audioFile, durationMs, createdAt);
   }
@@ -2615,6 +2821,13 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )?
     audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
     required TResult orElse(),
   }) {
     if (audio != null) {
@@ -2634,6 +2847,7 @@ class _$AudioBlockImpl extends AudioBlock {
     required TResult Function(SketchBlock value) sketch,
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
   }) {
     return audio(this);
   }
@@ -2649,6 +2863,7 @@ class _$AudioBlockImpl extends AudioBlock {
     TResult? Function(SketchBlock value)? sketch,
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
   }) {
     return audio?.call(this);
   }
@@ -2664,6 +2879,7 @@ class _$AudioBlockImpl extends AudioBlock {
     TResult Function(SketchBlock value)? sketch,
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
     required TResult orElse(),
   }) {
     if (audio != null) {
@@ -2694,5 +2910,342 @@ abstract class AudioBlock extends ContentBlock {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AudioBlockImplCopyWith<_$AudioBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$WorkspaceRefBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$WorkspaceRefBlockImplCopyWith(
+    _$WorkspaceRefBlockImpl value,
+    $Res Function(_$WorkspaceRefBlockImpl) then,
+  ) = __$$WorkspaceRefBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String id, String sessionId, String label, DateTime createdAt});
+}
+
+/// @nodoc
+class __$$WorkspaceRefBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$WorkspaceRefBlockImpl>
+    implements _$$WorkspaceRefBlockImplCopyWith<$Res> {
+  __$$WorkspaceRefBlockImplCopyWithImpl(
+    _$WorkspaceRefBlockImpl _value,
+    $Res Function(_$WorkspaceRefBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? sessionId = null,
+    Object? label = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$WorkspaceRefBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        sessionId: null == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        label: null == label
+            ? _value.label
+            : label // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
+  const _$WorkspaceRefBlockImpl({
+    required this.id,
+    required this.sessionId,
+    this.label = '',
+    required this.createdAt,
+  }) : super._();
+
+  @override
+  final String id;
+  @override
+  final String sessionId;
+  @override
+  @JsonKey()
+  final String label;
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'ContentBlock.workspaceRef(id: $id, sessionId: $sessionId, label: $label, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$WorkspaceRefBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.sessionId, sessionId) ||
+                other.sessionId == sessionId) &&
+            (identical(other.label, label) || other.label == label) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, id, sessionId, label, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$WorkspaceRefBlockImplCopyWith<_$WorkspaceRefBlockImpl> get copyWith =>
+      __$$WorkspaceRefBlockImplCopyWithImpl<_$WorkspaceRefBlockImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
+  }) {
+    return workspaceRef(id, sessionId, label, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
+  }) {
+    return workspaceRef?.call(id, sessionId, label, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
+    required TResult orElse(),
+  }) {
+    if (workspaceRef != null) {
+      return workspaceRef(id, sessionId, label, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
+  }) {
+    return workspaceRef(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+  }) {
+    return workspaceRef?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    required TResult orElse(),
+  }) {
+    if (workspaceRef != null) {
+      return workspaceRef(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class WorkspaceRefBlock extends ContentBlock {
+  const factory WorkspaceRefBlock({
+    required final String id,
+    required final String sessionId,
+    final String label,
+    required final DateTime createdAt,
+  }) = _$WorkspaceRefBlockImpl;
+  const WorkspaceRefBlock._() : super._();
+
+  @override
+  String get id;
+  String get sessionId;
+  String get label;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$WorkspaceRefBlockImplCopyWith<_$WorkspaceRefBlockImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

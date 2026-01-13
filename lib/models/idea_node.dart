@@ -5,7 +5,7 @@ import 'position.dart';
 part 'idea_node.freezed.dart';
 part 'idea_node.g.dart';
 
-/// Custom JSON converter for List<ContentBlock> to handle the sealed union.
+/// Custom JSON converter for `List&lt;ContentBlock&gt;` to handle the sealed union.
 class ContentBlockListConverter
     implements JsonConverter<List<ContentBlock>, List<dynamic>> {
   const ContentBlockListConverter();
@@ -71,6 +71,13 @@ class ContentBlockListConverter
         'id': id,
         'audioFile': audioFile,
         'durationMs': durationMs,
+        'createdAt': createdAt.toIso8601String(),
+      },
+      WorkspaceRefBlock(:final id, :final sessionId, :final label, :final createdAt) => {
+        'type': 'workspace_ref',
+        'id': id,
+        'sessionId': sessionId,
+        'label': label,
         'createdAt': createdAt.toIso8601String(),
       },
     }).toList();

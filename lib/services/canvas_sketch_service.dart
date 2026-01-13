@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../models/canvas_sketch.dart';
@@ -48,7 +49,7 @@ class CanvasSketchService {
         );
       }
     } catch (e) {
-      print('Error loading canvas sketch: $e');
+      debugPrint('Error loading canvas sketch: $e');
       _currentSketch = CanvasSketch(
         id: 'canvas-doodles',
         strokes: [],
@@ -116,7 +117,7 @@ class CanvasSketchService {
       final json = jsonEncode(_currentSketch!.toJson());
       await file.writeAsString(json);
     } catch (e) {
-      print('Error saving canvas sketch: $e');
+      debugPrint('Error saving canvas sketch: $e');
     }
   }
 }
