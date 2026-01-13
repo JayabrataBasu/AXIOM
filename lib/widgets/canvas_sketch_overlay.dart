@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/canvas_sketch.dart';
@@ -35,14 +36,25 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onPanStart: (details) {
-            if (toolState.tool == SketchTool.selector || 
-                toolState.tool == SketchTool.eraser) return;
+            if (toolState.tool == SketchTool.selector) return;
+            
+            if (toolState.tool == SketchTool.eraser) {
+              _eraseAt(sketch, details.localPosition);
+              setState(() {});
+              return;
+            }
             
             _isDrawing = true;
             _currentPoints = [details.localPosition];
             setState(() {});
           },
           onPanUpdate: (details) {
+            if (toolState.tool == SketchTool.eraser) {
+              _eraseAt(sketch, details.localPosition);
+              setState(() {});
+              return;
+            }
+            
             if (!_isDrawing) return;
             
             // Add point without setState - just update the list
@@ -52,6 +64,10 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
             (context as Element).markNeedsBuild();
           },
           onPanEnd: (details) {
+            if (toolState.tool == SketchTool.eraser) {
+              return;
+            }
+            
             if (!_isDrawing || _currentPoints.length < 2) {
               _isDrawing = false;
               _currentPoints = [];
@@ -86,9 +102,11 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
           },
           child: CustomPaint(
             painter: _CanvasSketchOverlayPainter(
+              strokes: sketch.strokes,
               currentPoints: _currentPoints,
               currentColor: toolState.color,
               currentWidth: toolState.brushSize,
+              currentTool: toolState.tool,
               isDrawing: _isDrawing,
             ),
             size: Size.infinite,
@@ -97,45 +115,132 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
       },
     );
   }
+
+  void _eraseAt(CanvasSketch sketch, Offset screenPosition) {
+    const eraserRadius = 20.0;
+    final canvasState = widget.canvasKey.currentState;
+    if (canvasState == null) return;
+    
+    final canvasPosition = canvasState.screenToCanvas(screenPosition);
+
+    final newStrokes = <CanvasSketchStroke>[];
+
+    for (final stroke in sketch.strokes) {
+      final keptSegments = <List<CanvasSketchPoint>>[];
+      var currentSegment = <CanvasSketchPoint>[];
+
+      for (final point in stroke.points) {
+        final dx = point.x - canvasPosition.dx;
+        final dy = point.y - canvasPosition.dy;
+        final distance = sqrt(dx * dx + dy * dy);
+
+        if (distance >= eraserRadius) {
+          currentSegment.add(point);
+        } else {
+          if (currentSegment.isNotEmpty) {
+            keptSegments.add(currentSegment);
+            currentSegment = <CanvasSketchPoint>[];
+          }
+        }
+      }
+
+      if (currentSegment.isNotEmpty) {
+        keptSegments.add(currentSegment);
+      }
+
+      if (keptSegments.isEmpty) {
+        // Entire stroke erased - skip it
+        continue;
+      } else if (keptSegments.length == 1 && keptSegments[0].length == stroke.points.length) {
+        // Unchanged - keep original stroke
+        newStrokes.add(stroke);
+      } else {
+        // Add each remaining segment as a new stroke
+        for (final seg in keptSegments) {
+          newStrokes.add(
+            CanvasSketchStroke(points: seg, color: stroke.color, width: stroke.width),
+          );
+        }
+      }
+    }
+
+    // Replace strokes in provider with the trimmed list
+    ref.read(canvasSketchNotifierProvider.notifier).setCanvasStrokes(newStrokes);
+  }
 }
 
-/// Painter for the current stroke being drawn (screen coordinates).
+/// Painter for canvas sketch strokes.
 class _CanvasSketchOverlayPainter extends CustomPainter {
   _CanvasSketchOverlayPainter({
+    required this.strokes,
     required this.currentPoints,
     required this.currentColor,
     required this.currentWidth,
+    required this.currentTool,
     required this.isDrawing,
   });
 
+  final List<CanvasSketchStroke> strokes;
   final List<Offset> currentPoints;
   final Color currentColor;
   final double currentWidth;
+  final SketchTool currentTool;
   final bool isDrawing;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!isDrawing || currentPoints.length < 2) return;
+    // Only draw the current, in-progress stroke on the overlay (saved strokes are
+    // rendered by the canvas content layer so they participate in transforms).
+    if (isDrawing && currentPoints.isNotEmpty) {
+      _drawStroke(canvas, currentPoints, currentColor, currentWidth, currentTool);
+    }
+  }
+
+  void _drawStroke(Canvas canvas, List<Offset> points, Color color,
+      double width, SketchTool tool) {
+    if (points.length < 2) {
+      if (points.isNotEmpty) {
+        final paint = Paint()
+          ..color = color
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = width;
+        canvas.drawCircle(points[0], width / 2, paint);
+      }
+      return;
+    }
 
     final paint = Paint()
-      ..color = currentColor
+      ..color = color
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..strokeWidth = currentWidth
+      ..strokeWidth = _getToolWidth(tool, width)
       ..style = PaintingStyle.stroke;
 
     final path = Path();
-    path.moveTo(currentPoints.first.dx, currentPoints.first.dy);
-    
-    for (int i = 1; i < currentPoints.length; i++) {
-      path.lineTo(currentPoints[i].dx, currentPoints[i].dy);
+    path.moveTo(points.first.dx, points.first.dy);
+
+    for (int i = 1; i < points.length; i++) {
+      path.lineTo(points[i].dx, points[i].dy);
     }
-    
+
     canvas.drawPath(path, paint);
+  }
+
+  double _getToolWidth(SketchTool tool, double baseWidth) {
+    switch (tool) {
+      case SketchTool.marker:
+        return baseWidth * 1.5; // Wider
+      case SketchTool.pencil:
+        return baseWidth * 0.6; // Thinner
+      case SketchTool.brush:
+        return baseWidth * 1.2; // Slightly wider
+      default:
+        return baseWidth;
+    }
   }
 
   @override
   bool shouldRepaint(_CanvasSketchOverlayPainter oldDelegate) {
-    return isDrawing || oldDelegate.isDrawing;
+    return isDrawing || oldDelegate.isDrawing || strokes != oldDelegate.strokes;
   }
 }

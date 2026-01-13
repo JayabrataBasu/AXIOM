@@ -63,9 +63,44 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
     }
   }
 
+  /// Remove a stroke at the given index.
+  Future<void> removeStrokeAt(int index) async {
+    try {
+      await state.whenData((sketch) async {
+        if (index >= 0 && index < sketch.strokes.length) {
+          sketch.strokes.removeAt(index);
+          await _service.setCanvasSketch(sketch);
+        }
+      });
+      final sketch = await _service.getCanvasSketch();
+      state = AsyncValue.data(sketch);
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+
   /// Reload the sketch from disk.
   Future<void> reload() async {
     _loadSketch();
+  }
+
+  /// Replace the entire strokes list for the current sketch.
+  Future<void> setCanvasStrokes(List<CanvasSketchStroke> strokes) async {
+    try {
+      await state.whenData((sketch) async {
+        final newSketch = CanvasSketch(
+          id: sketch.id,
+          strokes: strokes,
+          createdAt: sketch.createdAt,
+          updatedAt: DateTime.now(),
+        );
+        await _service.setCanvasSketch(newSketch);
+      });
+      final updated = await _service.getCanvasSketch();
+      state = AsyncValue.data(updated);
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
   }
 }
 

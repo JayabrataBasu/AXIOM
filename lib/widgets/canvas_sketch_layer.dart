@@ -34,8 +34,8 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
             setState(() {
               _currentStroke = [
                 CanvasSketchPoint(
-                  x: details.globalPosition.dx,
-                  y: details.globalPosition.dy,
+                  x: details.localPosition.dx,
+                  y: details.localPosition.dy,
                   pressure: 1.0,
                 ),
               ];
@@ -49,8 +49,8 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
               setState(() {
                 _currentStroke.add(
                   CanvasSketchPoint(
-                    x: details.globalPosition.dx,
-                    y: details.globalPosition.dy,
+                    x: details.localPosition.dx,
+                    y: details.localPosition.dy,
                     pressure: 1.0,
                   ),
                 );

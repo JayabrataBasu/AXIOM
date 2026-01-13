@@ -57,6 +57,16 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
     await _sketchService.saveStrokes(block.id, _strokes);
   }
 
+  void _eraseAt(Offset position) {
+    const eraserRadius = 15.0;
+    _strokes.removeWhere((stroke) {
+      return stroke.points.any((point) {
+        final distance = (point.toOffset() - position).distance;
+        return distance < eraserRadius;
+      });
+    });
+  }
+
   void _undo() {
     if (_strokes.isNotEmpty) {
       setState(() {
@@ -168,18 +178,31 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               behavior: HitTestBehavior.opaque,
               onPanStart: (details) {
                 final toolState = ref.read(sketchToolsProvider);
-                if (toolState.tool != SketchTool.pen && 
-                    toolState.tool != SketchTool.marker && 
-                    toolState.tool != SketchTool.pencil && 
-                    toolState.tool != SketchTool.brush) {
+                if (toolState.tool == SketchTool.selector) {
                   return;
                 }
+                
+                if (toolState.tool == SketchTool.eraser) {
+                  // Erase strokes that overlap this point
+                  _eraseAt(details.localPosition);
+                  setState(() {});
+                  return;
+                }
+                
                 _currentStroke = [
                   SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
                 ];
                 setState(() {});
               },
               onPanUpdate: (details) {
+                final toolState = ref.read(sketchToolsProvider);
+                
+                if (toolState.tool == SketchTool.eraser) {
+                  _eraseAt(details.localPosition);
+                  setState(() {});
+                  return;
+                }
+                
                 if (_currentStroke.isNotEmpty) {
                   _currentStroke.add(
                     SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
@@ -189,8 +212,13 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                 }
               },
               onPanEnd: (details) {
+                final toolState = ref.read(sketchToolsProvider);
+                if (toolState.tool == SketchTool.eraser) {
+                  _saveStrokes();
+                  return;
+                }
+                
                 if (_currentStroke.isNotEmpty) {
-                  final toolState = ref.read(sketchToolsProvider);
                   _strokes.add(SketchStroke(
                     points: List.from(_currentStroke),
                     color: toolState.color,
@@ -213,6 +241,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                         currentStroke: _currentStroke,
                         currentColor: toolState.color,
                         currentWidth: toolState.brushSize,
+                        currentTool: toolState.tool,
                       ),
                       size: Size.infinite,
                     ),
@@ -310,6 +339,7 @@ class _SketchBlockDisplayState extends State<SketchBlockDisplay> {
             currentStroke: [],
             currentColor: Colors.black,
             currentWidth: 2.0,
+            currentTool: SketchTool.pen,
           ),
           size: Size.infinite,
         ),
@@ -325,17 +355,17 @@ class _SketchCanvasPainter extends CustomPainter {
     required this.currentStroke,
     required this.currentColor,
     required this.currentWidth,
+    required this.currentTool,
   });
 
   final List<SketchStroke> strokes;
   final List<SketchPoint> currentStroke;
   final Color currentColor;
   final double currentWidth;
+  final SketchTool currentTool;
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Background is now handled by the Container, just draw strokes
-    
     // Draw completed strokes with their own colors and widths
     for (final stroke in strokes) {
       final paint = Paint()
@@ -344,7 +374,7 @@ class _SketchCanvasPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = stroke.width;
 
-      _drawStroke(canvas, paint, stroke.points);
+      _drawStroke(canvas, paint, stroke.points, SketchTool.pen);
     }
 
     // Draw current stroke with current tool settings
@@ -353,13 +383,26 @@ class _SketchCanvasPainter extends CustomPainter {
         ..color = currentColor
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
-        ..strokeWidth = currentWidth;
+        ..strokeWidth = _getToolWidth(currentTool, currentWidth);
 
-      _drawStroke(canvas, paint, currentStroke);
+      _drawStroke(canvas, paint, currentStroke, currentTool);
     }
   }
 
-  void _drawStroke(Canvas canvas, Paint paint, List<SketchPoint> points) {
+  double _getToolWidth(SketchTool tool, double baseWidth) {
+    switch (tool) {
+      case SketchTool.marker:
+        return baseWidth * 1.5; // Wider
+      case SketchTool.pencil:
+        return baseWidth * 0.6; // Thinner
+      case SketchTool.brush:
+        return baseWidth * 1.2; // Slightly wider, smoother
+      default:
+        return baseWidth;
+    }
+  }
+
+  void _drawStroke(Canvas canvas, Paint paint, List<SketchPoint> points, SketchTool tool) {
     if (points.length < 2) {
       // Draw a single point as a small circle
       if (points.isNotEmpty) {
@@ -399,6 +442,7 @@ class _SketchCanvasPainter extends CustomPainter {
     return oldDelegate.strokes != strokes ||
         oldDelegate.currentStroke != currentStroke ||
         oldDelegate.currentColor != currentColor ||
-        oldDelegate.currentWidth != currentWidth;
+        oldDelegate.currentWidth != currentWidth ||
+        oldDelegate.currentTool != currentTool;
   }
 }
