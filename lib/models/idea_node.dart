@@ -60,6 +60,19 @@ class ContentBlockListConverter
         'thumbnailFile': thumbnailFile,
         'createdAt': createdAt.toIso8601String(),
       },
+      MathBlock(:final id, :final latex, :final createdAt) => {
+        'type': 'math',
+        'id': id,
+        'latex': latex,
+        'createdAt': createdAt.toIso8601String(),
+      },
+      AudioBlock(:final id, :final audioFile, :final durationMs, :final createdAt) => {
+        'type': 'audio',
+        'id': id,
+        'audioFile': audioFile,
+        'durationMs': durationMs,
+        'createdAt': createdAt.toIso8601String(),
+      },
     }).toList();
   }
 }

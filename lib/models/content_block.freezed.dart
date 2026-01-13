@@ -53,6 +53,14 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )
     sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -82,6 +90,14 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -111,6 +127,14 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -121,6 +145,8 @@ mixin _$ContentBlock {
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
     required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -130,6 +156,8 @@ mixin _$ContentBlock {
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
     TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -139,6 +167,8 @@ mixin _$ContentBlock {
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
     TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 
@@ -318,6 +348,14 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )
     sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
   }) {
     return text(id, content, createdAt);
   }
@@ -351,6 +389,14 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
   }) {
     return text?.call(id, content, createdAt);
   }
@@ -384,6 +430,14 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -401,6 +455,8 @@ class _$TextBlockImpl extends TextBlock {
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
     required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
   }) {
     return text(this);
   }
@@ -414,6 +470,8 @@ class _$TextBlockImpl extends TextBlock {
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
     TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
   }) {
     return text?.call(this);
   }
@@ -427,6 +485,8 @@ class _$TextBlockImpl extends TextBlock {
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
     TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -596,6 +656,14 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )
     sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
   }) {
     return heading(id, content, level, createdAt);
   }
@@ -629,6 +697,14 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
   }) {
     return heading?.call(id, content, level, createdAt);
   }
@@ -662,6 +738,14 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -679,6 +763,8 @@ class _$HeadingBlockImpl extends HeadingBlock {
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
     required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
   }) {
     return heading(this);
   }
@@ -692,6 +778,8 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
     TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
   }) {
     return heading?.call(this);
   }
@@ -705,6 +793,8 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
     TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -881,6 +971,14 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )
     sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
   }) {
     return bulletList(id, items, createdAt);
   }
@@ -914,6 +1012,14 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
   }) {
     return bulletList?.call(id, items, createdAt);
   }
@@ -947,6 +1053,14 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -964,6 +1078,8 @@ class _$BulletListBlockImpl extends BulletListBlock {
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
     required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
   }) {
     return bulletList(this);
   }
@@ -977,6 +1093,8 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
     TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
   }) {
     return bulletList?.call(this);
   }
@@ -990,6 +1108,8 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
     TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -1161,6 +1281,14 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )
     sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
   }) {
     return code(id, content, language, createdAt);
   }
@@ -1194,6 +1322,14 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
   }) {
     return code?.call(id, content, language, createdAt);
   }
@@ -1227,6 +1363,14 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1244,6 +1388,8 @@ class _$CodeBlockImpl extends CodeBlock {
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
     required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
   }) {
     return code(this);
   }
@@ -1257,6 +1403,8 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
     TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
   }) {
     return code?.call(this);
   }
@@ -1270,6 +1418,8 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
     TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1448,6 +1598,14 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )
     sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
   }) {
     return quote(id, content, attribution, createdAt);
   }
@@ -1481,6 +1639,14 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
   }) {
     return quote?.call(id, content, attribution, createdAt);
   }
@@ -1514,6 +1680,14 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -1531,6 +1705,8 @@ class _$QuoteBlockImpl extends QuoteBlock {
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
     required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
   }) {
     return quote(this);
   }
@@ -1544,6 +1720,8 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
     TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
   }) {
     return quote?.call(this);
   }
@@ -1557,6 +1735,8 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
     TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -1735,6 +1915,14 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )
     sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
   }) {
     return sketch(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -1768,6 +1956,14 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
   }) {
     return sketch?.call(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -1801,6 +1997,14 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )?
     sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -1818,6 +2022,8 @@ class _$SketchBlockImpl extends SketchBlock {
     required TResult Function(CodeBlock value) code,
     required TResult Function(QuoteBlock value) quote,
     required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
   }) {
     return sketch(this);
   }
@@ -1831,6 +2037,8 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult? Function(CodeBlock value)? code,
     TResult? Function(QuoteBlock value)? quote,
     TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
   }) {
     return sketch?.call(this);
   }
@@ -1844,6 +2052,8 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult Function(CodeBlock value)? code,
     TResult Function(QuoteBlock value)? quote,
     TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -1874,5 +2084,615 @@ abstract class SketchBlock extends ContentBlock {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SketchBlockImplCopyWith<_$SketchBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$MathBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$MathBlockImplCopyWith(
+    _$MathBlockImpl value,
+    $Res Function(_$MathBlockImpl) then,
+  ) = __$$MathBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String id, String latex, DateTime createdAt});
+}
+
+/// @nodoc
+class __$$MathBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$MathBlockImpl>
+    implements _$$MathBlockImplCopyWith<$Res> {
+  __$$MathBlockImplCopyWithImpl(
+    _$MathBlockImpl _value,
+    $Res Function(_$MathBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? latex = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$MathBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        latex: null == latex
+            ? _value.latex
+            : latex // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$MathBlockImpl extends MathBlock {
+  const _$MathBlockImpl({
+    required this.id,
+    this.latex = '',
+    required this.createdAt,
+  }) : super._();
+
+  @override
+  final String id;
+  @override
+  @JsonKey()
+  final String latex;
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'ContentBlock.math(id: $id, latex: $latex, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MathBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.latex, latex) || other.latex == latex) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, id, latex, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MathBlockImplCopyWith<_$MathBlockImpl> get copyWith =>
+      __$$MathBlockImplCopyWithImpl<_$MathBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
+  }) {
+    return math(id, latex, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+  }) {
+    return math?.call(id, latex, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    required TResult orElse(),
+  }) {
+    if (math != null) {
+      return math(id, latex, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
+  }) {
+    return math(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
+  }) {
+    return math?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
+    required TResult orElse(),
+  }) {
+    if (math != null) {
+      return math(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class MathBlock extends ContentBlock {
+  const factory MathBlock({
+    required final String id,
+    final String latex,
+    required final DateTime createdAt,
+  }) = _$MathBlockImpl;
+  const MathBlock._() : super._();
+
+  @override
+  String get id;
+  String get latex;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MathBlockImplCopyWith<_$MathBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$AudioBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$AudioBlockImplCopyWith(
+    _$AudioBlockImpl value,
+    $Res Function(_$AudioBlockImpl) then,
+  ) = __$$AudioBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String id, String audioFile, int durationMs, DateTime createdAt});
+}
+
+/// @nodoc
+class __$$AudioBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$AudioBlockImpl>
+    implements _$$AudioBlockImplCopyWith<$Res> {
+  __$$AudioBlockImplCopyWithImpl(
+    _$AudioBlockImpl _value,
+    $Res Function(_$AudioBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? audioFile = null,
+    Object? durationMs = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$AudioBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        audioFile: null == audioFile
+            ? _value.audioFile
+            : audioFile // ignore: cast_nullable_to_non_nullable
+                  as String,
+        durationMs: null == durationMs
+            ? _value.durationMs
+            : durationMs // ignore: cast_nullable_to_non_nullable
+                  as int,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$AudioBlockImpl extends AudioBlock {
+  const _$AudioBlockImpl({
+    required this.id,
+    required this.audioFile,
+    this.durationMs = 0,
+    required this.createdAt,
+  }) : super._();
+
+  @override
+  final String id;
+  @override
+  final String audioFile;
+  @override
+  @JsonKey()
+  final int durationMs;
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'ContentBlock.audio(id: $id, audioFile: $audioFile, durationMs: $durationMs, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AudioBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.audioFile, audioFile) ||
+                other.audioFile == audioFile) &&
+            (identical(other.durationMs, durationMs) ||
+                other.durationMs == durationMs) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, audioFile, durationMs, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AudioBlockImplCopyWith<_$AudioBlockImpl> get copyWith =>
+      __$$AudioBlockImplCopyWithImpl<_$AudioBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
+  }) {
+    return audio(id, audioFile, durationMs, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+  }) {
+    return audio?.call(id, audioFile, durationMs, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    required TResult orElse(),
+  }) {
+    if (audio != null) {
+      return audio(id, audioFile, durationMs, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
+  }) {
+    return audio(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
+  }) {
+    return audio?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
+    required TResult orElse(),
+  }) {
+    if (audio != null) {
+      return audio(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class AudioBlock extends ContentBlock {
+  const factory AudioBlock({
+    required final String id,
+    required final String audioFile,
+    final int durationMs,
+    required final DateTime createdAt,
+  }) = _$AudioBlockImpl;
+  const AudioBlock._() : super._();
+
+  @override
+  String get id;
+  String get audioFile;
+  int get durationMs;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AudioBlockImplCopyWith<_$AudioBlockImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -6,6 +6,8 @@ import '../models/models.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
 import '../widgets/blocks/sketch_block_editor.dart';
+import '../widgets/blocks/math_block_editor.dart';
+import '../widgets/blocks/audio_block_editor.dart';
 
 /// Full-screen editor for an IdeaNode.
 class NodeEditorScreen extends ConsumerStatefulWidget {
@@ -274,6 +276,24 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           dragIndex: index,
           onDelete: () => _deleteBlock(node.id, block.id),
         ),
+      MathBlock() => BlockEditorCard(
+          blockType: 'Math',
+          dragIndex: index,
+          onDelete: () => _deleteBlock(node.id, block.id),
+          child: MathBlockEditor(
+            latex: block.latex,
+            onChanged: (latex) => _updateBlockLatex(node.id, block.id, latex),
+          ),
+        ),
+      AudioBlock() => BlockEditorCard(
+          blockType: 'Audio',
+          dragIndex: index,
+          onDelete: () => _deleteBlock(node.id, block.id),
+          child: AudioBlockEditor(
+            audioFile: block.audioFile,
+            durationMs: block.durationMs,
+          ),
+        ),
     };
   }
 
@@ -299,6 +319,12 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         notifier.addQuoteBlock(node.id);
       case BlockType.sketch:
         notifier.addSketchBlock(node.id);
+      case BlockType.math:
+        notifier.addMathBlock(node.id);
+      case BlockType.audio:
+        // TODO: Implement audio recording UI
+        // For now, create a placeholder audio block
+        notifier.addAudioBlock(node.id, audioFile: '', durationMs: 0);
     }
   }
 
@@ -329,6 +355,13 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     _saveDebounce?.cancel();
     _saveDebounce = Timer(const Duration(milliseconds: 500), () {
       ref.read(nodesNotifierProvider.notifier).updateQuoteAttribution(nodeId, blockId, attribution);
+    });
+  }
+
+  void _updateBlockLatex(String nodeId, String blockId, String latex) {
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 500), () {
+      ref.read(nodesNotifierProvider.notifier).updateBlockLatex(nodeId, blockId, latex);
     });
   }
 

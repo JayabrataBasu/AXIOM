@@ -62,6 +62,23 @@ sealed class ContentBlock with _$ContentBlock {
     required DateTime createdAt,
   }) = SketchBlock;
 
+  /// A math block for LaTeX mathematical expressions (Stage 4).
+  @FreezedUnionValue('math')
+  const factory ContentBlock.math({
+    required String id,
+    @Default('') String latex,
+    required DateTime createdAt,
+  }) = MathBlock;
+
+  /// An audio block for voice recordings (Stage 6).
+  @FreezedUnionValue('audio')
+  const factory ContentBlock.audio({
+    required String id,
+    required String audioFile,
+    @Default(0) int durationMs,
+    required DateTime createdAt,
+  }) = AudioBlock;
+
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String?;
 
@@ -107,6 +124,17 @@ sealed class ContentBlock with _$ContentBlock {
         id: json['id'] as String,
         strokeFile: json['strokeFile'] as String,
         thumbnailFile: (json['thumbnailFile'] as String?) ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'math' => ContentBlock.math(
+        id: json['id'] as String,
+        latex: (json['latex'] as String?) ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'audio' => ContentBlock.audio(
+        id: json['id'] as String,
+        audioFile: json['audioFile'] as String,
+        durationMs: (json['durationMs'] as int?) ?? 0,
         createdAt: DateTime.parse(json['createdAt'] as String),
       ),
       _ => ContentBlock.text(

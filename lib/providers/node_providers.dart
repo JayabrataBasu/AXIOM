@@ -231,6 +231,8 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         QuoteBlock() => block.copyWith(content: content),
         BulletListBlock() => block, // Use updateBulletListItems instead
         SketchBlock() => block, // Use SketchService for strokes
+        MathBlock() => block, // Use updateBlockLatex instead
+        AudioBlock() => block, // Audio is read-only after creation
       };
     }).toList();
 
@@ -307,6 +309,65 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     }).toList();
 
     final updated = node.copyWith(blocks: updatedBlocks);
+    await updateNode(updated);
+  }
+
+  /// Add a math block to a node (Stage 4).
+  Future<void> addMathBlock(String nodeId, {String latex = ''}) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final newBlock = ContentBlock.math(
+      id: _uuid.v4(),
+      latex: latex,
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(
+      blocks: [...node.blocks, newBlock],
+    );
+    await updateNode(updated);
+  }
+
+  /// Update a math block's LaTeX content.
+  Future<void> updateBlockLatex(String nodeId, String blockId, String latex) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final updatedBlocks = node.blocks.map((block) {
+      if (block.id == blockId && block is MathBlock) {
+        return block.copyWith(latex: latex);
+      }
+      return block;
+    }).toList();
+
+    final updated = node.copyWith(blocks: updatedBlocks);
+    await updateNode(updated);
+  }
+
+  /// Add an audio block to a node (Stage 6).
+  Future<void> addAudioBlock(String nodeId, {required String audioFile, int durationMs = 0}) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final node = currentNodes[nodeIndex];
+    final now = DateTime.now();
+    final newBlock = ContentBlock.audio(
+      id: _uuid.v4(),
+      audioFile: audioFile,
+      durationMs: durationMs,
+      createdAt: now,
+    );
+
+    final updated = node.copyWith(
+      blocks: [...node.blocks, newBlock],
+    );
     await updateNode(updated);
   }
 

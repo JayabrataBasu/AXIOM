@@ -242,6 +242,8 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
       CodeBlock(:final content, :final language) => ('CODE${language.isNotEmpty ? ' ($language)' : ''}', Colors.orange, content),
       QuoteBlock(:final content) => ('QUOTE', Colors.teal, content),
       SketchBlock() => ('SKETCH', Colors.deepOrange, '[drawing]'),
+      MathBlock(:final latex) => ('MATH', Colors.indigo, latex),
+      AudioBlock(:final durationMs) => ('AUDIO', Colors.cyan, '${(durationMs / 1000).toStringAsFixed(1)}s'),
     };
 
     return Card(
