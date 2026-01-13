@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 import '../repositories/repositories.dart';
+import '../services/audio_service.dart';
 import '../services/sketch_service.dart';
 
 /// Provider for the NodeRepository singleton.
@@ -19,6 +20,7 @@ final nodesProvider = FutureProvider<List<IdeaNode>>((ref) async {
 class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   late NodeRepository _repository;
   final _uuid = const Uuid();
+  final AudioService _audioService = AudioService.instance;
   final SketchService _sketchService = SketchService.instance;
 
   @override
@@ -381,19 +383,19 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     final node = currentNodes[nodeIndex];
     final block = node.blocks.firstWhere((b) => b.id == blockId);
     
-    if (block.runtimeType.toString().contains('SketchBlock')) {
-      // Safely check and cast for SketchBlock
-      final stroke = switch (block) {
-        _ when block.runtimeType.toString() == 'SketchBlock' => block as dynamic,
-        _ => null,
-      };
-      if (stroke != null) {
+    switch (block) {
+      case SketchBlock(:final strokeFile, :final thumbnailFile):
         await _sketchService.deleteSketchAssets(
           blockId: block.id,
-          strokeFile: stroke.strokeFile as String,
-          thumbnailFile: (stroke.thumbnailFile as String).isNotEmpty ? stroke.thumbnailFile as String : null,
+          strokeFile: strokeFile,
+          thumbnailFile: thumbnailFile.isNotEmpty ? thumbnailFile : null,
         );
-      }
+      case AudioBlock(:final audioFile):
+        if (audioFile.isNotEmpty) {
+          await _audioService.deleteRecording(audioFile);
+        }
+      default:
+        break;
     }
 
     final updated = node.copyWith(

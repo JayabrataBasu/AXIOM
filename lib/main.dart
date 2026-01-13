@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 
 import 'screens/screens.dart';
 import 'services/settings_service.dart';
@@ -8,6 +9,7 @@ import 'services/canvas_sketch_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  JustAudioMediaKit.registerWith();
 
   // Initialize settings service
   await SettingsService.instance.initialize();

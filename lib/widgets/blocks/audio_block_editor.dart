@@ -20,6 +20,7 @@ class AudioBlockEditor extends StatefulWidget {
 class _AudioBlockEditorState extends State<AudioBlockEditor> {
   late AudioPlayer _audioPlayer;
   bool _isPlaying = false;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -30,6 +31,9 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
 
   Future<void> _initializeAudio() async {
     try {
+      if (widget.audioFile.isEmpty) {
+        throw Exception('No audio file path provided');
+      }
       await _audioPlayer.setFilePath(widget.audioFile);
       _audioPlayer.playbackEventStream.listen((event) {
         if (mounted) {
@@ -39,10 +43,15 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
         }
       });
     } catch (e) {
+      _loadFailed = true;
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading audio: $e')),
-        );
+        setState(() {});
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error loading audio: $e')),
+          );
+        });
       }
     }
   }
@@ -72,7 +81,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
           Row(
             children: [
               FilledButton.icon(
-                onPressed: _togglePlayback,
+                onPressed: _loadFailed ? null : _togglePlayback,
                 icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
                 label: Text(_isPlaying ? 'Pause' : 'Play'),
               ),

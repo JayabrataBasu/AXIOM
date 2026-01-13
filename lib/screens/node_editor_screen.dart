@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../services/audio_service.dart';
 import '../widgets/widgets.dart';
 import '../widgets/blocks/sketch_block_editor.dart';
 import '../widgets/blocks/math_block_editor.dart';
 import '../widgets/blocks/audio_block_editor.dart';
+import '../widgets/blocks/audio_recorder_dialog.dart';
 import '../widgets/blocks/workspace_ref_block.dart';
 
 /// Full-screen editor for an IdeaNode.
@@ -278,6 +280,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           onDelete: () => _deleteBlock(node.id, block.id),
         ),
       MathBlock() => BlockEditorCard(
+          key: ValueKey(block.id),
           blockType: 'Math',
           dragIndex: index,
           onDelete: () => _deleteBlock(node.id, block.id),
@@ -287,6 +290,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           ),
         ),
       AudioBlock() => BlockEditorCard(
+          key: ValueKey(block.id),
           blockType: 'Audio',
           dragIndex: index,
           onDelete: () => _deleteBlock(node.id, block.id),
@@ -296,6 +300,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           ),
         ),
       WorkspaceRefBlock() => BlockEditorCard(
+          key: ValueKey(block.id),
           blockType: 'Workspace',
           dragIndex: index,
           onDelete: () => _deleteBlock(node.id, block.id),
@@ -332,13 +337,31 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       case BlockType.math:
         notifier.addMathBlock(node.id);
       case BlockType.audio:
-        // TODO: Implement audio recording UI
-        // For now, create a placeholder audio block
-        notifier.addAudioBlock(node.id, audioFile: '', durationMs: 0);
+        await _recordAndAddAudio(node, notifier);
       case BlockType.workspaceRef:
         // TODO: Show session picker dialog
         // For now, skip
         break;
+    }
+  }
+
+  Future<void> _recordAndAddAudio(IdeaNode node, NodesNotifier notifier) async {
+    final result = await showDialog<AudioRecordingResult>(
+      context: context,
+      builder: (context) => const AudioRecorderDialog(),
+    );
+
+    if (result != null && mounted) {
+      await notifier.addAudioBlock(
+        node.id,
+        audioFile: result.filePath,
+        durationMs: result.durationMs,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Audio block added')),
+        );
+      }
     }
   }
 

@@ -66,6 +66,16 @@ class FileService {
   /// Get the media directory.
   Future<Directory> get mediaDirectory => getSubdirectory('media');
 
+  /// Get the audio directory under media.
+  Future<Directory> get audioDirectory async {
+    final media = await mediaDirectory;
+    final dir = Directory(p.join(media.path, 'audio'));
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
+  }
+
   /// Read a JSON file and return parsed content.
   /// Returns null if file doesn't exist or is invalid.
   Future<Map<String, dynamic>?> readJson(String filePath) async {
@@ -148,5 +158,11 @@ class FileService {
   Future<String> sessionFilePath(String sessionId) async {
     final sessionsDir = await sessionsDirectory;
     return p.join(sessionsDir.path, '$sessionId.json');
+  }
+
+  /// Get the file path for an audio recording by block ID.
+  Future<String> audioFilePath(String blockId) async {
+    final audioDir = await audioDirectory;
+    return p.join(audioDir.path, '$blockId.m4a');
   }
 }
