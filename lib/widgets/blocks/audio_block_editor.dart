@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 /// Editor for audio recordings (Stage 6).
 /// Provides recording, playback, and duration display.
@@ -18,14 +18,16 @@ class AudioBlockEditor extends StatefulWidget {
 }
 
 class _AudioBlockEditorState extends State<AudioBlockEditor> {
-  late AudioPlayer _audioPlayer;
+  late final AudioPlayer _player;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _loadFailed = false;
 
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
+    _player = AudioPlayer();
     _initializeAudio();
   }
 
@@ -34,13 +36,24 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
       if (widget.audioFile.isEmpty) {
         throw Exception('No audio file path provided');
       }
-      await _audioPlayer.setFilePath(widget.audioFile);
-      _audioPlayer.playbackEventStream.listen((event) {
-        if (mounted) {
-          setState(() {
-            _isPlaying = _audioPlayer.playing;
-          });
-        }
+      await _player.setSourceDeviceFile(widget.audioFile);
+
+      // Listen for player state changes.
+      _player.onPlayerStateChanged.listen((state) {
+        if (!mounted) return;
+        setState(() {
+          _isPlaying = state == PlayerState.playing;
+        });
+      });
+
+      _player.onDurationChanged.listen((d) {
+        if (!mounted) return;
+        setState(() => _duration = d);
+      });
+
+      _player.onPositionChanged.listen((p) {
+        if (!mounted) return;
+        setState(() => _position = p);
       });
     } catch (e) {
       _loadFailed = true;
@@ -58,14 +71,16 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    _player.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final duration = Duration(milliseconds: widget.durationMs);
+    final duration = _duration == Duration.zero
+      ? Duration(milliseconds: widget.durationMs)
+      : _duration;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -96,14 +111,17 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
           const SizedBox(height: 12),
           // Progress indicator
           StreamBuilder<Duration>(
-            stream: _audioPlayer.positionStream,
+            stream: _player.onPositionChanged,
             builder: (context, snapshot) {
-              final position = snapshot.data ?? Duration.zero;
+              final position = snapshot.data ?? _position;
+              final clamped = position.inMilliseconds > duration.inMilliseconds && duration.inMilliseconds > 0
+                  ? duration
+                  : position;
               return Column(
                 children: [
                   LinearProgressIndicator(
                     value: duration.inMilliseconds > 0
-                        ? position.inMilliseconds / duration.inMilliseconds
+                        ? clamped.inMilliseconds / duration.inMilliseconds
                         : 0,
                     minHeight: 4,
                   ),
@@ -112,7 +130,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        _formatDuration(position),
+                        _formatDuration(clamped),
                         style: theme.textTheme.labelSmall,
                       ),
                       Text(
@@ -133,9 +151,9 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
   Future<void> _togglePlayback() async {
     try {
       if (_isPlaying) {
-        await _audioPlayer.pause();
+        await _player.pause();
       } else {
-        await _audioPlayer.play();
+        await _player.resume();
       }
     } catch (e) {
       if (mounted) {
