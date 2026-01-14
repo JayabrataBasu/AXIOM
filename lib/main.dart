@@ -12,7 +12,7 @@ Future<void> main() async {
 
   // Initialize settings service
   await SettingsService.instance.initialize();
-  
+
   // Initialize canvas sketch service
   await CanvasSketchService.instance.initialize();
 
@@ -35,11 +35,7 @@ Future<void> main() async {
     });
   }
 
-  runApp(
-    const ProviderScope(
-      child: AxiomApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: AxiomApp()));
 }
 
 /// Root application widget for Axiom.
@@ -57,10 +53,7 @@ class AxiomApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          centerTitle: false,
-          elevation: 0,
-        ),
+        appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -68,10 +61,7 @@ class AxiomApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          centerTitle: false,
-          elevation: 0,
-        ),
+        appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
       // Stage 2: Canvas is now the primary thinking surface
       home: const CanvasScreen(),

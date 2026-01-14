@@ -48,7 +48,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 16),
                     Text('Error: $error'),
                     const SizedBox(height: 16),
@@ -84,9 +88,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
             // Canvas sketch overlay (only active in sketch mode, above the canvas)
             if (_sketchMode)
               Positioned.fill(
-                child: CanvasSketchOverlay(
-                  canvasKey: _canvasKey,
-                ),
+                child: CanvasSketchOverlay(canvasKey: _canvasKey),
               ),
             // Top toolbar
             Positioned(
@@ -104,11 +106,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               child: _buildZoomIndicator(theme),
             ),
             // Help hint
-            Positioned(
-              bottom: 16,
-              left: 16,
-              child: _buildHelpHint(theme),
-            ),
+            Positioned(bottom: 16, left: 16, child: _buildHelpHint(theme)),
           ],
         ),
       ),
@@ -117,15 +115,13 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
   Widget _buildToolbar(BuildContext context, ThemeData theme) {
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface.withValues(alpha: 0.9),
         border: Border(
-          bottom: BorderSide(
-            color: theme.colorScheme.outlineVariant,
-          ),
+          bottom: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
       ),
       child: SafeArea(
@@ -287,25 +283,25 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       x: node.position.x + delta.dx,
       y: node.position.y + delta.dy,
     );
-    await ref.read(nodesNotifierProvider.notifier).updateNodePosition(
-          nodeId,
-          newPosition,
-        );
+    await ref
+        .read(nodesNotifierProvider.notifier)
+        .updateNodePosition(nodeId, newPosition);
   }
 
   /// Create a new node at the canvas origin.
   Future<void> _createNewNode() async {
     // Create node at the center of the current view
-    final viewportCenter = _canvasKey.currentState?.viewportCenter ?? Offset.zero;
+    final viewportCenter =
+        _canvasKey.currentState?.viewportCenter ?? Offset.zero;
     final position = Position(x: viewportCenter.dx, y: viewportCenter.dy);
-    
-    final node = await ref.read(nodesNotifierProvider.notifier).createNode(
-      position: position,
-    );
-    
+
+    final node = await ref
+        .read(nodesNotifierProvider.notifier)
+        .createNode(position: position);
+
     // Select the new node
     ref.read(canvasViewProvider.notifier).selectNode(node.id);
-    
+
     // Show a snackbar
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -324,18 +320,16 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   void _onCanvasDoubleTap(Offset canvasPosition) async {
     // Create new node at the tapped position
     final position = Position(x: canvasPosition.dx, y: canvasPosition.dy);
-    final node = await ref.read(nodesNotifierProvider.notifier).createNode(
-          position: position,
-        );
+    final node = await ref
+        .read(nodesNotifierProvider.notifier)
+        .createNode(position: position);
     // Select the new node
     ref.read(canvasViewProvider.notifier).selectNode(node.id);
   }
 
   void _openNodeEditor(String nodeId) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => NodeEditorScreen(nodeId: nodeId),
-      ),
+      MaterialPageRoute(builder: (context) => NodeEditorScreen(nodeId: nodeId)),
     );
   }
 
@@ -383,9 +377,7 @@ class _DebugScreenPlaceholder extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Re-use the debug screen from screens
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Debug View'),
-      ),
+      appBar: AppBar(title: const Text('Debug View')),
       body: const Center(
         child: Text('Debug view - use back button to return to canvas'),
       ),

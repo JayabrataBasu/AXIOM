@@ -60,15 +60,15 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
     final matrix = _controller.value;
     final scale = matrix.getMaxScaleOnAxis();
     final translation = matrix.getTranslation();
-    
+
     // Get the viewport size
     final renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return Offset.zero;
-    
+
     final viewportSize = renderBox.size;
     final centerX = (viewportSize.width / 2 - translation.x) / scale;
     final centerY = (viewportSize.height / 2 - translation.y) / scale;
-    
+
     return Offset(centerX, centerY);
   }
 
@@ -130,8 +130,10 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
         if (event is PointerScrollEvent) {
           final delta = event.scrollDelta.dy;
           final scaleFactor = delta > 0 ? 0.9 : 1.1;
-          final newScale = (currentScale * scaleFactor)
-              .clamp(widget.minScale, widget.maxScale);
+          final newScale = (currentScale * scaleFactor).clamp(
+            widget.minScale,
+            widget.maxScale,
+          );
 
           // Zoom towards cursor position
           final focalPoint = event.localPosition;
@@ -140,7 +142,9 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
           final matrix = Matrix4.identity()
             ..translateByVector3(Vector3(focalPoint.dx, focalPoint.dy, 0))
             ..scaleByVector3(Vector3(newScale, newScale, 1))
-            ..translateByVector3(Vector3(-focalPointScene.dx, -focalPointScene.dy, 0));
+            ..translateByVector3(
+              Vector3(-focalPointScene.dx, -focalPointScene.dy, 0),
+            );
 
           _controller.value = matrix;
           widget.onScaleChanged?.call(newScale);
