@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/workspace_providers.dart';
+import '../../screens/workspace_shell.dart';
 
 /// Display widget for workspace reference blocks.
-class WorkspaceRefBlockDisplay extends StatefulWidget {
+class WorkspaceRefBlockDisplay extends ConsumerWidget {
   const WorkspaceRefBlockDisplay({
     super.key,
     required this.sessionId,
@@ -12,13 +15,18 @@ class WorkspaceRefBlockDisplay extends StatefulWidget {
   final String label;
 
   @override
-  State<WorkspaceRefBlockDisplay> createState() => _WorkspaceRefBlockDisplayState();
-}
-
-class _WorkspaceRefBlockDisplayState extends State<WorkspaceRefBlockDisplay> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final sessionAsync = ref.watch(workspaceSessionProvider(sessionId));
+
+    final title = sessionAsync.maybeWhen(
+      data: (session) => session?.label.isNotEmpty == true
+          ? session!.label
+          : (label.isNotEmpty
+                ? label
+                : session?.preview ?? 'Workspace Session'),
+      orElse: () => label.isNotEmpty ? label : 'Workspace Session',
+    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -39,15 +47,17 @@ class _WorkspaceRefBlockDisplayState extends State<WorkspaceRefBlockDisplay> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.label.isNotEmpty ? widget.label : 'Workspace Session',
+                      title,
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      'ID: ${widget.sessionId.substring(0, 8)}...',
+                      'ID: ${sessionId.substring(0, 8)}...',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   ],
@@ -59,7 +69,7 @@ class _WorkspaceRefBlockDisplayState extends State<WorkspaceRefBlockDisplay> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: _openSession,
+              onPressed: () => _openSession(context),
               icon: const Icon(Icons.open_in_new),
               label: const Text('Open Session'),
             ),
@@ -69,10 +79,9 @@ class _WorkspaceRefBlockDisplayState extends State<WorkspaceRefBlockDisplay> {
     );
   }
 
-  void _openSession() {
-    // TODO: Implement session opening logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening session...')),
+  void _openSession(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => WorkspaceShell(sessionId: sessionId)),
     );
   }
 }

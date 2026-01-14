@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/audio_service.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
-import '../services/audio_service.dart';
 import '../widgets/widgets.dart';
 import '../widgets/blocks/sketch_block_editor.dart';
 import '../widgets/blocks/math_block_editor.dart';
@@ -14,10 +13,7 @@ import '../widgets/blocks/workspace_ref_block.dart';
 
 /// Full-screen editor for an IdeaNode.
 class NodeEditorScreen extends ConsumerStatefulWidget {
-  const NodeEditorScreen({
-    super.key,
-    required this.nodeId,
-  });
+  const NodeEditorScreen({super.key, required this.nodeId});
 
   final String nodeId;
 
@@ -40,15 +36,14 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     final theme = Theme.of(context);
 
     return nodesAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, stack) => Scaffold(
         appBar: AppBar(title: const Text('Error')),
         body: Center(child: Text('Error: $error')),
       ),
       data: (nodes) {
-        final node = nodes.where((n) => n.id == widget.nodeId).firstOrNull;
+        final node = _findNode(nodes, widget.nodeId);
         if (node == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Node Not Found')),
@@ -89,14 +84,18 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                             'ID: ${node.id.substring(0, 8)}...',
                             style: theme.textTheme.labelSmall?.copyWith(
                               fontFamily: 'monospace',
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Position: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                         ],
@@ -105,7 +104,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                     Text(
                       '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   ],
@@ -119,7 +120,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerLow,
                     border: Border(
-                      bottom: BorderSide(color: theme.colorScheme.outlineVariant),
+                      bottom: BorderSide(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
                     ),
                   ),
                   child: Column(
@@ -146,12 +149,16 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: node.links.map((link) {
-                          final targetNode = nodes.firstWhereOrNull((n) => n.id == link.targetNodeId);
+                          final targetNode = _findNode(
+                            nodes,
+                            link.targetNodeId,
+                          );
                           final label = link.label.isNotEmpty
                               ? link.label
-                              : (targetNode != null && targetNode.previewText.isNotEmpty
-                                  ? targetNode.previewText
-                                  : 'Node ${link.targetNodeId.substring(0, 6)}...');
+                              : (targetNode != null &&
+                                        targetNode.previewText.isNotEmpty
+                                    ? targetNode.previewText
+                                    : 'Node ${link.targetNodeId.substring(0, 6)}...');
 
                           return InputChip(
                             avatar: const Icon(Icons.arrow_forward, size: 16),
@@ -166,11 +173,14 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => NodeEditorScreen(nodeId: link.targetNodeId),
+                                  builder: (_) => NodeEditorScreen(
+                                    nodeId: link.targetNodeId,
+                                  ),
                                 ),
                               );
                             },
-                            onDeleted: () => _removeLink(node.id, link.targetNodeId),
+                            onDeleted: () =>
+                                _removeLink(node.id, link.targetNodeId),
                           );
                         }).toList(),
                       ),
@@ -236,79 +246,87 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   Widget _buildBlockEditor(IdeaNode node, ContentBlock block, int index) {
     return switch (block) {
       TextBlock() => TextBlockEditor(
-          key: ValueKey(block.id),
-          block: block,
-          dragIndex: index,
-          onContentChanged: (content) => _updateBlockContent(node.id, block.id, content),
-          onDelete: () => _deleteBlock(node.id, block.id),
-        ),
+        key: ValueKey(block.id),
+        block: block,
+        dragIndex: index,
+        onContentChanged: (content) =>
+            _updateBlockContent(node.id, block.id, content),
+        onDelete: () => _deleteBlock(node.id, block.id),
+      ),
       HeadingBlock() => HeadingBlockEditor(
-          key: ValueKey(block.id),
-          block: block,
-          dragIndex: index,
-          onContentChanged: (content) => _updateBlockContent(node.id, block.id, content),
-          onLevelChanged: (level) => _updateHeadingLevel(node.id, block.id, level),
-          onDelete: () => _deleteBlock(node.id, block.id),
-        ),
+        key: ValueKey(block.id),
+        block: block,
+        dragIndex: index,
+        onContentChanged: (content) =>
+            _updateBlockContent(node.id, block.id, content),
+        onLevelChanged: (level) =>
+            _updateHeadingLevel(node.id, block.id, level),
+        onDelete: () => _deleteBlock(node.id, block.id),
+      ),
       BulletListBlock() => BulletListBlockEditor(
-          key: ValueKey(block.id),
-          block: block,
-          dragIndex: index,
-          onItemsChanged: (items) => _updateBulletListItems(node.id, block.id, items),
-          onDelete: () => _deleteBlock(node.id, block.id),
-        ),
+        key: ValueKey(block.id),
+        block: block,
+        dragIndex: index,
+        onItemsChanged: (items) =>
+            _updateBulletListItems(node.id, block.id, items),
+        onDelete: () => _deleteBlock(node.id, block.id),
+      ),
       CodeBlock() => CodeBlockEditor(
-          key: ValueKey(block.id),
-          block: block,
-          dragIndex: index,
-          onContentChanged: (content) => _updateBlockContent(node.id, block.id, content),
-          onLanguageChanged: (lang) => _updateCodeLanguage(node.id, block.id, lang),
-          onDelete: () => _deleteBlock(node.id, block.id),
-        ),
+        key: ValueKey(block.id),
+        block: block,
+        dragIndex: index,
+        onContentChanged: (content) =>
+            _updateBlockContent(node.id, block.id, content),
+        onLanguageChanged: (lang) =>
+            _updateCodeLanguage(node.id, block.id, lang),
+        onDelete: () => _deleteBlock(node.id, block.id),
+      ),
       QuoteBlock() => QuoteBlockEditor(
-          key: ValueKey(block.id),
-          block: block,
-          dragIndex: index,
-          onContentChanged: (content) => _updateBlockContent(node.id, block.id, content),
-          onAttributionChanged: (attr) => _updateQuoteAttribution(node.id, block.id, attr),
-          onDelete: () => _deleteBlock(node.id, block.id),
-        ),
+        key: ValueKey(block.id),
+        block: block,
+        dragIndex: index,
+        onContentChanged: (content) =>
+            _updateBlockContent(node.id, block.id, content),
+        onAttributionChanged: (attr) =>
+            _updateQuoteAttribution(node.id, block.id, attr),
+        onDelete: () => _deleteBlock(node.id, block.id),
+      ),
       SketchBlock() => SketchBlockEditor(
-          key: ValueKey(block.id),
-          block: block,
-          dragIndex: index,
-          onDelete: () => _deleteBlock(node.id, block.id),
-        ),
+        key: ValueKey(block.id),
+        block: block,
+        dragIndex: index,
+        onDelete: () => _deleteBlock(node.id, block.id),
+      ),
       MathBlock() => BlockEditorCard(
-          key: ValueKey(block.id),
-          blockType: 'Math',
-          dragIndex: index,
-          onDelete: () => _deleteBlock(node.id, block.id),
-          child: MathBlockEditor(
-            latex: block.latex,
-            onChanged: (latex) => _updateBlockLatex(node.id, block.id, latex),
-          ),
+        key: ValueKey(block.id),
+        blockType: 'Math',
+        dragIndex: index,
+        onDelete: () => _deleteBlock(node.id, block.id),
+        child: MathBlockEditor(
+          latex: block.latex,
+          onChanged: (latex) => _updateBlockLatex(node.id, block.id, latex),
         ),
+      ),
       AudioBlock() => BlockEditorCard(
-          key: ValueKey(block.id),
-          blockType: 'Audio',
-          dragIndex: index,
-          onDelete: () => _deleteBlock(node.id, block.id),
-          child: AudioBlockEditor(
-            audioFile: block.audioFile,
-            durationMs: block.durationMs,
-          ),
+        key: ValueKey(block.id),
+        blockType: 'Audio',
+        dragIndex: index,
+        onDelete: () => _deleteBlock(node.id, block.id),
+        child: AudioBlockEditor(
+          audioFile: block.audioFile,
+          durationMs: block.durationMs,
         ),
+      ),
       WorkspaceRefBlock() => BlockEditorCard(
-          key: ValueKey(block.id),
-          blockType: 'Workspace',
-          dragIndex: index,
-          onDelete: () => _deleteBlock(node.id, block.id),
-          child: WorkspaceRefBlockDisplay(
-            sessionId: block.sessionId,
-            label: block.label,
-          ),
+        key: ValueKey(block.id),
+        blockType: 'Workspace',
+        dragIndex: index,
+        onDelete: () => _deleteBlock(node.id, block.id),
+        child: WorkspaceRefBlockDisplay(
+          sessionId: block.sessionId,
+          label: block.label,
         ),
+      ),
     };
   }
 
@@ -324,23 +342,30 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     switch (blockType) {
       case BlockType.text:
         notifier.addTextBlock(node.id);
+        break;
       case BlockType.heading:
         notifier.addHeadingBlock(node.id);
+        break;
       case BlockType.bulletList:
         notifier.addBulletListBlock(node.id);
+        break;
       case BlockType.code:
         notifier.addCodeBlock(node.id);
+        break;
       case BlockType.quote:
         notifier.addQuoteBlock(node.id);
+        break;
       case BlockType.sketch:
         notifier.addSketchBlock(node.id);
+        break;
       case BlockType.math:
         notifier.addMathBlock(node.id);
+        break;
       case BlockType.audio:
         await _recordAndAddAudio(node, notifier);
+        break;
       case BlockType.workspaceRef:
-        // TODO: Show session picker dialog
-        // For now, skip
+        await _addWorkspaceRefBlock(node);
         break;
     }
   }
@@ -357,48 +382,196 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         audioFile: result.filePath,
         durationMs: result.durationMs,
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio block added')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Audio block added')));
     }
+  }
+
+  Future<void> _addWorkspaceRefBlock(IdeaNode node) async {
+    // Load existing sessions (matrix workspace only for now)
+    final sessions = await ref.read(workspaceSessionsProvider.future);
+    final matrixSessions = sessions
+        .where((s) => s.workspaceType == 'matrix_calculator')
+        .toList();
+
+    if (!mounted) return;
+
+    final result = await showDialog<_WorkspaceSessionChoice?>(
+      context: context,
+      builder: (context) {
+        final labelController = TextEditingController();
+
+        return AlertDialog(
+          title: const Text('Workspace Session'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (matrixSessions.isNotEmpty) ...[
+                  Text(
+                    'Existing sessions',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 240),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: matrixSessions.length,
+                      itemBuilder: (context, index) {
+                        final session = matrixSessions[index];
+                        return ListTile(
+                          dense: true,
+                          leading: const Icon(Icons.widgets_outlined),
+                          title: Text(
+                            session.label.isNotEmpty
+                                ? session.label
+                                : session.preview,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            'Created ${session.createdAt.toLocal().toIso8601String().split('T').first}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          onTap: () => Navigator.pop(
+                            context,
+                            _WorkspaceSessionChoice(session.id, session.label),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const Divider(height: 24),
+                ],
+                Text(
+                  'Create new matrix workspace',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: labelController,
+                  decoration: const InputDecoration(
+                    labelText: 'Label (optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                final label = labelController.text.trim();
+                Navigator.pop(
+                  context,
+                  _WorkspaceSessionChoice('__create__', label),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    final workspaceNotifier = ref.read(
+      workspaceSessionsNotifierProvider.notifier,
+    );
+    final nodesNotifier = ref.read(nodesNotifierProvider.notifier);
+
+    // Create session if requested
+    String sessionId = result.sessionId;
+    String label = result.label;
+
+    if (result.sessionId == '__create__') {
+      final data = MatrixCalculatorData().toJson();
+      final session = await workspaceNotifier.createSession(
+        workspaceType: 'matrix_calculator',
+        data: data,
+        label: label,
+      );
+      sessionId = session.id;
+      label = session.label;
+    }
+
+    await nodesNotifier.addWorkspaceRefBlock(
+      node.id,
+      sessionId: sessionId,
+      label: label,
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Workspace reference added')));
   }
 
   void _updateBlockContent(String nodeId, String blockId, String content) {
     // Debounce saves
     _saveDebounce?.cancel();
     _saveDebounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(nodesNotifierProvider.notifier).updateBlockContent(nodeId, blockId, content);
+      ref
+          .read(nodesNotifierProvider.notifier)
+          .updateBlockContent(nodeId, blockId, content);
     });
   }
 
   void _updateHeadingLevel(String nodeId, String blockId, int level) {
-    ref.read(nodesNotifierProvider.notifier).updateHeadingLevel(nodeId, blockId, level);
+    ref
+        .read(nodesNotifierProvider.notifier)
+        .updateHeadingLevel(nodeId, blockId, level);
   }
 
-  void _updateBulletListItems(String nodeId, String blockId, List<String> items) {
+  void _updateBulletListItems(
+    String nodeId,
+    String blockId,
+    List<String> items,
+  ) {
     _saveDebounce?.cancel();
     _saveDebounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(nodesNotifierProvider.notifier).updateBulletListItems(nodeId, blockId, items);
+      ref
+          .read(nodesNotifierProvider.notifier)
+          .updateBulletListItems(nodeId, blockId, items);
     });
   }
 
   void _updateCodeLanguage(String nodeId, String blockId, String language) {
-    ref.read(nodesNotifierProvider.notifier).updateCodeLanguage(nodeId, blockId, language);
+    ref
+        .read(nodesNotifierProvider.notifier)
+        .updateCodeLanguage(nodeId, blockId, language);
   }
 
-  void _updateQuoteAttribution(String nodeId, String blockId, String attribution) {
+  void _updateQuoteAttribution(
+    String nodeId,
+    String blockId,
+    String attribution,
+  ) {
     _saveDebounce?.cancel();
     _saveDebounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(nodesNotifierProvider.notifier).updateQuoteAttribution(nodeId, blockId, attribution);
+      ref
+          .read(nodesNotifierProvider.notifier)
+          .updateQuoteAttribution(nodeId, blockId, attribution);
     });
   }
 
   void _updateBlockLatex(String nodeId, String blockId, String latex) {
     _saveDebounce?.cancel();
     _saveDebounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(nodesNotifierProvider.notifier).updateBlockLatex(nodeId, blockId, latex);
+      ref
+          .read(nodesNotifierProvider.notifier)
+          .updateBlockLatex(nodeId, blockId, latex);
     });
   }
 
@@ -411,7 +584,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     final blocks = List<ContentBlock>.from(node.blocks);
     final block = blocks.removeAt(oldIndex);
     blocks.insert(newIndex, block);
-    
+
     final updated = node.copyWith(blocks: blocks);
     ref.read(nodesNotifierProvider.notifier).updateNode(updated);
   }
@@ -421,7 +594,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Node?'),
-        content: const Text('This will permanently delete this node and all its content.'),
+        content: const Text(
+          'This will permanently delete this node and all its content.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -444,10 +619,11 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   Future<void> _showAddLinkDialog(IdeaNode node) async {
     final nodesAsync = ref.read(nodesNotifierProvider);
     final allNodes = nodesAsync.valueOrNull ?? [];
-    
+
     // Filter out current node and already linked nodes
     final availableNodes = allNodes.where((n) {
-      return n.id != node.id && !node.links.any((link) => link.targetNodeId == n.id);
+      return n.id != node.id &&
+          !node.links.any((link) => link.targetNodeId == n.id);
     }).toList();
 
     if (availableNodes.isEmpty) {
@@ -497,6 +673,8 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
     );
 
+    if (!mounted) return;
+
     if (selected != null) {
       // Optionally prompt for label
       final label = await showDialog<String>(
@@ -527,12 +705,12 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         },
       );
 
+      if (!mounted) return;
+
       if (label != null) {
-        await ref.read(nodesNotifierProvider.notifier).addLink(
-              node.id,
-              selected.id,
-              label: label,
-            );
+        await ref
+            .read(nodesNotifierProvider.notifier)
+            .addLink(node.id, selected.id, label: label);
       }
     }
   }
@@ -540,4 +718,17 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   void _removeLink(String nodeId, String targetNodeId) {
     ref.read(nodesNotifierProvider.notifier).removeLink(nodeId, targetNodeId);
   }
+
+  IdeaNode? _findNode(List<IdeaNode> nodes, String id) {
+    for (final node in nodes) {
+      if (node.id == id) return node;
+    }
+    return null;
+  }
+}
+
+class _WorkspaceSessionChoice {
+  const _WorkspaceSessionChoice(this.sessionId, this.label);
+  final String sessionId;
+  final String label;
 }

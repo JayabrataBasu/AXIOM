@@ -37,13 +37,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
       updatedAt: now,
       position: position,
-      blocks: [
-        ContentBlock.text(
-          id: _uuid.v4(),
-          content: '',
-          createdAt: now,
-        ),
-      ],
+      blocks: [ContentBlock.text(id: _uuid.v4(), content: '', createdAt: now)],
     );
 
     await _repository.create(node);
@@ -100,14 +94,16 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      blocks: [...node.blocks, newBlock],
-    );
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
     await updateNode(updated);
   }
 
   /// Add a heading block to a node.
-  Future<void> addHeadingBlock(String nodeId, {int level = 1, String content = ''}) async {
+  Future<void> addHeadingBlock(
+    String nodeId, {
+    int level = 1,
+    String content = '',
+  }) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -121,9 +117,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      blocks: [...node.blocks, newBlock],
-    );
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
     await updateNode(updated);
   }
 
@@ -141,14 +135,16 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      blocks: [...node.blocks, newBlock],
-    );
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
     await updateNode(updated);
   }
 
   /// Add a code block to a node.
-  Future<void> addCodeBlock(String nodeId, {String language = '', String content = ''}) async {
+  Future<void> addCodeBlock(
+    String nodeId, {
+    String language = '',
+    String content = '',
+  }) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -162,14 +158,16 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      blocks: [...node.blocks, newBlock],
-    );
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
     await updateNode(updated);
   }
 
   /// Add a quote block to a node.
-  Future<void> addQuoteBlock(String nodeId, {String content = '', String attribution = ''}) async {
+  Future<void> addQuoteBlock(
+    String nodeId, {
+    String content = '',
+    String attribution = '',
+  }) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -183,9 +181,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      blocks: [...node.blocks, newBlock],
-    );
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
     await updateNode(updated);
   }
 
@@ -225,7 +221,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     final node = currentNodes[nodeIndex];
     final updatedBlocks = node.blocks.map((block) {
       if (block.id != blockId) return block;
-      
+
       return switch (block) {
         TextBlock() => block.copyWith(content: content),
         HeadingBlock() => block.copyWith(content: content),
@@ -244,7 +240,11 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   }
 
   /// Update a heading block's level.
-  Future<void> updateHeadingLevel(String nodeId, String blockId, int level) async {
+  Future<void> updateHeadingLevel(
+    String nodeId,
+    String blockId,
+    int level,
+  ) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -262,7 +262,11 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   }
 
   /// Update a bullet list block's items.
-  Future<void> updateBulletListItems(String nodeId, String blockId, List<String> items) async {
+  Future<void> updateBulletListItems(
+    String nodeId,
+    String blockId,
+    List<String> items,
+  ) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -279,8 +283,35 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     await updateNode(updated);
   }
 
+  /// Add a workspace reference block pointing to a session.
+  Future<void> addWorkspaceRefBlock(
+    String nodeId, {
+    required String sessionId,
+    String label = '',
+  }) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final now = DateTime.now();
+    final newBlock = ContentBlock.workspaceRef(
+      id: _uuid.v4(),
+      sessionId: sessionId,
+      label: label,
+      createdAt: now,
+    );
+
+    final node = currentNodes[nodeIndex];
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
+    await updateNode(updated);
+  }
+
   /// Update a code block's language.
-  Future<void> updateCodeLanguage(String nodeId, String blockId, String language) async {
+  Future<void> updateCodeLanguage(
+    String nodeId,
+    String blockId,
+    String language,
+  ) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -298,7 +329,11 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   }
 
   /// Update a quote block's attribution.
-  Future<void> updateQuoteAttribution(String nodeId, String blockId, String attribution) async {
+  Future<void> updateQuoteAttribution(
+    String nodeId,
+    String blockId,
+    String attribution,
+  ) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -329,14 +364,16 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      blocks: [...node.blocks, newBlock],
-    );
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
     await updateNode(updated);
   }
 
   /// Update a math block's LaTeX content.
-  Future<void> updateBlockLatex(String nodeId, String blockId, String latex) async {
+  Future<void> updateBlockLatex(
+    String nodeId,
+    String blockId,
+    String latex,
+  ) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -354,7 +391,11 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   }
 
   /// Add an audio block to a node (Stage 6).
-  Future<void> addAudioBlock(String nodeId, {required String audioFile, int durationMs = 0}) async {
+  Future<void> addAudioBlock(
+    String nodeId, {
+    required String audioFile,
+    int durationMs = 0,
+  }) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -368,9 +409,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      blocks: [...node.blocks, newBlock],
-    );
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
     await updateNode(updated);
   }
 
@@ -382,7 +421,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
 
     final node = currentNodes[nodeIndex];
     final block = node.blocks.firstWhere((b) => b.id == blockId);
-    
+
     switch (block) {
       case SketchBlock(:final strokeFile, :final thumbnailFile):
         await _sketchService.deleteSketchAssets(
@@ -405,7 +444,11 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   }
 
   /// Add a link to another node.
-  Future<void> addLink(String nodeId, String targetNodeId, {String label = ''}) async {
+  Future<void> addLink(
+    String nodeId,
+    String targetNodeId, {
+    String label = '',
+  }) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -418,9 +461,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
       createdAt: now,
     );
 
-    final updated = node.copyWith(
-      links: [...node.links, newLink],
-    );
+    final updated = node.copyWith(links: [...node.links, newLink]);
     await updateNode(updated);
   }
 
@@ -432,13 +473,19 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
 
     final node = currentNodes[nodeIndex];
     final updated = node.copyWith(
-      links: node.links.where((link) => link.targetNodeId != targetNodeId).toList(),
+      links: node.links
+          .where((link) => link.targetNodeId != targetNodeId)
+          .toList(),
     );
     await updateNode(updated);
   }
 
   /// Update a link's label.
-  Future<void> updateLinkLabel(String nodeId, String targetNodeId, String label) async {
+  Future<void> updateLinkLabel(
+    String nodeId,
+    String targetNodeId,
+    String label,
+  ) async {
     final currentNodes = state.valueOrNull ?? [];
     final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
     if (nodeIndex == -1) return;
@@ -475,5 +522,5 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
 /// Provider for the NodesNotifier.
 final nodesNotifierProvider =
     AsyncNotifierProvider<NodesNotifier, List<IdeaNode>>(() {
-  return NodesNotifier();
-});
+      return NodesNotifier();
+    });

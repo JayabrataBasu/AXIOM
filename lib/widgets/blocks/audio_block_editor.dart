@@ -23,7 +23,6 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _loadFailed = false;
-  PlayerState? _playerState;
   String _statusText = 'Loading...';
 
   @override
@@ -45,7 +44,6 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
         if (!mounted) return;
         setState(() {
           _isPlaying = state == PlayerState.playing;
-          _playerState = state;
           _statusText = _getStatusText(state);
         });
       });
