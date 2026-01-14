@@ -63,7 +63,7 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
