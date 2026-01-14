@@ -68,9 +68,10 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
   /// Remove a stroke at the given index.
   Future<void> removeStrokeAt(int index) async {
     try {
-      await state.whenData((sketch) async {
+      state.whenData((sketch) async {
         if (index >= 0 && index < sketch.strokes.length) {
-          final newStrokes = List<CanvasSketchStroke>.from(sketch.strokes)..removeAt(index);
+          final newStrokes = List<CanvasSketchStroke>.from(sketch.strokes)
+            ..removeAt(index);
           final newSketch = CanvasSketch(
             id: sketch.id,
             strokes: newStrokes,
@@ -95,7 +96,7 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
   /// Replace the entire strokes list for the current sketch.
   Future<void> setCanvasStrokes(List<CanvasSketchStroke> strokes) async {
     try {
-      await state.whenData((sketch) async {
+      state.whenData((sketch) async {
         final newSketch = CanvasSketch(
           id: sketch.id,
           strokes: strokes,
@@ -114,7 +115,9 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
 
 /// StateNotifier provider for canvas sketch operations.
 final canvasSketchNotifierProvider =
-    StateNotifierProvider<CanvasSketchNotifier, AsyncValue<CanvasSketch>>((ref) {
-  final service = ref.watch(canvasSketchServiceProvider);
-  return CanvasSketchNotifier(service);
-});
+    StateNotifierProvider<CanvasSketchNotifier, AsyncValue<CanvasSketch>>((
+      ref,
+    ) {
+      final service = ref.watch(canvasSketchServiceProvider);
+      return CanvasSketchNotifier(service);
+    });

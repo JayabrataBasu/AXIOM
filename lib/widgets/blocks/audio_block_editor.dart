@@ -23,6 +23,8 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _loadFailed = false;
+  PlayerState? _playerState;
+  String _statusText = 'Loading...';
 
   @override
   void initState() {
@@ -43,6 +45,8 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
         if (!mounted) return;
         setState(() {
           _isPlaying = state == PlayerState.playing;
+          _playerState = state;
+          _statusText = _getStatusText(state);
         });
       });
 
@@ -61,9 +65,9 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
         setState(() {});
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error loading audio: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error loading audio: $e')));
         });
       }
     }
@@ -79,8 +83,8 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final duration = _duration == Duration.zero
-      ? Duration(milliseconds: widget.durationMs)
-      : _duration;
+        ? Duration(milliseconds: widget.durationMs)
+        : _duration;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -114,16 +118,37 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
             stream: _player.onPositionChanged,
             builder: (context, snapshot) {
               final position = snapshot.data ?? _position;
-              final clamped = position.inMilliseconds > duration.inMilliseconds && duration.inMilliseconds > 0
+              final clamped =
+                  position.inMilliseconds > duration.inMilliseconds &&
+                      duration.inMilliseconds > 0
                   ? duration
                   : position;
+              final progress = duration.inMilliseconds > 0
+                  ? clamped.inMilliseconds / duration.inMilliseconds
+                  : 0.0;
               return Column(
                 children: [
+                  // Status text
+                  Text(
+                    _statusText,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: _loadFailed
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Animated progress bar
                   LinearProgressIndicator(
-                    value: duration.inMilliseconds > 0
-                        ? clamped.inMilliseconds / duration.inMilliseconds
-                        : 0,
+                    value: progress,
                     minHeight: 4,
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    valueColor: AlwaysStoppedAnimation(
+                      _loadFailed
+                          ? theme.colorScheme.error
+                          : theme.colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -157,9 +182,9 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Playback error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Playback error: $e')));
       }
     }
   }
@@ -168,5 +193,20 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  String _getStatusText(PlayerState state) {
+    switch (state) {
+      case PlayerState.playing:
+        return 'Playing...';
+      case PlayerState.paused:
+        return 'Paused';
+      case PlayerState.stopped:
+        return 'Stopped';
+      case PlayerState.disposed:
+        return 'Disposed';
+      case PlayerState.completed:
+        return 'Done';
+    }
   }
 }

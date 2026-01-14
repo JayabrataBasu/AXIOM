@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
@@ -15,22 +16,24 @@ Future<void> main() async {
   // Initialize canvas sketch service
   await CanvasSketchService.instance.initialize();
 
-  // Configure window for desktop platforms
-  await windowManager.ensureInitialized();
+  // Configure window for desktop platforms only
+  if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+    await windowManager.ensureInitialized();
 
-  const windowOptions = WindowOptions(
-    size: Size(1400, 900),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.normal,
-    title: 'Axiom',
-  );
+    const windowOptions = WindowOptions(
+      size: Size(1400, 900),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.normal,
+      title: 'Axiom',
+    );
 
-  await windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
 
   runApp(
     const ProviderScope(

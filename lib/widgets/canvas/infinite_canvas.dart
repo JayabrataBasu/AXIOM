@@ -153,7 +153,9 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
         maxScale: widget.maxScale,
         constrained: false,
         panEnabled: widget.panEnabled,
-        scaleEnabled: true,
+        // Disable scale gestures to let canvas handle double-tap for node creation
+        scaleEnabled: false,
+        trackpadScrollCausesScale: false,
         onInteractionEnd: (details) {
           widget.onScaleChanged?.call(currentScale);
         },

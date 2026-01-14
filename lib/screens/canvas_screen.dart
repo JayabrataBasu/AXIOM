@@ -116,6 +116,8 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 
   Widget _buildToolbar(BuildContext context, ThemeData theme) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -130,14 +132,15 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         bottom: false,
         child: Row(
           children: [
-            // Logo/Title
-            Text(
-              'Axiom',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+            // Logo/Title (hide on very small screens)
+            if (!isSmallScreen)
+              Text(
+                'Axiom',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const Spacer(),
+            if (!isSmallScreen) const Spacer(),
             // Sketch mode toggle
             IconButton(
               icon: Icon(_sketchMode ? Icons.brush : Icons.brush_outlined),
@@ -147,7 +150,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 setState(() => _sketchMode = !_sketchMode);
               },
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             // Center on origin
             IconButton(
               icon: const Icon(Icons.center_focus_strong),
@@ -173,8 +176,22 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 _canvasKey.currentState?.setZoom(newZoom);
               },
             ),
-            const SizedBox(width: 8),
-            // Debug menu (temporary)
+            const SizedBox(width: 4),
+            // Create node button - icon only on small screens
+            if (isSmallScreen)
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                tooltip: 'Create new node',
+                onPressed: _createNewNode,
+              )
+            else
+              ElevatedButton.icon(
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Create Node'),
+                onPressed: _createNewNode,
+              ),
+            const Spacer(),
+            // More options menu
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
               tooltip: 'More options',
@@ -230,7 +247,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Text(
-        'Right-click to create • Drag to move • Double-click node to edit',
+        'Click "Create Node" or double-tap • Drag to move • Double-click node to edit',
         style: theme.textTheme.labelSmall?.copyWith(
           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
@@ -274,6 +291,30 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           nodeId,
           newPosition,
         );
+  }
+
+  /// Create a new node at the canvas origin.
+  Future<void> _createNewNode() async {
+    // Create node at the center of the current view
+    final viewportCenter = _canvasKey.currentState?.viewportCenter ?? Offset.zero;
+    final position = Position(x: viewportCenter.dx, y: viewportCenter.dy);
+    
+    final node = await ref.read(nodesNotifierProvider.notifier).createNode(
+      position: position,
+    );
+    
+    // Select the new node
+    ref.read(canvasViewProvider.notifier).selectNode(node.id);
+    
+    // Show a snackbar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('New node created'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _onCanvasTap() {
