@@ -154,6 +154,17 @@ class FileService {
     return p.join(nodesDir.path, '$nodeId.json');
   }
 
+  /// Get the file path for a node in a specific workspace
+  Future<String> workspaceNodeFilePath(String workspaceId, String nodeId) async {
+    final workspaceDir = await getSubdirectory('workspaces/$workspaceId');
+    return p.join(workspaceDir.path, '$nodeId.json');
+  }
+
+  /// Get nodes directory for a specific workspace
+  Future<Directory> workspaceNodesDirectory(String workspaceId) async {
+    return getSubdirectory('workspaces/$workspaceId/nodes');
+  }
+
   /// Get the file path for a session by ID.
   Future<String> sessionFilePath(String sessionId) async {
     final sessionsDir = await sessionsDirectory;
@@ -164,5 +175,20 @@ class FileService {
   Future<String> audioFilePath(String blockId) async {
     final audioDir = await audioDirectory;
     return p.join(audioDir.path, '$blockId.m4a');
+  }
+
+  /// Get all workspace IDs from the workspaces directory
+  Future<List<String>> getAllWorkspaceIds() async {
+    final workspacesDir = await getSubdirectory('workspaces');
+    
+    if (!await workspacesDir.exists()) {
+      return [];
+    }
+
+    final entities = await workspacesDir.list().toList();
+    return entities
+        .whereType<Directory>()
+        .map((dir) => p.basename(dir.path))
+        .toList();
   }
 }

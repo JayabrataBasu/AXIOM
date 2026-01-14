@@ -118,6 +118,21 @@ class ContentBlockListConverter
                 'label': label,
                 'createdAt': createdAt.toIso8601String(),
               },
+            ToolBlock(
+              :final id,
+              :final toolType,
+              :final inputData,
+              :final outputData,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'tool',
+                'id': id,
+                'toolType': toolType,
+                'inputData': inputData,
+                'outputData': outputData,
+                'createdAt': createdAt.toIso8601String(),
+              },
           },
         )
         .toList();

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
+import '../models/node_template.dart';
 import '../repositories/repositories.dart';
 
 /// Provider for the WorkspaceRepository singleton.
@@ -30,16 +31,25 @@ class WorkspaceSessionsNotifier extends AsyncNotifier<List<WorkspaceSession>> {
   /// Create a new workspace session.
   Future<WorkspaceSession> createSession({
     required String workspaceType,
-    required Map<String, dynamic> data,
     String label = '',
+    Map<String, dynamic>? data,
+    NodeTemplate? template,
   }) async {
     final now = DateTime.now();
+    final sessionData = data ?? {};
+    
+    // If template is provided, initialize with template blocks
+    if (template != null) {
+      sessionData['templateName'] = template.name;
+      sessionData['initialBlockCount'] = template.blocks().length;
+    }
+    
     final session = WorkspaceSession(
       id: _uuid.v4(),
       workspaceType: workspaceType,
       createdAt: now,
       updatedAt: now,
-      data: data,
+      data: sessionData,
       label: label,
     );
 

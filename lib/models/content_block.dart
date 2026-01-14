@@ -88,6 +88,16 @@ sealed class ContentBlock with _$ContentBlock {
     required DateTime createdAt,
   }) = WorkspaceRefBlock;
 
+  /// A tool block for embedded calculations/utilities (Stage 7+).
+  @FreezedUnionValue('tool')
+  const factory ContentBlock.tool({
+    required String id,
+    required String toolType, // 'matrix_calculator', 'pdf_viewer', etc.
+    required Map<String, dynamic> inputData, // Tool-specific inputs
+    required Map<String, dynamic> outputData, // Tool-specific outputs (read-only)
+    required DateTime createdAt,
+  }) = ToolBlock;
+
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String?;
 

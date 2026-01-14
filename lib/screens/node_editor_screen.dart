@@ -327,6 +327,13 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           label: block.label,
         ),
       ),
+      ToolBlock() => BlockEditorCard(
+        key: ValueKey(block.id),
+        blockType: 'Tool',
+        dragIndex: index,
+        onDelete: () => _deleteBlock(node.id, block.id),
+        child: const Text('Tool Block (Coming Soon)'),
+      ),
     };
   }
 

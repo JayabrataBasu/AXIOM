@@ -6,15 +6,16 @@ import 'package:window_manager/window_manager.dart';
 import 'screens/screens.dart';
 import 'services/settings_service.dart';
 import 'services/canvas_sketch_service.dart';
+import 'services/preferences_service.dart';
+import 'providers/workspace_state_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize settings service
+  // Initialize services
   await SettingsService.instance.initialize();
-
-  // Initialize canvas sketch service
   await CanvasSketchService.instance.initialize();
+  await PreferencesService.instance.init();
 
   // Configure window for desktop platforms only
   if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
@@ -39,11 +40,14 @@ Future<void> main() async {
 }
 
 /// Root application widget for Axiom.
-class AxiomApp extends StatelessWidget {
+class AxiomApp extends ConsumerWidget {
   const AxiomApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch if user is onboarding (no active workspace)
+    final isOnboarding = ref.watch(isOnboardingProvider);
+
     return MaterialApp(
       title: 'Axiom',
       debugShowCheckedModeBanner: false,
@@ -63,8 +67,8 @@ class AxiomApp extends StatelessWidget {
         useMaterial3: true,
         appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
-      // Stage 2: Canvas is now the primary thinking surface
-      home: const CanvasScreen(),
+      // Show welcome screen on first launch, else show canvas
+      home: isOnboarding ? const WelcomeScreen() : const CanvasScreen(),
     );
   }
 }

@@ -68,6 +68,14 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -112,6 +120,14 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -156,6 +172,14 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -169,6 +193,7 @@ mixin _$ContentBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -181,6 +206,7 @@ mixin _$ContentBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -193,6 +219,7 @@ mixin _$ContentBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 
@@ -387,6 +414,14 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return text(id, content, createdAt);
   }
@@ -435,6 +470,14 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return text?.call(id, content, createdAt);
   }
@@ -483,6 +526,14 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -503,6 +554,7 @@ class _$TextBlockImpl extends TextBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return text(this);
   }
@@ -519,6 +571,7 @@ class _$TextBlockImpl extends TextBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return text?.call(this);
   }
@@ -535,6 +588,7 @@ class _$TextBlockImpl extends TextBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -719,6 +773,14 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return heading(id, content, level, createdAt);
   }
@@ -767,6 +829,14 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return heading?.call(id, content, level, createdAt);
   }
@@ -815,6 +885,14 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -835,6 +913,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return heading(this);
   }
@@ -851,6 +930,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return heading?.call(this);
   }
@@ -867,6 +947,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -1058,6 +1139,14 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return bulletList(id, items, createdAt);
   }
@@ -1106,6 +1195,14 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return bulletList?.call(id, items, createdAt);
   }
@@ -1154,6 +1251,14 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -1174,6 +1279,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return bulletList(this);
   }
@@ -1190,6 +1296,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return bulletList?.call(this);
   }
@@ -1206,6 +1313,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -1392,6 +1500,14 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return code(id, content, language, createdAt);
   }
@@ -1440,6 +1556,14 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return code?.call(id, content, language, createdAt);
   }
@@ -1488,6 +1612,14 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1508,6 +1640,7 @@ class _$CodeBlockImpl extends CodeBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return code(this);
   }
@@ -1524,6 +1657,7 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return code?.call(this);
   }
@@ -1540,6 +1674,7 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1733,6 +1868,14 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return quote(id, content, attribution, createdAt);
   }
@@ -1781,6 +1924,14 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return quote?.call(id, content, attribution, createdAt);
   }
@@ -1829,6 +1980,14 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -1849,6 +2008,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return quote(this);
   }
@@ -1865,6 +2025,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return quote?.call(this);
   }
@@ -1881,6 +2042,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -2074,6 +2236,14 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return sketch(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -2122,6 +2292,14 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return sketch?.call(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -2170,6 +2348,14 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -2190,6 +2376,7 @@ class _$SketchBlockImpl extends SketchBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return sketch(this);
   }
@@ -2206,6 +2393,7 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return sketch?.call(this);
   }
@@ -2222,6 +2410,7 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -2398,6 +2587,14 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return math(id, latex, createdAt);
   }
@@ -2446,6 +2643,14 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return math?.call(id, latex, createdAt);
   }
@@ -2494,6 +2699,14 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (math != null) {
@@ -2514,6 +2727,7 @@ class _$MathBlockImpl extends MathBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return math(this);
   }
@@ -2530,6 +2744,7 @@ class _$MathBlockImpl extends MathBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return math?.call(this);
   }
@@ -2546,6 +2761,7 @@ class _$MathBlockImpl extends MathBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (math != null) {
@@ -2732,6 +2948,14 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return audio(id, audioFile, durationMs, createdAt);
   }
@@ -2780,6 +3004,14 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return audio?.call(id, audioFile, durationMs, createdAt);
   }
@@ -2828,6 +3060,14 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (audio != null) {
@@ -2848,6 +3088,7 @@ class _$AudioBlockImpl extends AudioBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return audio(this);
   }
@@ -2864,6 +3105,7 @@ class _$AudioBlockImpl extends AudioBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return audio?.call(this);
   }
@@ -2880,6 +3122,7 @@ class _$AudioBlockImpl extends AudioBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (audio != null) {
@@ -3069,6 +3312,14 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
       DateTime createdAt,
     )
     workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
   }) {
     return workspaceRef(id, sessionId, label, createdAt);
   }
@@ -3117,6 +3368,14 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
   }) {
     return workspaceRef?.call(id, sessionId, label, createdAt);
   }
@@ -3165,6 +3424,14 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
       DateTime createdAt,
     )?
     workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
     required TResult orElse(),
   }) {
     if (workspaceRef != null) {
@@ -3185,6 +3452,7 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
     required TResult Function(MathBlock value) math,
     required TResult Function(AudioBlock value) audio,
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
   }) {
     return workspaceRef(this);
   }
@@ -3201,6 +3469,7 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
     TResult? Function(MathBlock value)? math,
     TResult? Function(AudioBlock value)? audio,
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
   }) {
     return workspaceRef?.call(this);
   }
@@ -3217,6 +3486,7 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
     TResult Function(MathBlock value)? math,
     TResult Function(AudioBlock value)? audio,
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
     required TResult orElse(),
   }) {
     if (workspaceRef != null) {
@@ -3247,5 +3517,414 @@ abstract class WorkspaceRefBlock extends ContentBlock {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$WorkspaceRefBlockImplCopyWith<_$WorkspaceRefBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ToolBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$ToolBlockImplCopyWith(
+    _$ToolBlockImpl value,
+    $Res Function(_$ToolBlockImpl) then,
+  ) = __$$ToolBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String id,
+    String toolType,
+    Map<String, dynamic> inputData,
+    Map<String, dynamic> outputData,
+    DateTime createdAt,
+  });
+}
+
+/// @nodoc
+class __$$ToolBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$ToolBlockImpl>
+    implements _$$ToolBlockImplCopyWith<$Res> {
+  __$$ToolBlockImplCopyWithImpl(
+    _$ToolBlockImpl _value,
+    $Res Function(_$ToolBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? toolType = null,
+    Object? inputData = null,
+    Object? outputData = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$ToolBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        toolType: null == toolType
+            ? _value.toolType
+            : toolType // ignore: cast_nullable_to_non_nullable
+                  as String,
+        inputData: null == inputData
+            ? _value._inputData
+            : inputData // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>,
+        outputData: null == outputData
+            ? _value._outputData
+            : outputData // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$ToolBlockImpl extends ToolBlock {
+  const _$ToolBlockImpl({
+    required this.id,
+    required this.toolType,
+    required final Map<String, dynamic> inputData,
+    required final Map<String, dynamic> outputData,
+    required this.createdAt,
+  }) : _inputData = inputData,
+       _outputData = outputData,
+       super._();
+
+  @override
+  final String id;
+  @override
+  final String toolType;
+  // 'matrix_calculator', 'pdf_viewer', etc.
+  final Map<String, dynamic> _inputData;
+  // 'matrix_calculator', 'pdf_viewer', etc.
+  @override
+  Map<String, dynamic> get inputData {
+    if (_inputData is EqualUnmodifiableMapView) return _inputData;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_inputData);
+  }
+
+  // Tool-specific inputs
+  final Map<String, dynamic> _outputData;
+  // Tool-specific inputs
+  @override
+  Map<String, dynamic> get outputData {
+    if (_outputData is EqualUnmodifiableMapView) return _outputData;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_outputData);
+  }
+
+  // Tool-specific outputs (read-only)
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'ContentBlock.tool(id: $id, toolType: $toolType, inputData: $inputData, outputData: $outputData, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ToolBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.toolType, toolType) ||
+                other.toolType == toolType) &&
+            const DeepCollectionEquality().equals(
+              other._inputData,
+              _inputData,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._outputData,
+              _outputData,
+            ) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    toolType,
+    const DeepCollectionEquality().hash(_inputData),
+    const DeepCollectionEquality().hash(_outputData),
+    createdAt,
+  );
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ToolBlockImplCopyWith<_$ToolBlockImpl> get copyWith =>
+      __$$ToolBlockImplCopyWithImpl<_$ToolBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
+  }) {
+    return tool(id, toolType, inputData, outputData, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
+  }) {
+    return tool?.call(id, toolType, inputData, outputData, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
+    required TResult orElse(),
+  }) {
+    if (tool != null) {
+      return tool(id, toolType, inputData, outputData, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
+  }) {
+    return tool(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
+  }) {
+    return tool?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
+    required TResult orElse(),
+  }) {
+    if (tool != null) {
+      return tool(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ToolBlock extends ContentBlock {
+  const factory ToolBlock({
+    required final String id,
+    required final String toolType,
+    required final Map<String, dynamic> inputData,
+    required final Map<String, dynamic> outputData,
+    required final DateTime createdAt,
+  }) = _$ToolBlockImpl;
+  const ToolBlock._() : super._();
+
+  @override
+  String get id;
+  String get toolType; // 'matrix_calculator', 'pdf_viewer', etc.
+  Map<String, dynamic> get inputData; // Tool-specific inputs
+  Map<String, dynamic> get outputData; // Tool-specific outputs (read-only)
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ToolBlockImplCopyWith<_$ToolBlockImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

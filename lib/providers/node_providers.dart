@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
 import '../models/node_template.dart';
+import '../providers/workspace_state_provider.dart';
 import '../repositories/repositories.dart';
 import '../services/audio_service.dart';
 import '../services/sketch_service.dart';
@@ -11,9 +12,17 @@ final nodeRepositoryProvider = Provider<NodeRepository>((ref) {
   return NodeRepository();
 });
 
-/// Provider for loading all nodes.
+/// Provider for loading all nodes in the active workspace.
 final nodesProvider = FutureProvider<List<IdeaNode>>((ref) async {
+  final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
+  
+  // If no active workspace, return empty list
+  if (activeWorkspaceId == null) {
+    return [];
+  }
+
   final repository = ref.watch(nodeRepositoryProvider);
+  // TODO: Update repository to support workspace-scoped queries
   return repository.getAll();
 });
 
@@ -244,6 +253,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         MathBlock() => block, // Use updateBlockLatex instead
         AudioBlock() => block, // Audio is read-only after creation
         WorkspaceRefBlock() => block, // Read-only workspace references
+        ToolBlock() => block, // Tool results are computed, use updateToolBlockOutput
       };
     }).toList();
 
