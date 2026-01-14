@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
+import '../models/node_template.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
+import '../widgets/dialogs/create_node_dialog.dart';
 import 'node_editor_screen.dart';
+import 'workspace_sessions_screen.dart';
 
 /// The main canvas screen - the primary thinking surface.
 class CanvasScreen extends ConsumerStatefulWidget {
@@ -198,9 +201,25 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                       builder: (context) => const _DebugScreenWrapper(),
                     ),
                   );
+                } else if (value == 'workspaces') {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const WorkspaceSessionsScreen(),
+                    ),
+                  );
                 }
               },
               itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'workspaces',
+                  child: Row(
+                    children: [
+                      Icon(Icons.workspaces),
+                      SizedBox(width: 8),
+                      Text('Workspace Sessions'),
+                    ],
+                  ),
+                ),
                 const PopupMenuItem(
                   value: 'debug',
                   child: Row(
@@ -290,6 +309,14 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
   /// Create a new node at the canvas origin.
   Future<void> _createNewNode() async {
+    // Show create node dialog
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const CreateNodeDialog(),
+    );
+
+    if (result == null || !mounted) return;
+
     // Create node at the center of the current view
     final viewportCenter =
         _canvasKey.currentState?.viewportCenter ?? Offset.zero;
@@ -297,7 +324,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
     final node = await ref
         .read(nodesNotifierProvider.notifier)
-        .createNode(position: position);
+        .createNode(
+          position: position,
+          name: result['name'] as String?,
+          template: result['template'] as NodeTemplate?,
+        );
 
     // Select the new node
     ref.read(canvasViewProvider.notifier).selectNode(node.id);
@@ -305,9 +336,13 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     // Show a snackbar
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('New node created'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(
+            result['name'] != null && (result['name'] as String).isNotEmpty
+                ? 'Created node: ${result['name']}'
+                : 'New node created',
+          ),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -318,11 +353,23 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 
   void _onCanvasDoubleTap(Offset canvasPosition) async {
+    // Show create node dialog
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const CreateNodeDialog(),
+    );
+
+    if (result == null || !mounted) return;
+
     // Create new node at the tapped position
     final position = Position(x: canvasPosition.dx, y: canvasPosition.dy);
     final node = await ref
         .read(nodesNotifierProvider.notifier)
-        .createNode(position: position);
+        .createNode(
+          position: position,
+          name: result['name'] as String?,
+          template: result['template'] as NodeTemplate?,
+        );
     // Select the new node
     ref.read(canvasViewProvider.notifier).selectNode(node.id);
   }

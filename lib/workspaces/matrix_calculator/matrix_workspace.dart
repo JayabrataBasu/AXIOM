@@ -686,8 +686,9 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
     final aCols = a[0].length;
     final bRows = b.length;
     final bCols = b[0].length;
-    if (aCols != bRows)
+    if (aCols != bRows) {
       throw 'Dimension mismatch (${aRows}x$aCols) · (${bRows}x$bCols)';
+    }
 
     final result = List.generate(aRows, (_) => List.filled(bCols, 0.0));
     for (var i = 0; i < aRows; i++) {

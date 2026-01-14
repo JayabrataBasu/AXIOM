@@ -19,68 +19,108 @@ class ContentBlockListConverter
 
   @override
   List<dynamic> toJson(List<ContentBlock> object) {
-    return object.map((b) => switch (b) {
-      TextBlock(:final id, :final content, :final createdAt) => {
-        'type': 'text',
-        'id': id,
-        'content': content,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      HeadingBlock(:final id, :final content, :final level, :final createdAt) => {
-        'type': 'heading',
-        'id': id,
-        'content': content,
-        'level': level,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      BulletListBlock(:final id, :final items, :final createdAt) => {
-        'type': 'bulletList',
-        'id': id,
-        'items': items,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      CodeBlock(:final id, :final content, :final language, :final createdAt) => {
-        'type': 'code',
-        'id': id,
-        'content': content,
-        'language': language,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      QuoteBlock(:final id, :final content, :final attribution, :final createdAt) => {
-        'type': 'quote',
-        'id': id,
-        'content': content,
-        'attribution': attribution,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      SketchBlock(:final id, :final strokeFile, :final thumbnailFile, :final createdAt) => {
-        'type': 'sketch',
-        'id': id,
-        'strokeFile': strokeFile,
-        'thumbnailFile': thumbnailFile,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      MathBlock(:final id, :final latex, :final createdAt) => {
-        'type': 'math',
-        'id': id,
-        'latex': latex,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      AudioBlock(:final id, :final audioFile, :final durationMs, :final createdAt) => {
-        'type': 'audio',
-        'id': id,
-        'audioFile': audioFile,
-        'durationMs': durationMs,
-        'createdAt': createdAt.toIso8601String(),
-      },
-      WorkspaceRefBlock(:final id, :final sessionId, :final label, :final createdAt) => {
-        'type': 'workspace_ref',
-        'id': id,
-        'sessionId': sessionId,
-        'label': label,
-        'createdAt': createdAt.toIso8601String(),
-      },
-    }).toList();
+    return object
+        .map(
+          (b) => switch (b) {
+            TextBlock(:final id, :final content, :final createdAt) => {
+              'type': 'text',
+              'id': id,
+              'content': content,
+              'createdAt': createdAt.toIso8601String(),
+            },
+            HeadingBlock(
+              :final id,
+              :final content,
+              :final level,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'heading',
+                'id': id,
+                'content': content,
+                'level': level,
+                'createdAt': createdAt.toIso8601String(),
+              },
+            BulletListBlock(:final id, :final items, :final createdAt) => {
+              'type': 'bulletList',
+              'id': id,
+              'items': items,
+              'createdAt': createdAt.toIso8601String(),
+            },
+            CodeBlock(
+              :final id,
+              :final content,
+              :final language,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'code',
+                'id': id,
+                'content': content,
+                'language': language,
+                'createdAt': createdAt.toIso8601String(),
+              },
+            QuoteBlock(
+              :final id,
+              :final content,
+              :final attribution,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'quote',
+                'id': id,
+                'content': content,
+                'attribution': attribution,
+                'createdAt': createdAt.toIso8601String(),
+              },
+            SketchBlock(
+              :final id,
+              :final strokeFile,
+              :final thumbnailFile,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'sketch',
+                'id': id,
+                'strokeFile': strokeFile,
+                'thumbnailFile': thumbnailFile,
+                'createdAt': createdAt.toIso8601String(),
+              },
+            MathBlock(:final id, :final latex, :final createdAt) => {
+              'type': 'math',
+              'id': id,
+              'latex': latex,
+              'createdAt': createdAt.toIso8601String(),
+            },
+            AudioBlock(
+              :final id,
+              :final audioFile,
+              :final durationMs,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'audio',
+                'id': id,
+                'audioFile': audioFile,
+                'durationMs': durationMs,
+                'createdAt': createdAt.toIso8601String(),
+              },
+            WorkspaceRefBlock(
+              :final id,
+              :final sessionId,
+              :final label,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'workspace_ref',
+                'id': id,
+                'sessionId': sessionId,
+                'label': label,
+                'createdAt': createdAt.toIso8601String(),
+              },
+          },
+        )
+        .toList();
   }
 }
 
@@ -95,6 +135,9 @@ class IdeaNode with _$IdeaNode {
     /// Unique identifier for this node
     required String id,
 
+    /// Optional name/title for the node
+    @Default('') String name,
+
     /// Timestamp when this node was created
     required DateTime createdAt,
 
@@ -105,9 +148,7 @@ class IdeaNode with _$IdeaNode {
     @Default(Position()) Position position,
 
     /// Ordered list of content blocks
-    @ContentBlockListConverter()
-    @Default([])
-    List<ContentBlock> blocks,
+    @ContentBlockListConverter() @Default([]) List<ContentBlock> blocks,
 
     /// Links to other IdeaNodes (Stage 9)
     @Default([]) List<NodeLink> links,
@@ -125,7 +166,8 @@ class IdeaNode with _$IdeaNode {
         BulletListBlock(:final items) when items.isNotEmpty => items.first,
         CodeBlock(:final content) when content.isNotEmpty => content,
         QuoteBlock(:final content) when content.isNotEmpty => '"$content"',
-        _ when block.runtimeType.toString().contains('SketchBlock') => '[Sketch]',
+        _ when block.runtimeType.toString().contains('SketchBlock') =>
+          '[Sketch]',
         _ => null,
       };
       if (text != null) {

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
+import '../models/node_template.dart';
 import '../repositories/repositories.dart';
 import '../services/audio_service.dart';
 import '../services/sketch_service.dart';
@@ -30,14 +31,25 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   }
 
   /// Create a new node at the specified position.
-  Future<IdeaNode> createNode({Position position = const Position()}) async {
+  Future<IdeaNode> createNode({
+    Position position = const Position(),
+    String? name,
+    NodeTemplate? template,
+  }) async {
     final now = DateTime.now();
+
+    // Generate blocks from template or create default text block
+    final blocks = template != null
+        ? template.createBlocks(_uuid, now)
+        : [ContentBlock.text(id: _uuid.v4(), content: '', createdAt: now)];
+
     final node = IdeaNode(
       id: _uuid.v4(),
+      name: name ?? '',
       createdAt: now,
       updatedAt: now,
       position: position,
-      blocks: [ContentBlock.text(id: _uuid.v4(), content: '', createdAt: now)],
+      blocks: blocks,
     );
 
     await _repository.create(node);

@@ -9,7 +9,9 @@ final workspaceRepositoryProvider = Provider<WorkspaceRepository>((ref) {
 });
 
 /// Provider for loading all workspace sessions.
-final workspaceSessionsProvider = FutureProvider<List<WorkspaceSession>>((ref) async {
+final workspaceSessionsProvider = FutureProvider<List<WorkspaceSession>>((
+  ref,
+) async {
   final repository = ref.watch(workspaceRepositoryProvider);
   return repository.getAll();
 });
@@ -82,6 +84,31 @@ class WorkspaceSessionsNotifier extends AsyncNotifier<List<WorkspaceSession>> {
     return forked;
   }
 
+  /// Clone a session with a custom name.
+  Future<WorkspaceSession> cloneSession(
+    String sessionId, {
+    String? newName,
+  }) async {
+    final forkedId = _uuid.v4();
+    final forked = await _repository.fork(sessionId, forkedId);
+
+    // Update name if provided
+    final cloned = newName != null && newName.isNotEmpty
+        ? forked.copyWith(label: newName)
+        : forked;
+
+    // Save with new name if changed
+    if (cloned != forked) {
+      await _repository.update(cloned);
+    }
+
+    // Update state
+    final currentSessions = state.valueOrNull ?? [];
+    state = AsyncData([...currentSessions, cloned]);
+
+    return cloned;
+  }
+
   /// Reload sessions from disk.
   Future<void> reload() async {
     _repository.clearCache();
@@ -93,20 +120,22 @@ class WorkspaceSessionsNotifier extends AsyncNotifier<List<WorkspaceSession>> {
 /// Riverpod notifier provider for workspace sessions.
 final workspaceSessionsNotifierProvider =
     AsyncNotifierProvider<WorkspaceSessionsNotifier, List<WorkspaceSession>>(
-  WorkspaceSessionsNotifier.new,
-);
+      WorkspaceSessionsNotifier.new,
+    );
 
 /// Get sessions by workspace type.
 final workspaceSessionsByTypeProvider =
-    FutureProvider.family<List<WorkspaceSession>, String>((ref, workspaceType) async {
-  final repository = ref.watch(workspaceRepositoryProvider);
-  return repository.getAllByType(workspaceType);
-});
+    FutureProvider.family<List<WorkspaceSession>, String>((
+      ref,
+      workspaceType,
+    ) async {
+      final repository = ref.watch(workspaceRepositoryProvider);
+      return repository.getAllByType(workspaceType);
+    });
 
 /// Get a single session by ID.
-final workspaceSessionProvider = FutureProvider.family<WorkspaceSession?, String>(
-  (ref, sessionId) async {
-    final repository = ref.watch(workspaceRepositoryProvider);
-    return repository.getById(sessionId);
-  },
-);
+final workspaceSessionProvider =
+    FutureProvider.family<WorkspaceSession?, String>((ref, sessionId) async {
+      final repository = ref.watch(workspaceRepositoryProvider);
+      return repository.getById(sessionId);
+    });
