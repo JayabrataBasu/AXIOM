@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/spacing.dart';
 import '../models/workspace_session.dart';
 import '../providers/workspace_providers.dart';
+import '../providers/workspace_state_provider.dart';
 
 /// Screen for browsing and managing workspace sessions.
 class WorkspaceSessionsScreen extends ConsumerStatefulWidget {
@@ -18,11 +19,22 @@ class _WorkspaceSessionsScreenState
   String _searchQuery = '';
 
   Future<void> _openSession(WorkspaceSession session) async {
-    // For now, just show a snackbar - we'll implement workspace viewer later
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Opening: ${session.label}')));
+    try {
+      // Set as active workspace - this will trigger navigation in the app shell
+      await ref
+          .read(activeWorkspaceIdProvider.notifier)
+          .setActiveWorkspace(session.id);
+
+      // Pop back to let the app routing handle the navigation
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error opening workspace: $e')));
+      }
     }
   }
 

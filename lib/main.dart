@@ -8,6 +8,7 @@ import 'services/settings_service.dart';
 import 'services/canvas_sketch_service.dart';
 import 'services/preferences_service.dart';
 import 'providers/workspace_state_provider.dart';
+import 'providers/workspace_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +49,7 @@ class AxiomApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch if user is onboarding (no active workspace)
     final isOnboarding = ref.watch(isOnboardingProvider);
+    final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
 
     return MaterialApp(
       title: 'Axiom',
@@ -68,8 +70,54 @@ class AxiomApp extends ConsumerWidget {
         useMaterial3: true,
         appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
       ),
-      // Show welcome screen on first launch, else show canvas
-      home: isOnboarding ? const WelcomeScreen() : const CanvasScreen(),
+      // Route based on onboarding state and active workspace type
+      home: isOnboarding
+          ? const WelcomeScreen()
+          : activeWorkspaceId != null
+          ? AppShell(workspaceId: activeWorkspaceId)
+          : const WelcomeScreen(),
+    );
+  }
+}
+
+/// App shell that routes to the correct workspace viewer based on session type.
+class AppShell extends ConsumerWidget {
+  const AppShell({super.key, required this.workspaceId});
+
+  final String workspaceId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessionAsync = ref.watch(workspaceSessionProvider(workspaceId));
+
+    return sessionAsync.when(
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, stack) => Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(child: Text('Error loading workspace: $err')),
+      ),
+      data: (session) {
+        if (session == null) {
+          // Workspace was deleted, go back to onboarding
+          Future.microtask(() {
+            ref.read(activeWorkspaceIdProvider.notifier).clearActive();
+          });
+          return const Scaffold(
+            body: Center(child: Text('Workspace not found')),
+          );
+        }
+
+        // Route to appropriate workspace viewer based on type
+        switch (session.workspaceType) {
+          case 'matrix_calculator':
+            return WorkspaceShell(sessionId: workspaceId);
+          case 'canvas':
+          default:
+            // Default to canvas screen for regular workspaces
+            return const CanvasScreen();
+        }
+      },
     );
   }
 }
