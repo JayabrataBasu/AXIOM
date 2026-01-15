@@ -117,6 +117,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
   Widget _buildToolbar(BuildContext context, ThemeData theme) {
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    final toolbarChildren = _buildToolbarChildren(
+      context,
+      theme,
+      isSmallScreen,
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -128,113 +133,138 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       ),
       child: SafeArea(
         bottom: false,
-        child: Row(
-          children: [
-            // Logo/Title (hide on very small screens)
-            if (!isSmallScreen)
-              Text(
-                'Axiom',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+        child: isSmallScreen
+            // Allow horizontal scrolling on tight layouts to avoid pixel overflow.
+            ? SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: toolbarChildren,
                 ),
-              ),
-            if (!isSmallScreen) const Spacer(),
-            // Sketch mode toggle
-            IconButton(
-              icon: Icon(_sketchMode ? Icons.brush : Icons.brush_outlined),
-              tooltip: _sketchMode ? 'Exit sketch mode' : 'Enter sketch mode',
-              color: _sketchMode ? theme.colorScheme.primary : null,
-              onPressed: () {
-                setState(() => _sketchMode = !_sketchMode);
-              },
-            ),
-            const SizedBox(width: 4),
-            // Center on origin
-            IconButton(
-              icon: const Icon(Icons.center_focus_strong),
-              tooltip: 'Center on origin',
-              onPressed: () {
-                _canvasKey.currentState?.centerOn(_originInScene);
-              },
-            ),
-            // Zoom controls
-            IconButton(
-              icon: const Icon(Icons.remove),
-              tooltip: 'Zoom out',
-              onPressed: () {
-                final newZoom = (_currentZoom * 0.8).clamp(0.1, 4.0);
-                _canvasKey.currentState?.setZoom(newZoom);
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.add),
-              tooltip: 'Zoom in',
-              onPressed: () {
-                final newZoom = (_currentZoom * 1.25).clamp(0.1, 4.0);
-                _canvasKey.currentState?.setZoom(newZoom);
-              },
-            ),
-            const SizedBox(width: 4),
-            // Create node button - icon only on small screens
-            if (isSmallScreen)
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline),
-                tooltip: 'Create new node',
-                onPressed: _createNewNode,
               )
-            else
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Create Node'),
-                onPressed: _createNewNode,
-              ),
-            const Spacer(),
-            // More options menu
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
-              tooltip: 'More options',
-              onSelected: (value) {
-                if (value == 'debug') {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const _DebugScreenWrapper(),
-                    ),
-                  );
-                } else if (value == 'workspaces') {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const WorkspaceSessionsScreen(),
-                    ),
-                  );
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'workspaces',
-                  child: Row(
-                    children: [
-                      Icon(Icons.workspaces),
-                      SizedBox(width: 8),
-                      Text('Workspace Sessions'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'debug',
-                  child: Row(
-                    children: [
-                      Icon(Icons.bug_report),
-                      SizedBox(width: 8),
-                      Text('Debug View'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+            : Row(children: toolbarChildren),
       ),
     );
+  }
+
+  List<Widget> _buildToolbarChildren(
+    BuildContext context,
+    ThemeData theme,
+    bool isSmallScreen,
+  ) {
+    final children = <Widget>[];
+
+    if (!isSmallScreen) {
+      children.add(
+        Text(
+          'Axiom',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+      children.add(const Spacer());
+    }
+
+    children.addAll([
+      IconButton(
+        icon: Icon(_sketchMode ? Icons.brush : Icons.brush_outlined),
+        tooltip: _sketchMode ? 'Exit sketch mode' : 'Enter sketch mode',
+        color: _sketchMode ? theme.colorScheme.primary : null,
+        onPressed: () {
+          setState(() => _sketchMode = !_sketchMode);
+        },
+      ),
+      const SizedBox(width: 4),
+      IconButton(
+        icon: const Icon(Icons.center_focus_strong),
+        tooltip: 'Center on origin',
+        onPressed: () {
+          _canvasKey.currentState?.centerOn(_originInScene);
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.remove),
+        tooltip: 'Zoom out',
+        onPressed: () {
+          final newZoom = (_currentZoom * 0.8).clamp(0.1, 4.0);
+          _canvasKey.currentState?.setZoom(newZoom);
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.add),
+        tooltip: 'Zoom in',
+        onPressed: () {
+          final newZoom = (_currentZoom * 1.25).clamp(0.1, 4.0);
+          _canvasKey.currentState?.setZoom(newZoom);
+        },
+      ),
+      const SizedBox(width: 4),
+      if (isSmallScreen)
+        IconButton(
+          icon: const Icon(Icons.add_circle_outline),
+          tooltip: 'Create new node',
+          onPressed: _createNewNode,
+        )
+      else
+        ElevatedButton.icon(
+          icon: const Icon(Icons.add_circle_outline),
+          label: const Text('Create Node'),
+          onPressed: _createNewNode,
+        ),
+    ]);
+
+    if (!isSmallScreen) {
+      children.add(const Spacer());
+    } else {
+      children.add(const SizedBox(width: 8));
+    }
+
+    children.add(
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert),
+        tooltip: 'More options',
+        onSelected: (value) {
+          if (value == 'debug') {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const _DebugScreenWrapper(),
+              ),
+            );
+          } else if (value == 'workspaces') {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const WorkspaceSessionsScreen(),
+              ),
+            );
+          }
+        },
+        itemBuilder: (context) => const [
+          PopupMenuItem(
+            value: 'workspaces',
+            child: Row(
+              children: [
+                Icon(Icons.workspaces),
+                SizedBox(width: 8),
+                Text('Workspace Sessions'),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: 'debug',
+            child: Row(
+              children: [
+                Icon(Icons.bug_report),
+                SizedBox(width: 8),
+                Text('Debug View'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return children;
   }
 
   Widget _buildZoomIndicator(ThemeData theme) {
@@ -253,17 +283,24 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 
   Widget _buildHelpHint(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
+    final maxWidth = MediaQuery.of(context).size.width - 32;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: maxWidth.clamp(260, 440).toDouble(),
       ),
-      child: Text(
-        'Click "Create Node" or double-tap • Drag to move • Double-click node to edit',
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Text(
+          'Click "Create Node" or double-tap • Drag to move • Double-click node to edit',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
         ),
       ),
     );
