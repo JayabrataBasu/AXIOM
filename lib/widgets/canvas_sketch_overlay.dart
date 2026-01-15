@@ -29,7 +29,7 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
 
     return sketchAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __stack) => const SizedBox.shrink(),
+      error: (_, stack) => const SizedBox.shrink(),
       data: (sketch) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,

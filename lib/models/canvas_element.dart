@@ -174,50 +174,30 @@ class CanvasElement with _$CanvasElement {
   /// Get preview text for display on canvas
   String get previewText {
     return when(
-      standaloneBlock:
-          (
-                String id,
-                Position position,
-                ContentBlock block,
-                DateTime createdAt,
-                DateTime updatedAt,
-                List<ElementLink> links,
-          ) {
-            return switch (block) {
-              TextBlock(:final content) when content.isNotEmpty => content,
-              HeadingBlock(:final content) when content.isNotEmpty => content,
-              CodeBlock(:final content) when content.isNotEmpty => content,
-              QuoteBlock(:final content) when content.isNotEmpty =>
-                '"$content"',
-              MathBlock(:final latex) when latex.isNotEmpty => latex,
-                      String id,
-                      Position position,
-                      String name,
-                      DateTime createdAt,
-                      DateTime updatedAt,
-                      List<ContentBlock> blocks,
-                      List<ElementLink> links,
-            String name,
-            DateTime _createdAt,
-            DateTime _updatedAt,
-            List<ContentBlock> blocks,
-            List<ElementLink> _links,
-          ) {
-            if (name.isNotEmpty) return name;
-            for (final block in blocks) {
-              final text = switch (block) {
-                TextBlock(:final content) when content.isNotEmpty => content,
-                HeadingBlock(:final content) when content.isNotEmpty => content,
-                _ => null,
-              };
-              if (text != null) {
-                return text.length > 100
-                    ? '${text.substring(0, 100)}...'
-                    : text;
-              }
-            }
-            return '[Container]';
-          },
+      standaloneBlock: (_, __, block, ___, ____, _____) {
+        return switch (block) {
+          TextBlock(:final content) when content.isNotEmpty => content,
+          HeadingBlock(:final content) when content.isNotEmpty => content,
+          CodeBlock(:final content) when content.isNotEmpty => content,
+          QuoteBlock(:final content) when content.isNotEmpty => '"$content"',
+          MathBlock(:final latex) when latex.isNotEmpty => latex,
+          _ => '[Block]',
+        };
+      },
+      container: (_, __, name, ___, ____, blocks, ______) {
+        if (name.isNotEmpty) return name;
+        for (final block in blocks) {
+          final text = switch (block) {
+            TextBlock(:final content) when content.isNotEmpty => content,
+            HeadingBlock(:final content) when content.isNotEmpty => content,
+            _ => null,
+          };
+          if (text != null) {
+            return text.length > 100 ? '${text.substring(0, 100)}...' : text;
+          }
+        }
+        return '[Container]';
+      },
     );
   }
 }
