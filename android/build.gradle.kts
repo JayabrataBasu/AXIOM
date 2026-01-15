@@ -15,22 +15,10 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
-subprojects {
-    project.evaluationDependsOn(":app")
-    
-    // Set Java version for all subprojects (including Flutter plugins)
-    afterEvaluate {
-        if (project.hasProperty("android")) {
-            extensions.configure<com.android.build.gradle.BaseExtension>("android") {
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_11
-                    targetCompatibility = JavaVersion.VERSION_11
-                }
-            }
-        }
-    }
-}
+// No global Android compileOptions configuration here to avoid finalization conflicts.
+// Each module (e.g., :app) defines its own Java/Kotlin compatibility.
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+// End of file

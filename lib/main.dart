@@ -16,7 +16,7 @@ Future<void> main() async {
   // Services will complete initialization in background
   SettingsService.instance.initialize();
   CanvasSketchService.instance.initialize();
-  PreferencesService.instance.init();
+  await PreferencesService.instance.init();
 
   // Configure window for desktop platforms only
   if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
