@@ -16,7 +16,7 @@ class MatrixService {
     final bCols = b[0].length;
 
     if (aCols != bRows) {
-      throw 'Dimension mismatch: (${aRows}×$aCols) · (${bRows}×$bCols). Inner dimensions must match.';
+      throw 'Dimension mismatch: ($aRows×$aCols) · ($bRows×$bCols). Inner dimensions must match.';
     }
 
     final result = List.generate(aRows, (_) => List.filled(bCols, 0.0));

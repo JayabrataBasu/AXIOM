@@ -6,7 +6,6 @@ import '../models/node_template.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
-import '../widgets/dialogs/create_node_dialog.dart';
 import 'node_editor_screen.dart';
 import 'workspace_sessions_screen.dart';
 
