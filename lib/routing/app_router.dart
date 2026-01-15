@@ -15,26 +15,9 @@ final routerProvider = Provider<GoRouter>((ref) {
   final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
 
   return GoRouter(
-    initialLocation: '/',
-    redirect: (context, state) {
-      // Redirect logic based on app state
-      final path = state.matchedLocation;
-      
-      // If on splash, let it proceed
-      if (path == '/splash') return null;
-      
-      // If onboarding and not on welcome screen, redirect to welcome
-      if (isOnboarding && path != '/welcome') {
-        return '/welcome';
-      }
-      
-      // If not onboarding but no active workspace, redirect to dashboard
-      if (!isOnboarding && activeWorkspaceId == null && path == '/') {
-        return '/dashboard';
-      }
-      
-      return null;
-    },
+    // Start with splash screen
+    initialLocation: '/splash',
+    debugLogDiagnostics: true,
     routes: [
       // Splash Screen (app startup)
       GoRoute(
@@ -42,21 +25,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      
+
       // Welcome/Onboarding Screen
       GoRoute(
         path: '/welcome',
         name: 'welcome',
         builder: (context, state) => const WelcomeScreen(),
       ),
-      
+
       // Dashboard/Home Screen
       GoRoute(
         path: '/dashboard',
         name: 'dashboard',
         builder: (context, state) => const DashboardScreen(),
       ),
-      
+
       // Workspace Routes
       GoRoute(
         path: '/workspace/:id',
@@ -77,27 +60,34 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      
+
       // Workspace Sessions List
       GoRoute(
         path: '/workspaces',
         name: 'workspaces',
         builder: (context, state) => const WorkspaceSessionsScreen(),
       ),
-      
+
       // Root - redirects to appropriate screen
       GoRoute(
         path: '/',
         name: 'root',
         builder: (context, state) {
-          // This will be redirected by the redirect logic above
-          return const SizedBox.shrink();
+          // Determine where to go based on app state
+          if (isOnboarding) {
+            return const WelcomeScreen();
+          } else if (activeWorkspaceId != null) {
+            return AppShell(workspaceId: activeWorkspaceId);
+          } else {
+            return const DashboardScreen();
+          }
         },
       ),
     ],
-    
+
     // Error handling
     errorBuilder: (context, state) => Scaffold(
+      backgroundColor: Colors.black,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -105,13 +95,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             Text(
-              'Page not found',
+              'Navigation Error',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
-            Text(
-              state.error?.toString() ?? 'Unknown error',
-              style: Theme.of(context).textTheme.bodyMedium,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                state.error?.toString() ?? 'Unknown navigation error',
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

@@ -26,52 +26,51 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Animation setup
     _controller = AnimationController(
       duration: AxiomDurations.splash,
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+      ),
+    );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
 
     // Start animations
     _controller.forward();
-    
+
     // Simulate loading progress
     _simulateLoading();
   }
 
   Future<void> _simulateLoading() async {
     // Simulate initialization steps
-    for (int i = 0; i <= 100; i += 10) {
-      await Future.delayed(const Duration(milliseconds: 150));
+    for (int i = 0; i <= 100; i += 20) {
+      await Future.delayed(const Duration(milliseconds: 100));
       if (mounted) {
         setState(() {
           _progress = i / 100;
         });
       }
     }
-    
+
     // Navigate to welcome or dashboard after splash
     if (mounted) {
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
-        context.go('/welcome');
+        // Use context.pushReplacementNamed instead of go to avoid black screen
+        context.pushReplacementNamed('welcome');
       }
     }
   }
@@ -90,11 +89,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         children: [
           // Background effects
           Positioned.fill(
-            child: CustomPaint(
-              painter: _GridBackgroundPainter(),
-            ),
+            child: CustomPaint(painter: _GridBackgroundPainter()),
           ),
-          
+
           // Ambient glow
           Positioned(
             top: 0,
@@ -114,7 +111,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               ),
             ),
           ),
-          
+
           // Main content
           Center(
             child: FadeTransition(
@@ -127,7 +124,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     // Logo
                     _buildLogo(),
                     const SizedBox(height: AxiomSpacing.xl),
-                    
+
                     // Brand name
                     Text(
                       'AXIOM',
@@ -138,7 +135,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       ),
                     ),
                     const SizedBox(height: AxiomSpacing.md),
-                    
+
                     // Status
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -163,7 +160,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               ),
             ),
           ),
-          
+
           // Bottom section with progress bar
           Positioned(
             bottom: 48,
@@ -179,7 +176,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     child: AxiomProgressBar(value: _progress),
                   ),
                   const SizedBox(height: AxiomSpacing.lg),
-                  
+
                   // Version text
                   Text(
                     'SECURE CONNECTION ESTABLISHED',
@@ -247,7 +244,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               },
             ),
           ),
-          
+
           // Main logo container
           Container(
             margin: const EdgeInsets.all(2),
@@ -319,20 +316,12 @@ class _GridBackgroundPainter extends CustomPainter {
 
     // Vertical lines
     for (double x = 0; x < size.width; x += gridSize) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        paint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
     // Horizontal lines
     for (double y = 0; y < size.height; y += gridSize) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        paint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 

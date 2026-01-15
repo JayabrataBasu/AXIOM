@@ -18,19 +18,15 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionsAsync = ref.watch(workspaceSessionsNotifierProvider);
-    
+
     return Scaffold(
       backgroundColor: AxiomColors.backgroundDark,
       appBar: _buildAppBar(context, ref),
       drawer: _buildNavigationDrawer(context, ref),
       body: sessionsAsync.when(
         data: (sessions) => _buildContent(context, ref, sessions),
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        error: (error, stack) => Center(
-          child: Text('Error: $error'),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(child: Text('Error: $error')),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/welcome'),
@@ -42,7 +38,9 @@ class DashboardScreen extends ConsumerWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
     return AppBar(
-      backgroundColor: AxiomColors.backgroundDark.withAlpha((0.9 * 255).round()),
+      backgroundColor: AxiomColors.backgroundDark.withAlpha(
+        (0.9 * 255).round(),
+      ),
       elevation: 0,
       title: Row(
         children: [
@@ -54,19 +52,12 @@ class DashboardScreen extends ConsumerWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  AxiomColors.primary,
-                  AxiomColors.primaryLight,
-                ],
+                colors: [AxiomColors.primary, AxiomColors.primaryLight],
               ),
               borderRadius: BorderRadius.circular(AxiomRadius.md),
               boxShadow: AxiomElevation.glow,
             ),
-            child: const Icon(
-              Icons.api,
-              color: Colors.white,
-              size: 20,
-            ),
+            child: const Icon(Icons.api, color: Colors.white, size: 20),
           ),
           const SizedBox(width: AxiomSpacing.sm),
           Text(
@@ -92,10 +83,7 @@ class DashboardScreen extends ConsumerWidget {
           child: CircleAvatar(
             radius: 20,
             backgroundColor: AxiomColors.surfaceVariant,
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.person, color: Colors.white),
           ),
         ),
       ],
@@ -140,7 +128,7 @@ class DashboardScreen extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           // Navigation items
           Expanded(
             child: ListView(
@@ -198,11 +186,11 @@ class DashboardScreen extends ConsumerWidget {
           // Hero section
           _buildHeroSection(context),
           const SizedBox(height: AxiomSpacing.xl),
-          
+
           // Recent workspaces
           _buildRecentWorkspaces(context, ref, sessions),
           const SizedBox(height: AxiomSpacing.xl),
-          
+
           // Quick stats
           _buildQuickStats(context, sessions),
         ],
@@ -216,9 +204,7 @@ class DashboardScreen extends ConsumerWidget {
       children: [
         Text(
           'Welcome back,',
-          style: AxiomTypography.displayMedium.copyWith(
-            height: 1.1,
-          ),
+          style: AxiomTypography.displayMedium.copyWith(height: 1.1),
         ),
         Text(
           'Commander.',
@@ -228,7 +214,7 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AxiomSpacing.md),
-        
+
         // Status indicator
         Container(
           padding: const EdgeInsets.symmetric(
@@ -238,10 +224,7 @@ class DashboardScreen extends ConsumerWidget {
           decoration: BoxDecoration(
             color: AxiomColors.surfaceDark,
             borderRadius: BorderRadius.circular(AxiomRadius.full),
-            border: Border.all(
-              color: AxiomColors.borderDark,
-              width: 1,
-            ),
+            border: Border.all(color: AxiomColors.borderDark, width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -281,17 +264,14 @@ class DashboardScreen extends ConsumerWidget {
     List<WorkspaceSession> sessions,
   ) {
     final recentSessions = sessions.take(6).toList();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Recent Workspaces',
-              style: AxiomTypography.heading2,
-            ),
+            Text('Recent Workspaces', style: AxiomTypography.heading2),
             TextButton(
               onPressed: () => context.push('/workspaces'),
               child: const Text('View All'),
@@ -299,7 +279,7 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AxiomSpacing.md),
-        
+
         if (recentSessions.isEmpty)
           AxiomCard(
             child: Center(
@@ -352,7 +332,9 @@ class DashboardScreen extends ConsumerWidget {
     return AxiomCard(
       elevated: true,
       onTap: () {
-        ref.read(activeWorkspaceIdProvider.notifier).setActiveWorkspace(session.id);
+        ref
+            .read(activeWorkspaceIdProvider.notifier)
+            .setActiveWorkspace(session.id);
         context.go('/workspace/${session.id}');
       },
       child: Column(
@@ -399,14 +381,14 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickStats(BuildContext context, List<WorkspaceSession> sessions) {
+  Widget _buildQuickStats(
+    BuildContext context,
+    List<WorkspaceSession> sessions,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Stats',
-          style: AxiomTypography.heading2,
-        ),
+        Text('Quick Stats', style: AxiomTypography.heading2),
         const SizedBox(height: AxiomSpacing.md),
         Row(
           children: [
@@ -421,10 +403,7 @@ class DashboardScreen extends ConsumerWidget {
                         color: AxiomColors.primary,
                       ),
                     ),
-                    Text(
-                      'Workspaces',
-                      style: AxiomTypography.labelMedium,
-                    ),
+                    Text('Workspaces', style: AxiomTypography.labelMedium),
                   ],
                 ),
               ),
@@ -441,10 +420,7 @@ class DashboardScreen extends ConsumerWidget {
                         color: AxiomColors.primary,
                       ),
                     ),
-                    Text(
-                      'Nodes',
-                      style: AxiomTypography.labelMedium,
-                    ),
+                    Text('Nodes', style: AxiomTypography.labelMedium),
                   ],
                 ),
               ),
@@ -468,7 +444,7 @@ class DashboardScreen extends ConsumerWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'Today';
     } else if (difference.inDays == 1) {

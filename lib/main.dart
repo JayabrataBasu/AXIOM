@@ -15,29 +15,37 @@ import 'routing/app_router.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize services asynchronously without blocking UI
-  // Services will complete initialization in background
-  SettingsService.instance.initialize();
-  CanvasSketchService.instance.initialize();
-  await PreferencesService.instance.init();
+  try {
+    // Initialize services asynchronously without blocking UI
+    // Services will complete initialization in background
+    SettingsService.instance.initialize();
+    CanvasSketchService.instance.initialize();
+    await PreferencesService.instance.init();
 
-  // Configure window for desktop platforms only
-  if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
-    await windowManager.ensureInitialized();
+    // Configure window for desktop platforms only
+    if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+      await windowManager.ensureInitialized();
 
-    const windowOptions = WindowOptions(
-      size: Size(1400, 900),
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.normal,
-      title: 'Axiom',
-    );
+      const windowOptions = WindowOptions(
+        size: Size(1400, 900),
+        center: true,
+        backgroundColor: Colors.transparent,
+        skipTaskbar: false,
+        titleBarStyle: TitleBarStyle.normal,
+        title: 'Axiom',
+      );
 
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-    });
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+        await windowManager.focus();
+      });
+    }
+  } catch (e, stack) {
+    // Log initialization errors (debug only)
+    // ignore: avoid_print
+    print('AXIOM: Fatal error during initialization: $e');
+    // ignore: avoid_print
+    print(stack);
   }
 
   runApp(const ProviderScope(child: AxiomApp()));

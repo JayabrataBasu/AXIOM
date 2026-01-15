@@ -35,25 +35,26 @@ class AxiomTheme {
 
       // App Bar
       appBarTheme: AppBarTheme(
-        backgroundColor: AxiomColors.backgroundDark.withAlpha((0.9 * 255).round()),
+        backgroundColor: AxiomColors.backgroundDark.withAlpha(
+          (0.9 * 255).round(),
+        ),
         elevation: 0,
         scrolledUnderElevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         centerTitle: false,
-        titleTextStyle: AxiomTypography.heading2.copyWith(
-          color: Colors.white,
-        ),
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 24,
-        ),
+        titleTextStyle: AxiomTypography.heading2.copyWith(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white, size: 24),
       ),
 
       // Typography
       textTheme: TextTheme(
         displayLarge: AxiomTypography.display.copyWith(color: Colors.white),
-        displayMedium: AxiomTypography.displayMedium.copyWith(color: Colors.white),
-        displaySmall: AxiomTypography.displaySmall.copyWith(color: Colors.white),
+        displayMedium: AxiomTypography.displayMedium.copyWith(
+          color: Colors.white,
+        ),
+        displaySmall: AxiomTypography.displaySmall.copyWith(
+          color: Colors.white,
+        ),
         headlineLarge: AxiomTypography.heading1.copyWith(color: Colors.white),
         headlineMedium: AxiomTypography.heading2.copyWith(color: Colors.white),
         headlineSmall: AxiomTypography.heading3.copyWith(color: Colors.white),
@@ -61,8 +62,12 @@ class AxiomTheme {
         bodyMedium: AxiomTypography.bodyMedium.copyWith(color: Colors.white),
         bodySmall: AxiomTypography.bodySmall.copyWith(color: Colors.white),
         labelLarge: AxiomTypography.labelLarge.copyWith(color: Colors.white),
-        labelMedium: AxiomTypography.labelMedium.copyWith(color: AxiomColors.textMuted),
-        labelSmall: AxiomTypography.labelSmall.copyWith(color: AxiomColors.textMuted),
+        labelMedium: AxiomTypography.labelMedium.copyWith(
+          color: AxiomColors.textMuted,
+        ),
+        labelSmall: AxiomTypography.labelSmall.copyWith(
+          color: AxiomColors.textMuted,
+        ),
       ),
 
       // Card
@@ -71,10 +76,7 @@ class AxiomTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AxiomRadius.lg),
-          side: BorderSide(
-            color: AxiomColors.borderDark,
-            width: 1,
-          ),
+          side: BorderSide(color: AxiomColors.borderDark, width: 1),
         ),
         shadowColor: Colors.black.withAlpha((0.3 * 255).round()),
       ),
@@ -101,10 +103,7 @@ class AxiomTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white,
-          side: BorderSide(
-            color: AxiomColors.borderDark,
-            width: 1.5,
-          ),
+          side: BorderSide(color: AxiomColors.borderDark, width: 1.5),
           padding: const EdgeInsets.symmetric(
             horizontal: AxiomSpacing.lg,
             vertical: AxiomSpacing.md,
@@ -162,7 +161,9 @@ class AxiomTheme {
           borderRadius: BorderRadius.circular(AxiomRadius.xl),
         ),
         titleTextStyle: AxiomTypography.heading2.copyWith(color: Colors.white),
-        contentTextStyle: AxiomTypography.bodyMedium.copyWith(color: Colors.white),
+        contentTextStyle: AxiomTypography.bodyMedium.copyWith(
+          color: Colors.white,
+        ),
       ),
 
       // Bottom Sheet
@@ -182,31 +183,19 @@ class AxiomTheme {
         fillColor: AxiomColors.surfaceVariant,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AxiomRadius.md),
-          borderSide: BorderSide(
-            color: AxiomColors.borderDark,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: AxiomColors.borderDark, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AxiomRadius.md),
-          borderSide: BorderSide(
-            color: AxiomColors.borderDark,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: AxiomColors.borderDark, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AxiomRadius.md),
-          borderSide: BorderSide(
-            color: AxiomColors.primary,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: AxiomColors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AxiomRadius.md),
-          borderSide: BorderSide(
-            color: AxiomColors.error,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: AxiomColors.error, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AxiomSpacing.md,
@@ -245,10 +234,7 @@ class AxiomTheme {
         backgroundColor: AxiomColors.surfaceVariant,
         selectedColor: AxiomColors.primary,
         labelStyle: AxiomTypography.labelMedium.copyWith(color: Colors.white),
-        side: BorderSide(
-          color: AxiomColors.borderDark,
-          width: 1,
-        ),
+        side: BorderSide(color: AxiomColors.borderDark, width: 1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AxiomRadius.full),
         ),
@@ -261,7 +247,9 @@ class AxiomTheme {
       // Snackbar
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AxiomColors.surfaceDark,
-        contentTextStyle: AxiomTypography.bodyMedium.copyWith(color: Colors.white),
+        contentTextStyle: AxiomTypography.bodyMedium.copyWith(
+          color: Colors.white,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AxiomRadius.md),
         ),
@@ -312,16 +300,24 @@ class AxiomTheme {
       scaffoldBackgroundColor: AxiomColors.backgroundLight,
       textTheme: TextTheme(
         displayLarge: AxiomTypography.display.copyWith(color: Colors.black87),
-        displayMedium: AxiomTypography.displayMedium.copyWith(color: Colors.black87),
-        displaySmall: AxiomTypography.displaySmall.copyWith(color: Colors.black87),
+        displayMedium: AxiomTypography.displayMedium.copyWith(
+          color: Colors.black87,
+        ),
+        displaySmall: AxiomTypography.displaySmall.copyWith(
+          color: Colors.black87,
+        ),
         headlineLarge: AxiomTypography.heading1.copyWith(color: Colors.black87),
-        headlineMedium: AxiomTypography.heading2.copyWith(color: Colors.black87),
+        headlineMedium: AxiomTypography.heading2.copyWith(
+          color: Colors.black87,
+        ),
         headlineSmall: AxiomTypography.heading3.copyWith(color: Colors.black87),
         bodyLarge: AxiomTypography.bodyLarge.copyWith(color: Colors.black87),
         bodyMedium: AxiomTypography.bodyMedium.copyWith(color: Colors.black87),
         bodySmall: AxiomTypography.bodySmall.copyWith(color: Colors.black87),
         labelLarge: AxiomTypography.labelLarge.copyWith(color: Colors.black87),
-        labelMedium: AxiomTypography.labelMedium.copyWith(color: Colors.black54),
+        labelMedium: AxiomTypography.labelMedium.copyWith(
+          color: Colors.black54,
+        ),
         labelSmall: AxiomTypography.labelSmall.copyWith(color: Colors.black54),
       ),
     );

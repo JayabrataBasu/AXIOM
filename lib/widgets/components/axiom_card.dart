@@ -29,10 +29,7 @@ class AxiomCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor ?? AxiomColors.surfaceDark,
         borderRadius: borderRadius ?? BorderRadius.circular(AxiomRadius.lg),
-        border: Border.all(
-          color: AxiomColors.borderDark,
-          width: 1,
-        ),
+        border: Border.all(color: AxiomColors.borderDark, width: 1),
         boxShadow: elevated ? AxiomElevation.card : null,
       ),
       child: child,

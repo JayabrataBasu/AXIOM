@@ -42,29 +42,20 @@ class AxiomEmptyState extends StatelessWidget {
                   ],
                 ),
                 borderRadius: BorderRadius.circular(AxiomRadius.xl),
-                border: Border.all(
-                  color: AxiomColors.borderDark,
-                  width: 1,
-                ),
+                border: Border.all(color: AxiomColors.borderDark, width: 1),
               ),
-              child: Icon(
-                icon,
-                size: 40,
-                color: AxiomColors.textMuted,
-              ),
+              child: Icon(icon, size: 40, color: AxiomColors.textMuted),
             ),
             const SizedBox(height: AxiomSpacing.lg),
-            
+
             // Title
             Text(
               title,
-              style: AxiomTypography.heading2.copyWith(
-                color: Colors.white,
-              ),
+              style: AxiomTypography.heading2.copyWith(color: Colors.white),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AxiomSpacing.sm),
-            
+
             // Message
             Text(
               message,
@@ -73,14 +64,11 @@ class AxiomEmptyState extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             // Optional action button
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: AxiomSpacing.xl),
-              ElevatedButton(
-                onPressed: onAction,
-                child: Text(actionLabel!),
-              ),
+              ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
             ],
           ],
         ),

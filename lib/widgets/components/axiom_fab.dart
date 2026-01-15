@@ -31,10 +31,7 @@ class AxiomFAB extends StatelessWidget {
       return FloatingActionButton.extended(
         onPressed: onPressed,
         icon: Icon(icon, size: 24),
-        label: Text(
-          label!,
-          style: AxiomTypography.labelLarge,
-        ),
+        label: Text(label!, style: AxiomTypography.labelLarge),
         backgroundColor: AxiomColors.primary,
         foregroundColor: AxiomColors.onPrimary,
         elevation: 3,
@@ -62,11 +59,7 @@ class AxiomLargeFAB extends StatelessWidget {
   final VoidCallback onPressed;
   final IconData icon;
 
-  const AxiomLargeFAB({
-    super.key,
-    required this.onPressed,
-    required this.icon,
-  });
+  const AxiomLargeFAB({super.key, required this.onPressed, required this.icon});
 
   @override
   Widget build(BuildContext context) {

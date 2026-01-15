@@ -8,11 +8,7 @@ class AxiomLoadingIndicator extends StatelessWidget {
   final String? message;
   final double size;
 
-  const AxiomLoadingIndicator({
-    super.key,
-    this.message,
-    this.size = 40,
-  });
+  const AxiomLoadingIndicator({super.key, this.message, this.size = 40});
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +45,7 @@ class AxiomProgressBar extends StatelessWidget {
   final double value; // 0.0 to 1.0
   final double height;
 
-  const AxiomProgressBar({
-    super.key,
-    required this.value,
-    this.height = 4,
-  });
+  const AxiomProgressBar({super.key, required this.value, this.height = 4});
 
   @override
   Widget build(BuildContext context) {
@@ -69,10 +61,7 @@ class AxiomProgressBar extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                AxiomColors.primary,
-                AxiomColors.primaryLight,
-              ],
+              colors: [AxiomColors.primary, AxiomColors.primaryLight],
             ),
             borderRadius: BorderRadius.circular(AxiomRadius.full),
             boxShadow: [
