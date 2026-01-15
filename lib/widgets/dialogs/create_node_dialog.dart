@@ -63,76 +63,69 @@ class _CreateNodeDialogState extends State<CreateNodeDialog> {
 
               // Template grid
               Flexible(
-                child: SingleChildScrollView(
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: Spacing.m,
-                          mainAxisSpacing: Spacing.m,
-                          childAspectRatio: 1.2,
-                        ),
-                    itemCount: NodeTemplate.templates.length,
-                    itemBuilder: (context, index) {
-                      final template = NodeTemplate.templates[index];
-                      final isSelected = _selectedTemplate == template;
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 400),
+                  child: SingleChildScrollView(
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: Spacing.m,
+                            mainAxisSpacing: Spacing.m,
+                            childAspectRatio: 1.2,
+                          ),
+                      itemCount: NodeTemplate.templates.length,
+                      itemBuilder: (context, index) {
+                        final template = NodeTemplate.templates[index];
+                        final isSelected = _selectedTemplate == template;
 
-                      return Card(
-                        elevation: isSelected ? 4 : 1,
-                        color: isSelected
-                            ? colorScheme.primaryContainer
-                            : colorScheme.surface,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedTemplate = template;
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(Spacing.m),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  template.icon,
-                                  style: const TextStyle(fontSize: 32),
-                                ),
-                                const SizedBox(height: Spacing.s),
-                                Text(
-                                  template.name,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    color: isSelected
-                                        ? colorScheme.onPrimaryContainer
-                                        : colorScheme.onSurface,
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
+                        return Card(
+                          elevation: isSelected ? 4 : 1,
+                          color: isSelected
+                              ? colorScheme.primaryContainer
+                              : colorScheme.surface,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                _selectedTemplate = template;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    template.icon,
+                                    style: const TextStyle(fontSize: 24),
                                   ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: Spacing.xs),
-                                Text(
-                                  template.description,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: isSelected
-                                        ? colorScheme.onPrimaryContainer
-                                              .withValues(alpha: 0.7)
-                                        : colorScheme.onSurface.withValues(
-                                            alpha: 0.7,
+                                  const SizedBox(height: 2),
+                                  Flexible(
+                                    child: Text(
+                                      template.name,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                            color: isSelected
+                                                ? colorScheme.onPrimaryContainer
+                                                : colorScheme.onSurface,
                                           ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),

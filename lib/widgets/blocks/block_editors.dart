@@ -89,7 +89,9 @@ class BlockEditorCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
             ),
             child: Row(
               children: [
@@ -100,24 +102,28 @@ class BlockEditorCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 // Block type badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    blockType.toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      blockType.toUpperCase(),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),
-                if (trailing != null) ...[
-                  const SizedBox(width: 8),
-                  trailing!,
-                ],
+                if (trailing != null) ...[const SizedBox(width: 8), trailing!],
                 const Spacer(),
                 // Delete button
                 IconButton(
@@ -131,10 +137,7 @@ class BlockEditorCard extends StatelessWidget {
             ),
           ),
           // Block content
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: child,
-          ),
+          Padding(padding: const EdgeInsets.all(12), child: child),
         ],
       ),
     );
@@ -314,7 +317,9 @@ class _BulletListBlockEditorState extends State<BulletListBlockEditor> {
   @override
   void initState() {
     super.initState();
-    _controllers = widget.block.items.map((item) => TextEditingController(text: item)).toList();
+    _controllers = widget.block.items
+        .map((item) => TextEditingController(text: item))
+        .toList();
     if (_controllers.isEmpty) {
       _controllers.add(TextEditingController());
     }
@@ -437,7 +442,22 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
   late TextEditingController _contentController;
   late TextEditingController _languageController;
 
-  static const _commonLanguages = ['', 'dart', 'python', 'javascript', 'typescript', 'java', 'c', 'cpp', 'rust', 'go', 'sql', 'json', 'yaml', 'bash'];
+  static const _commonLanguages = [
+    '',
+    'dart',
+    'python',
+    'javascript',
+    'typescript',
+    'java',
+    'c',
+    'cpp',
+    'rust',
+    'go',
+    'sql',
+    'json',
+    'yaml',
+    'bash',
+  ];
 
   @override
   void initState() {
@@ -471,7 +491,9 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
       trailing: DropdownButton<String>(
-        value: _commonLanguages.contains(widget.block.language) ? widget.block.language : '',
+        value: _commonLanguages.contains(widget.block.language)
+            ? widget.block.language
+            : '',
         isDense: true,
         underline: const SizedBox.shrink(),
         items: _commonLanguages.map((lang) {
@@ -496,10 +518,7 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
           controller: _contentController,
           maxLines: null,
           minLines: 4,
-          style: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 13,
-          ),
+          style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
           decoration: const InputDecoration(
             hintText: '// Enter code...',
             border: InputBorder.none,
@@ -541,7 +560,9 @@ class _QuoteBlockEditorState extends State<QuoteBlockEditor> {
   void initState() {
     super.initState();
     _contentController = TextEditingController(text: widget.block.content);
-    _attributionController = TextEditingController(text: widget.block.attribution);
+    _attributionController = TextEditingController(
+      text: widget.block.attribution,
+    );
   }
 
   @override
@@ -571,10 +592,7 @@ class _QuoteBlockEditorState extends State<QuoteBlockEditor> {
       child: Container(
         decoration: BoxDecoration(
           border: Border(
-            left: BorderSide(
-              color: theme.colorScheme.primary,
-              width: 4,
-            ),
+            left: BorderSide(color: theme.colorScheme.primary, width: 4),
           ),
         ),
         padding: const EdgeInsets.only(left: 12),
