@@ -12,10 +12,11 @@ import 'providers/workspace_state_provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize services
-  await SettingsService.instance.initialize();
-  await CanvasSketchService.instance.initialize();
-  await PreferencesService.instance.init();
+  // Initialize services asynchronously without blocking UI
+  // Services will complete initialization in background
+  SettingsService.instance.initialize();
+  CanvasSketchService.instance.initialize();
+  PreferencesService.instance.init();
 
   // Configure window for desktop platforms only
   if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
