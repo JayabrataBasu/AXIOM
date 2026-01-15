@@ -6,6 +6,7 @@ import '../models/node_template.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
+import '../widgets/dialogs/add_canvas_item_dialog.dart';
 import 'node_editor_screen.dart';
 import 'workspace_sessions_screen.dart';
 
@@ -345,7 +346,30 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
   /// Create a new node at the canvas origin.
   Future<void> _createNewNode() async {
-    // Show create node dialog
+    // Show new canvas item dialog
+    final itemType = await showDialog<CanvasItemType>(
+      context: context,
+      builder: (context) => const AddCanvasItemDialog(),
+    );
+
+    if (itemType == null || !mounted) return;
+
+    // For now, show a message about the feature
+    if (itemType != CanvasItemType.container) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Standalone ${itemType.name} blocks are coming soon! '
+            'For now, you can add them inside container nodes.',
+          ),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(label: 'OK', onPressed: () {}),
+        ),
+      );
+      return;
+    }
+
+    // Continue with regular node creation for containers
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => const CreateNodeDialog(),
