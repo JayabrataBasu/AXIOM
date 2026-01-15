@@ -37,13 +37,13 @@ class WorkspaceSessionsNotifier extends AsyncNotifier<List<WorkspaceSession>> {
   }) async {
     final now = DateTime.now();
     final sessionData = data ?? {};
-    
+
     // If template is provided, initialize with template blocks
     if (template != null) {
       sessionData['templateName'] = template.name;
       sessionData['initialBlockCount'] = template.blocks().length;
     }
-    
+
     final session = WorkspaceSession(
       id: _uuid.v4(),
       workspaceType: workspaceType,

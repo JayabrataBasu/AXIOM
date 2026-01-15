@@ -155,7 +155,10 @@ class FileService {
   }
 
   /// Get the file path for a node in a specific workspace
-  Future<String> workspaceNodeFilePath(String workspaceId, String nodeId) async {
+  Future<String> workspaceNodeFilePath(
+    String workspaceId,
+    String nodeId,
+  ) async {
     final workspaceDir = await getSubdirectory('workspaces/$workspaceId');
     return p.join(workspaceDir.path, '$nodeId.json');
   }
@@ -180,7 +183,7 @@ class FileService {
   /// Get all workspace IDs from the workspaces directory
   Future<List<String>> getAllWorkspaceIds() async {
     final workspacesDir = await getSubdirectory('workspaces');
-    
+
     if (!await workspacesDir.exists()) {
       return [];
     }

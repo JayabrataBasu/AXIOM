@@ -163,7 +163,9 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+                  icon: Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  ),
                   onPressed: () {
                     setState(() => _isExpanded = !_isExpanded);
                   },
@@ -184,7 +186,10 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
                 children: [
                   _buildInfoRow('Created', node.createdAt.toString()),
                   _buildInfoRow('Updated', node.updatedAt.toString()),
-                  _buildInfoRow('Position', '(${node.position.x}, ${node.position.y})'),
+                  _buildInfoRow(
+                    'Position',
+                    '(${node.position.x}, ${node.position.y})',
+                  ),
                   const SizedBox(height: 12),
                   const Text(
                     'Blocks:',
@@ -237,14 +242,30 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
   Widget _buildBlockEditor(IdeaNode node, ContentBlock block) {
     final (typeName, typeColor, content) = switch (block) {
       TextBlock(:final content) => ('TEXT', Colors.blue, content),
-      HeadingBlock(:final content, :final level) => ('H$level', Colors.purple, content),
+      HeadingBlock(:final content, :final level) => (
+        'H$level',
+        Colors.purple,
+        content,
+      ),
       BulletListBlock(:final items) => ('LIST', Colors.green, items.join('\n')),
-      CodeBlock(:final content, :final language) => ('CODE${language.isNotEmpty ? ' ($language)' : ''}', Colors.orange, content),
+      CodeBlock(:final content, :final language) => (
+        'CODE${language.isNotEmpty ? ' ($language)' : ''}',
+        Colors.orange,
+        content,
+      ),
       QuoteBlock(:final content) => ('QUOTE', Colors.teal, content),
       SketchBlock() => ('SKETCH', Colors.deepOrange, '[drawing]'),
       MathBlock(:final latex) => ('MATH', Colors.indigo, latex),
-      AudioBlock(:final durationMs) => ('AUDIO', Colors.cyan, '${(durationMs / 1000).toStringAsFixed(1)}s'),
-      WorkspaceRefBlock(:final label, :final sessionId) => ('WORKSPACE', Colors.lime, label.isNotEmpty ? label : 'Session: ${sessionId.substring(0, 6)}...'),
+      AudioBlock(:final durationMs) => (
+        'AUDIO',
+        Colors.cyan,
+        '${(durationMs / 1000).toStringAsFixed(1)}s',
+      ),
+      WorkspaceRefBlock(:final label, :final sessionId) => (
+        'WORKSPACE',
+        Colors.lime,
+        label.isNotEmpty ? label : 'Session: ${sessionId.substring(0, 6)}...',
+      ),
       ToolBlock(:final toolType) => ('TOOL', Colors.pink, toolType),
     };
 
@@ -303,7 +324,8 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
-              onChanged: (value) => _updateBlockContent(node.id, block.id, value),
+              onChanged: (value) =>
+                  _updateBlockContent(node.id, block.id, value),
             ),
           ],
         ),
@@ -344,11 +366,9 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
     String blockId,
     String content,
   ) async {
-    await ref.read(nodesNotifierProvider.notifier).updateBlockContent(
-          nodeId,
-          blockId,
-          content,
-        );
+    await ref
+        .read(nodesNotifierProvider.notifier)
+        .updateBlockContent(nodeId, blockId, content);
   }
 
   Future<void> _deleteBlock(String nodeId, String blockId) async {

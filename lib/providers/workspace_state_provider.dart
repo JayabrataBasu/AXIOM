@@ -5,8 +5,8 @@ import '../services/preferences_service.dart';
 /// Provider for the currently active workspace ID
 final activeWorkspaceIdProvider =
     StateNotifierProvider<ActiveWorkspaceNotifier, String?>(
-  (ref) => ActiveWorkspaceNotifier(),
-);
+      (ref) => ActiveWorkspaceNotifier(),
+    );
 
 /// Notifier for managing the currently active workspace
 class ActiveWorkspaceNotifier extends StateNotifier<String?> {

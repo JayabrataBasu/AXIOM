@@ -89,7 +89,9 @@ class MatrixService {
     }
 
     if (n == 1) {
-      return [[1.0 / a[0][0]]];
+      return [
+        [1.0 / a[0][0]],
+      ];
     }
 
     if (n == 2) {
@@ -104,10 +106,7 @@ class MatrixService {
   }
 
   /// Gaussian elimination for matrix inversion
-  static List<List<double>> _gaussianInverse(
-    List<List<double>> a,
-    double det,
-  ) {
+  static List<List<double>> _gaussianInverse(List<List<double>> a, double det) {
     final n = a.length;
     // Create augmented matrix [A | I]
     final augmented = List.generate(
@@ -151,10 +150,7 @@ class MatrixService {
     }
 
     // Extract inverse from right side
-    return List.generate(
-      n,
-      (i) => augmented[i].sublist(n).cast<double>(),
-    );
+    return List.generate(n, (i) => augmented[i].sublist(n).cast<double>());
   }
 
   /// Get minor matrix (remove row i and column j)
@@ -203,9 +199,7 @@ class MatrixService {
       throw 'Scale factor cannot be zero';
     }
 
-    return matrix
-        .map((row) => row.map((val) => val * scale).toList())
-        .toList();
+    return matrix.map((row) => row.map((val) => val * scale).toList()).toList();
   }
 
   /// Dot product of two vectors (1D lists)

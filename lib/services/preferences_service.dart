@@ -15,10 +15,10 @@ class PreferencesService {
   Future<void> init() async {
     final appDir = await getApplicationDocumentsDirectory();
     _prefsFile = File(p.join(appDir.path, 'axiom_data', 'preferences.json'));
-    
+
     // Ensure directory exists
     await _prefsFile.parent.create(recursive: true);
-    
+
     // Load existing preferences
     if (await _prefsFile.exists()) {
       try {

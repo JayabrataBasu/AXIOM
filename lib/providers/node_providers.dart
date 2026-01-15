@@ -15,7 +15,7 @@ final nodeRepositoryProvider = Provider<NodeRepository>((ref) {
 /// Provider for loading all nodes in the active workspace.
 final nodesProvider = FutureProvider<List<IdeaNode>>((ref) async {
   final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
-  
+
   // If no active workspace, return empty list
   if (activeWorkspaceId == null) {
     return [];
@@ -253,7 +253,8 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         MathBlock() => block, // Use updateBlockLatex instead
         AudioBlock() => block, // Audio is read-only after creation
         WorkspaceRefBlock() => block, // Read-only workspace references
-        ToolBlock() => block, // Tool results are computed, use updateToolBlockOutput
+        ToolBlock() =>
+          block, // Tool results are computed, use updateToolBlockOutput
       };
     }).toList();
 

@@ -55,9 +55,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) {
@@ -200,8 +200,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                           ? null
                           : () {
                               setState(() {
-                                _selectedTemplate =
-                                    isSelected ? null : template;
+                                _selectedTemplate = isSelected
+                                    ? null
+                                    : template;
                               });
                             },
                       child: Card(
@@ -248,9 +249,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.add),
                       label: Text(
