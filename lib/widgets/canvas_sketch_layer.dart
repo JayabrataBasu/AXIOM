@@ -138,10 +138,11 @@ class _CanvasSketchLayerPainter extends CustomPainter {
           0.5,
           50.0,
         );
+        final pressureAlpha = (paint.color.a * point.pressure)
+            .clamp(0, 255)
+            .toDouble();
         final pressurePaint = Paint()
-          ..color = paint.color.withOpacity(
-            (paint.color.a * point.pressure).clamp(0, 1),
-          )
+          ..color = paint.color.withValues(alpha: pressureAlpha)
           ..strokeCap = paint.strokeCap
           ..strokeJoin = paint.strokeJoin
           ..strokeWidth = pressureWidth;
@@ -163,10 +164,11 @@ class _CanvasSketchLayerPainter extends CustomPainter {
       final avgPressure = (p0.pressure + p1.pressure) / 2;
       final pressureWidth = (paint.strokeWidth * avgPressure).clamp(0.5, 50.0);
 
+      final segmentAlpha = (paint.color.a * avgPressure)
+          .clamp(0, 255)
+          .toDouble();
       final segmentPaint = Paint()
-        ..color = paint.color.withOpacity(
-          (paint.color.a * avgPressure).clamp(0, 1),
-        )
+        ..color = paint.color.withValues(alpha: segmentAlpha)
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = pressureWidth;

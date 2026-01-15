@@ -174,7 +174,7 @@ class CanvasElement with _$CanvasElement {
   /// Get preview text for display on canvas
   String get previewText {
     return when(
-      standaloneBlock: (_, __, block, ___, ____, _____) {
+      standaloneBlock: (_, _, block, _, _, _) {
         return switch (block) {
           TextBlock(:final content) when content.isNotEmpty => content,
           HeadingBlock(:final content) when content.isNotEmpty => content,
@@ -184,7 +184,7 @@ class CanvasElement with _$CanvasElement {
           _ => '[Block]',
         };
       },
-      container: (_, __, name, ___, ____, blocks, ______) {
+      container: (_, _, name, _, _, blocks, _) {
         if (name.isNotEmpty) return name;
         for (final block in blocks) {
           final text = switch (block) {
