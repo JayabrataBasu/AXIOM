@@ -9,6 +9,8 @@ import 'services/canvas_sketch_service.dart';
 import 'services/preferences_service.dart';
 import 'providers/workspace_state_provider.dart';
 import 'providers/workspace_providers.dart';
+import 'theme/axiom_theme.dart';
+import 'routing/app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,35 +49,15 @@ class AxiomApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch if user is onboarding (no active workspace)
-    final isOnboarding = ref.watch(isOnboardingProvider);
-    final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
+    final router = ref.watch(routerProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Axiom',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2D3436),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2D3436),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
-      ),
-      // Route based on onboarding state and active workspace type
-      home: isOnboarding
-          ? const WelcomeScreen()
-          : activeWorkspaceId != null
-          ? AppShell(workspaceId: activeWorkspaceId)
-          : const WelcomeScreen(),
+      theme: AxiomTheme.lightTheme,
+      darkTheme: AxiomTheme.darkTheme,
+      themeMode: ThemeMode.dark, // Default to dark theme as per Stitch designs
+      routerConfig: router,
     );
   }
 }
