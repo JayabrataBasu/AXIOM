@@ -9,15 +9,13 @@ import 'canvas/infinite_canvas.dart';
 /// Overlay for canvas-level sketching that sits above the infinite canvas.
 /// Uses efficient rendering by minimizing setState calls.
 class CanvasSketchOverlay extends ConsumerStatefulWidget {
-  const CanvasSketchOverlay({
-    super.key,
-    required this.canvasKey,
-  });
+  const CanvasSketchOverlay({super.key, required this.canvasKey});
 
   final GlobalKey<InfiniteCanvasState> canvasKey;
 
   @override
-  ConsumerState<CanvasSketchOverlay> createState() => _CanvasSketchOverlayState();
+  ConsumerState<CanvasSketchOverlay> createState() =>
+      _CanvasSketchOverlayState();
 }
 
 class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
@@ -31,19 +29,19 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
 
     return sketchAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, __stack) => const SizedBox.shrink(),
       data: (sketch) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onPanStart: (details) {
             if (toolState.tool == SketchTool.selector) return;
-            
+
             if (toolState.tool == SketchTool.eraser) {
               _eraseAt(sketch, details.localPosition);
               setState(() {});
               return;
             }
-            
+
             _isDrawing = true;
             _currentPoints = [details.localPosition];
             setState(() {});
@@ -54,12 +52,12 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
               setState(() {});
               return;
             }
-            
+
             if (!_isDrawing) return;
-            
+
             // Add point without setState - just update the list
             _currentPoints.add(details.localPosition);
-            
+
             // Force repaint by calling setState minimally
             (context as Element).markNeedsBuild();
           },
@@ -67,14 +65,14 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
             if (toolState.tool == SketchTool.eraser) {
               return;
             }
-            
+
             if (!_isDrawing || _currentPoints.length < 2) {
               _isDrawing = false;
               _currentPoints = [];
               setState(() {});
               return;
             }
-            
+
             // Convert screen points to canvas points and save
             final canvasState = widget.canvasKey.currentState;
             if (canvasState != null) {
@@ -89,10 +87,10 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
 
               final stroke = CanvasSketchStroke(
                 points: canvasPoints,
-                color: toolState.color.value,
+                color: toolState.color.toARGB32(),
                 width: toolState.brushSize,
               );
-              
+
               ref.read(canvasSketchNotifierProvider.notifier).addStroke(stroke);
             }
 
@@ -120,7 +118,7 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
     const eraserRadius = 20.0;
     final canvasState = widget.canvasKey.currentState;
     if (canvasState == null) return;
-    
+
     final canvasPosition = canvasState.screenToCanvas(screenPosition);
 
     final newStrokes = <CanvasSketchStroke>[];
@@ -151,21 +149,28 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
       if (keptSegments.isEmpty) {
         // Entire stroke erased - skip it
         continue;
-      } else if (keptSegments.length == 1 && keptSegments[0].length == stroke.points.length) {
+      } else if (keptSegments.length == 1 &&
+          keptSegments[0].length == stroke.points.length) {
         // Unchanged - keep original stroke
         newStrokes.add(stroke);
       } else {
         // Add each remaining segment as a new stroke
         for (final seg in keptSegments) {
           newStrokes.add(
-            CanvasSketchStroke(points: seg, color: stroke.color, width: stroke.width),
+            CanvasSketchStroke(
+              points: seg,
+              color: stroke.color,
+              width: stroke.width,
+            ),
           );
         }
       }
     }
 
     // Replace strokes in provider with the trimmed list
-    ref.read(canvasSketchNotifierProvider.notifier).setCanvasStrokes(newStrokes);
+    ref
+        .read(canvasSketchNotifierProvider.notifier)
+        .setCanvasStrokes(newStrokes);
   }
 }
 
@@ -192,12 +197,23 @@ class _CanvasSketchOverlayPainter extends CustomPainter {
     // Only draw the current, in-progress stroke on the overlay (saved strokes are
     // rendered by the canvas content layer so they participate in transforms).
     if (isDrawing && currentPoints.isNotEmpty) {
-      _drawStroke(canvas, currentPoints, currentColor, currentWidth, currentTool);
+      _drawStroke(
+        canvas,
+        currentPoints,
+        currentColor,
+        currentWidth,
+        currentTool,
+      );
     }
   }
 
-  void _drawStroke(Canvas canvas, List<Offset> points, Color color,
-      double width, SketchTool tool) {
+  void _drawStroke(
+    Canvas canvas,
+    List<Offset> points,
+    Color color,
+    double width,
+    SketchTool tool,
+  ) {
     if (points.length < 2) {
       if (points.isNotEmpty) {
         final paint = Paint()

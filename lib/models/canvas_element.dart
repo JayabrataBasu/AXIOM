@@ -176,12 +176,12 @@ class CanvasElement with _$CanvasElement {
     return when(
       standaloneBlock:
           (
-            String _id,
-            Position _position,
-            ContentBlock block,
-            DateTime _createdAt,
-            DateTime _updatedAt,
-            List<ElementLink> _links,
+                String id,
+                Position position,
+                ContentBlock block,
+                DateTime createdAt,
+                DateTime updatedAt,
+                List<ElementLink> links,
           ) {
             return switch (block) {
               TextBlock(:final content) when content.isNotEmpty => content,
@@ -190,13 +190,13 @@ class CanvasElement with _$CanvasElement {
               QuoteBlock(:final content) when content.isNotEmpty =>
                 '"$content"',
               MathBlock(:final latex) when latex.isNotEmpty => latex,
-              _ => '[Block]',
-            };
-          },
-      container:
-          (
-            String _id,
-            Position _position,
+                      String id,
+                      Position position,
+                      String name,
+                      DateTime createdAt,
+                      DateTime updatedAt,
+                      List<ContentBlock> blocks,
+                      List<ElementLink> links,
             String name,
             DateTime _createdAt,
             DateTime _updatedAt,

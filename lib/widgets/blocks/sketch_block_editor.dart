@@ -167,7 +167,9 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: theme.colorScheme.outlineVariant),
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(12),
+            ),
           ),
           child: SizedBox(
             height: 300,
@@ -178,14 +180,14 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                 if (toolState.tool == SketchTool.selector) {
                   return;
                 }
-                
+
                 if (toolState.tool == SketchTool.eraser) {
                   // Erase strokes that overlap this point
                   _eraseAt(details.localPosition);
                   setState(() {});
                   return;
                 }
-                
+
                 _currentStroke = [
                   SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
                 ];
@@ -193,16 +195,19 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               },
               onPanUpdate: (details) {
                 final toolState = ref.read(sketchToolsProvider);
-                
+
                 if (toolState.tool == SketchTool.eraser) {
                   _eraseAt(details.localPosition);
                   setState(() {});
                   return;
                 }
-                
+
                 if (_currentStroke.isNotEmpty) {
                   _currentStroke.add(
-                    SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
+                    SketchPoint.fromOffset(
+                      details.localPosition,
+                      pressure: 1.0,
+                    ),
                   );
                   // Minimal repaint trigger
                   (context as Element).markNeedsBuild();
@@ -214,13 +219,15 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                   _saveStrokes();
                   return;
                 }
-                
+
                 if (_currentStroke.isNotEmpty) {
-                  _strokes.add(SketchStroke(
-                    points: List.from(_currentStroke),
-                    color: toolState.color,
-                    width: toolState.brushSize,
-                  ));
+                  _strokes.add(
+                    SketchStroke(
+                      points: List.from(_currentStroke),
+                      color: toolState.color,
+                      width: toolState.brushSize,
+                    ),
+                  );
                   _currentStroke = [];
                   setState(() {});
                   _saveStrokes();
@@ -253,7 +260,9 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(12),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -279,10 +288,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
 
 /// Display (non-editable) version of a sketch block.
 class SketchBlockDisplay extends StatefulWidget {
-  const SketchBlockDisplay({
-    super.key,
-    required this.block,
-  });
+  const SketchBlockDisplay({super.key, required this.block});
 
   final ContentBlock block;
 
@@ -399,14 +405,25 @@ class _SketchCanvasPainter extends CustomPainter {
     }
   }
 
-  void _drawStroke(Canvas canvas, Paint paint, List<SketchPoint> points, SketchTool tool) {
+  void _drawStroke(
+    Canvas canvas,
+    Paint paint,
+    List<SketchPoint> points,
+    SketchTool tool,
+  ) {
     if (points.length < 2) {
       // Draw a single point as a small circle
       if (points.isNotEmpty) {
         final point = points[0];
-        final pressureWidth = (paint.strokeWidth * point.pressure).clamp(0.5, 50.0);
+        final pressureWidth = (paint.strokeWidth * point.pressure).clamp(
+          0.5,
+          50.0,
+        );
+        final pressureAlpha = (paint.color.a * point.pressure)
+            .clamp(0, 255)
+            .toDouble();
         final pressurePaint = Paint()
-          ..color = paint.color.withOpacity((paint.color.a * point.pressure).clamp(0, 1))
+          ..color = paint.color.withValues(alpha: pressureAlpha)
           ..strokeCap = paint.strokeCap
           ..strokeJoin = paint.strokeJoin
           ..strokeWidth = pressureWidth;
@@ -419,13 +436,16 @@ class _SketchCanvasPainter extends CustomPainter {
     for (int i = 0; i < points.length - 1; i++) {
       final p0 = points[i];
       final p1 = points[i + 1];
-      
+
       // Use average pressure for this segment
       final avgPressure = (p0.pressure + p1.pressure) / 2;
       final pressureWidth = (paint.strokeWidth * avgPressure).clamp(0.5, 50.0);
-      
+
+      final segmentAlpha = (paint.color.a * avgPressure)
+          .clamp(0, 255)
+          .toDouble();
       final segmentPaint = Paint()
-        ..color = paint.color.withOpacity((paint.color.a * avgPressure).clamp(0, 1))
+        ..color = paint.color.withValues(alpha: segmentAlpha)
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = pressureWidth;

@@ -15,7 +15,6 @@ class CanvasSketchLayer extends ConsumerStatefulWidget {
 class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   List<CanvasSketchPoint> _currentStroke = [];
 
-
   @override
   Widget build(BuildContext context) {
     final sketchAsync = ref.watch(canvasSketchNotifierProvider);
@@ -23,14 +22,14 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
 
     return sketchAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, __stack) => const SizedBox.shrink(),
       data: (sketch) {
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
           onPanStart: (details) {
             final toolState = ref.read(sketchToolsProvider);
             if (toolState.tool == SketchTool.selector) return;
-            
+
             setState(() {
               _currentStroke = [
                 CanvasSketchPoint(
@@ -44,7 +43,7 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
           onPanUpdate: (details) {
             final toolState = ref.read(sketchToolsProvider);
             if (toolState.tool == SketchTool.selector) return;
-            
+
             if (_currentStroke.isNotEmpty) {
               setState(() {
                 _currentStroke.add(
@@ -59,14 +58,14 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
           },
           onPanEnd: (details) {
             if (_currentStroke.isEmpty) return;
-            
+
             final toolState = ref.read(sketchToolsProvider);
             final notifier = ref.read(canvasSketchNotifierProvider.notifier);
 
             // Create stroke with current tool settings
             final stroke = CanvasSketchStroke(
               points: _currentStroke,
-              color: toolState.color.value,
+              color: toolState.color.toARGB32(),
               width: toolState.brushSize,
             );
 
@@ -135,9 +134,14 @@ class _CanvasSketchLayerPainter extends CustomPainter {
     if (points.length < 2) {
       if (points.isNotEmpty) {
         final point = points[0];
-        final pressureWidth = (paint.strokeWidth * point.pressure).clamp(0.5, 50.0);
+        final pressureWidth = (paint.strokeWidth * point.pressure).clamp(
+          0.5,
+          50.0,
+        );
         final pressurePaint = Paint()
-          ..color = paint.color.withOpacity((paint.color.a * point.pressure).clamp(0, 1))
+          ..color = paint.color.withOpacity(
+            (paint.color.a * point.pressure).clamp(0, 1),
+          )
           ..strokeCap = paint.strokeCap
           ..strokeJoin = paint.strokeJoin
           ..strokeWidth = pressureWidth;
@@ -154,13 +158,15 @@ class _CanvasSketchLayerPainter extends CustomPainter {
     for (int i = 0; i < points.length - 1; i++) {
       final p0 = points[i];
       final p1 = points[i + 1];
-      
+
       // Use average pressure for this segment
       final avgPressure = (p0.pressure + p1.pressure) / 2;
       final pressureWidth = (paint.strokeWidth * avgPressure).clamp(0.5, 50.0);
-      
+
       final segmentPaint = Paint()
-        ..color = paint.color.withOpacity((paint.color.a * avgPressure).clamp(0, 1))
+        ..color = paint.color.withOpacity(
+          (paint.color.a * avgPressure).clamp(0, 1),
+        )
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = pressureWidth;

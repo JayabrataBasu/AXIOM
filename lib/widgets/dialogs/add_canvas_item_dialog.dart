@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/content_block.dart';
 
 enum CanvasItemType {
   container,
