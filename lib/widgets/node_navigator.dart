@@ -89,12 +89,14 @@ class _NodeNavigatorState extends ConsumerState<NodeNavigator> {
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Header
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   Icon(Icons.map, color: theme.colorScheme.primary, size: 20),
                   const SizedBox(width: 8),
@@ -105,8 +107,10 @@ class _NodeNavigatorState extends ConsumerState<NodeNavigator> {
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 4),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
                     onPressed: () => setState(() => _isExpanded = false),
@@ -157,6 +161,7 @@ class _NodeNavigatorState extends ConsumerState<NodeNavigator> {
                   ),
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.05),
+                  isDense: true,
                 ),
                 style: const TextStyle(color: Colors.white, fontSize: 14),
                 cursorColor: theme.colorScheme.primary,
@@ -179,7 +184,10 @@ class _NodeNavigatorState extends ConsumerState<NodeNavigator> {
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       itemCount: filteredNodes.length,
                       itemBuilder: (context, index) {
                         final node = filteredNodes[index];
@@ -191,12 +199,24 @@ class _NodeNavigatorState extends ConsumerState<NodeNavigator> {
                             type: MaterialType.transparency,
                             child: InkWell(
                               onTap: () {
+                                // Trigger centering callback
                                 widget.onNodeSelect(node.id);
-                                setState(() => _isExpanded = false);
+                                // Keep panel open briefly so user sees selection
+                                Future.delayed(
+                                  const Duration(milliseconds: 300),
+                                  () {
+                                    if (mounted) {
+                                      setState(() => _isExpanded = false);
+                                    }
+                                  },
+                                );
                               },
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
                                 padding: const EdgeInsets.all(10),
+                                constraints: const BoxConstraints(
+                                  minHeight: 48,
+                                ),
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? theme.colorScheme.primary.withValues(

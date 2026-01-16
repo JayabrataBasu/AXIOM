@@ -110,41 +110,52 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
             // Doodle layer (draw on canvas without creating nodes)
             if (_doodleMode)
               Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onPanStart: (details) {
-                    setState(() {
-                      _currentDoodleStroke = [details.globalPosition];
-                    });
-                  },
-                  onPanUpdate: (details) {
-                    setState(() {
-                      _currentDoodleStroke.add(details.globalPosition);
-                    });
-                  },
-                  onPanEnd: (_) {
-                    if (_currentDoodleStroke.isNotEmpty) {
+                child: RepaintBoundary(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onPanStart: (details) {
                       setState(() {
-                        _doodleStrokes.add(
-                          DoodleStroke(
-                            points: _currentDoodleStroke,
-                            color: _doodleColor,
-                            width: _doodleWidth,
-                            createdAt: DateTime.now(),
-                          ),
-                        );
-                        _currentDoodleStroke = [];
+                        _currentDoodleStroke = [details.globalPosition];
                       });
-                    }
-                  },
-                  child: CustomPaint(
-                    painter: DoodleCanvasPainter(
-                      strokes: _doodleStrokes,
-                      currentStroke: _currentDoodleStroke,
-                      currentColor: _doodleColor,
-                      currentWidth: _doodleWidth,
+                    },
+                    onPanUpdate: (details) {
+                      // Throttle updates - only add point if moved sufficiently
+                      final lastPoint = _currentDoodleStroke.isNotEmpty
+                          ? _currentDoodleStroke.last
+                          : null;
+                      if (lastPoint == null ||
+                          (details.globalPosition - lastPoint).distance > 2.0) {
+                        setState(() {
+                          _currentDoodleStroke.add(details.globalPosition);
+                        });
+                      }
+                    },
+                    onPanEnd: (_) {
+                      if (_currentDoodleStroke.isNotEmpty) {
+                        setState(() {
+                          _doodleStrokes.add(
+                            DoodleStroke(
+                              points: List.from(_currentDoodleStroke),
+                              color: _doodleColor,
+                              width: _doodleWidth,
+                              createdAt: DateTime.now(),
+                            ),
+                          );
+                          _currentDoodleStroke = [];
+                        });
+                      }
+                    },
+                    child: CustomPaint(
+                      painter: DoodleCanvasPainter(
+                        strokes: _doodleStrokes,
+                        currentStroke: _currentDoodleStroke,
+                        currentColor: _doodleColor,
+                        currentWidth: _doodleWidth,
+                      ),
+                      size: Size.infinite,
+                      isComplex: true,
+                      willChange: true,
                     ),
-                    size: Size.infinite,
                   ),
                 ),
               ),
@@ -177,7 +188,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         nodes: nodes,
         selectedNodeId: viewState.selectedNodeId,
         onNodeSelect: (nodeId) {
-          _canvasKey.currentState?.centerOn(_getNodePosition(nodes, nodeId));
+          final position = _getNodePosition(nodes, nodeId);
+          // ignore: avoid_print
+          print('CANVAS: Centering on node $nodeId at position $position');
+
+          _canvasKey.currentState?.centerOn(position);
           ref.read(canvasViewProvider.notifier).selectNode(nodeId);
         },
       ),

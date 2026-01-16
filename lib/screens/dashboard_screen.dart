@@ -2,11 +2,9 @@
 /// Based on Stitch design: axiom_home_dashboard
 library;
 
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../routing/app_router.dart';
 
 import '../theme/design_tokens.dart';
 import '../widgets/components/axiom_card.dart';
@@ -337,15 +335,16 @@ class DashboardScreen extends ConsumerWidget {
         // ignore: avoid_print
         print('DASHBOARD: workspace card tapped -> ${session.id}');
 
-        // Read all providers BEFORE any async operations
-        final router = ref.read(routerProvider);
-        final activeWorkspaceNotifier = ref.read(
-          activeWorkspaceIdProvider.notifier,
-        );
+        // Navigate FIRST to avoid router rebuild from state change
+        context.push('/workspace/${session.id}');
 
-        // Set active workspace and navigate immediately
-        unawaited(activeWorkspaceNotifier.setActiveWorkspace(session.id));
-        router.go('/workspace/${session.id}');
+        // THEN set active workspace in post-frame callback
+        // This ensures state change happens AFTER navigation starts
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref
+              .read(activeWorkspaceIdProvider.notifier)
+              .setActiveWorkspace(session.id);
+        });
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

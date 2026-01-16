@@ -31,16 +31,30 @@ class DoodleCanvasPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Draw all completed strokes
+    // Draw all completed strokes using paths for better performance
     for (final stroke in strokes) {
+      if (stroke.points.isEmpty) continue;
+
       final paint = Paint()
         ..color = stroke.color
         ..strokeWidth = stroke.width
         ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round;
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
 
-      for (int i = 0; i < stroke.points.length - 1; i++) {
-        canvas.drawLine(stroke.points[i], stroke.points[i + 1], paint);
+      if (stroke.points.length == 1) {
+        // Single point - draw a circle
+        canvas.drawCircle(stroke.points[0], stroke.width / 2, paint);
+      } else {
+        // Multiple points - draw as path
+        final path = Path();
+        path.moveTo(stroke.points[0].dx, stroke.points[0].dy);
+
+        for (int i = 1; i < stroke.points.length; i++) {
+          path.lineTo(stroke.points[i].dx, stroke.points[i].dy);
+        }
+
+        canvas.drawPath(path, paint);
       }
     }
 
@@ -50,18 +64,28 @@ class DoodleCanvasPainter extends CustomPainter {
         ..color = currentColor
         ..strokeWidth = currentWidth
         ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round;
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
 
-      for (int i = 0; i < currentStroke.length - 1; i++) {
-        canvas.drawLine(currentStroke[i], currentStroke[i + 1], paint);
+      if (currentStroke.length == 1) {
+        canvas.drawCircle(currentStroke[0], currentWidth / 2, paint);
+      } else {
+        final path = Path();
+        path.moveTo(currentStroke[0].dx, currentStroke[0].dy);
+
+        for (int i = 1; i < currentStroke.length; i++) {
+          path.lineTo(currentStroke[i].dx, currentStroke[i].dy);
+        }
+
+        canvas.drawPath(path, paint);
       }
     }
   }
 
   @override
   bool shouldRepaint(DoodleCanvasPainter oldDelegate) {
-    return oldDelegate.strokes != strokes ||
-        oldDelegate.currentStroke != currentStroke;
+    return oldDelegate.strokes.length != strokes.length ||
+        oldDelegate.currentStroke.length != currentStroke.length;
   }
 }
 

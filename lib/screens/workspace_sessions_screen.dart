@@ -25,17 +25,16 @@ class _WorkspaceSessionsScreenState
       // ignore: avoid_print
       print('WORKSPACES: opening workspace -> ${session.id}');
 
-      // Read all providers BEFORE any async operations (avoid using ref after widget disposal)
-      final activeWorkspaceNotifier = ref.read(
-        activeWorkspaceIdProvider.notifier,
-      );
-
-      // Set active workspace without awaiting (fire and forget)
-      unawaited(activeWorkspaceNotifier.setActiveWorkspace(session.id));
-
-      // Navigate immediately - AppShell will handle loading the workspace
+      // Navigate FIRST to avoid router rebuild from state change
       if (mounted) {
-        context.go('/workspace/${session.id}');
+        context.push('/workspace/${session.id}');
+
+        // THEN set active workspace in post-frame callback
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ref
+              .read(activeWorkspaceIdProvider.notifier)
+              .setActiveWorkspace(session.id);
+        });
       }
     } catch (e) {
       if (mounted) {
