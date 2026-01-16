@@ -122,7 +122,7 @@ class SearchService {
         return null;
     }
 
-    if (content == null || content.isEmpty) return null;
+    if (content.isEmpty) return null;
 
     final score = _calculateScore(content, query);
     if (score <= 0) return null;
