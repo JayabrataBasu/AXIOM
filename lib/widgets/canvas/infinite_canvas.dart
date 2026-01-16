@@ -122,6 +122,39 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
     widget.onScaleChanged?.call(clampedScale);
   }
 
+  /// Zoom to fit all content with given bounds and padding.
+  void zoomToFit(Rect contentBounds, {double padding = 100.0}) {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final viewportSize = renderBox.size;
+
+    // Add padding to content bounds
+    final paddedBounds = contentBounds.inflate(padding);
+
+    // Calculate scale to fit content in viewport
+    final scaleX = viewportSize.width / paddedBounds.width;
+    final scaleY = viewportSize.height / paddedBounds.height;
+    final scale = (scaleX < scaleY ? scaleX : scaleY).clamp(
+      widget.minScale,
+      widget.maxScale,
+    );
+
+    // Center on the middle of content bounds
+    final centerX = paddedBounds.left + paddedBounds.width / 2;
+    final centerY = paddedBounds.top + paddedBounds.height / 2;
+
+    final newX = viewportSize.width / 2 - centerX * scale;
+    final newY = viewportSize.height / 2 - centerY * scale;
+
+    final matrix = Matrix4.identity()
+      ..translateByVector3(Vector3(newX, newY, 0))
+      ..scaleByVector3(Vector3(scale, scale, 1));
+
+    _controller.value = matrix;
+    widget.onScaleChanged?.call(scale);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Listener(

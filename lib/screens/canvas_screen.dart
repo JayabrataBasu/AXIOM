@@ -193,9 +193,6 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         selectedNodeId: viewState.selectedNodeId,
         onNodeSelect: (nodeId) {
           final position = _getNodePosition(nodes, nodeId);
-          // ignore: avoid_print
-          print('CANVAS: Centering on node $nodeId at position $position');
-
           _canvasKey.currentState?.centerOn(position);
           ref.read(canvasViewProvider.notifier).selectNode(nodeId);
         },
@@ -292,6 +289,44 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                     iconSize: 24,
                   ),
                   const SizedBox(width: 4),
+                  // Zoom to fit button
+                  IconButton(
+                    icon: const Icon(Icons.fit_screen),
+                    onPressed: () {
+                      final nodes =
+                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                      if (nodes.isEmpty) return;
+
+                      // Calculate bounds of all nodes
+                      double minX = nodes.first.position.x;
+                      double minY = nodes.first.position.y;
+                      double maxX = nodes.first.position.x;
+                      double maxY = nodes.first.position.y;
+
+                      for (final node in nodes) {
+                        if (node.position.x < minX) minX = node.position.x;
+                        if (node.position.y < minY) minY = node.position.y;
+                        if (node.position.x > maxX) maxX = node.position.x;
+                        if (node.position.y > maxY) maxY = node.position.y;
+                      }
+
+                      // Add approximate node dimensions (230x120)
+                      final bounds = Rect.fromLTRB(
+                        minX,
+                        minY,
+                        maxX + 230,
+                        maxY + 120,
+                      );
+                      _canvasKey.currentState?.zoomToFit(bounds);
+                    },
+                    tooltip: 'Fit all nodes',
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    iconSize: 24,
+                  ),
+                  const SizedBox(width: 4),
                   // Zoom indicator
                   Container(
                     height: 32,
@@ -317,39 +352,86 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 ],
               )
             else
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () async {
-                  final nav = await Navigator.push<search.SearchNavigation?>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const SearchNodesScreen(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () async {
+                      final nav =
+                          await Navigator.push<search.SearchNavigation?>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SearchNodesScreen(),
+                            ),
+                          );
+
+                      if (nav == null) return;
+
+                      final nodes =
+                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                      final position = _getNodePosition(nodes, nav.nodeId);
+                      _canvasKey.currentState?.centerOn(position);
+                      ref
+                          .read(canvasViewProvider.notifier)
+                          .selectNode(nav.nodeId);
+
+                      if (nav.blockId.isNotEmpty && mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => NodeEditorScreen(
+                              nodeId: nav.nodeId,
+                              highlightBlockId: nav.blockId,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    tooltip: 'Search nodes',
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
                     ),
-                  );
+                    iconSize: 24,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.fit_screen),
+                    onPressed: () {
+                      final nodes =
+                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                      if (nodes.isEmpty) return;
 
-                  if (nav == null) return;
+                      // Calculate bounds of all nodes
+                      double minX = nodes.first.position.x;
+                      double minY = nodes.first.position.y;
+                      double maxX = nodes.first.position.x;
+                      double maxY = nodes.first.position.y;
 
-                  final nodes =
-                      ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                  final position = _getNodePosition(nodes, nav.nodeId);
-                  _canvasKey.currentState?.centerOn(position);
-                  ref.read(canvasViewProvider.notifier).selectNode(nav.nodeId);
+                      for (final node in nodes) {
+                        if (node.position.x < minX) minX = node.position.x;
+                        if (node.position.y < minY) minY = node.position.y;
+                        if (node.position.x > maxX) maxX = node.position.x;
+                        if (node.position.y > maxY) maxY = node.position.y;
+                      }
 
-                  if (nav.blockId.isNotEmpty && mounted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => NodeEditorScreen(
-                          nodeId: nav.nodeId,
-                          highlightBlockId: nav.blockId,
-                        ),
-                      ),
-                    );
-                  }
-                },
-                tooltip: 'Search nodes',
-                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                iconSize: 24,
+                      // Add approximate node dimensions (230x120)
+                      final bounds = Rect.fromLTRB(
+                        minX,
+                        minY,
+                        maxX + 230,
+                        maxY + 120,
+                      );
+                      _canvasKey.currentState?.zoomToFit(bounds);
+                    },
+                    tooltip: 'Fit all nodes',
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    iconSize: 24,
+                  ),
+                ],
               ),
           ],
         ),
@@ -372,26 +454,21 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       (n) => n.id == nodeId,
       orElse: () => nodes.first,
     );
-    
+
     // Calculate minX and minY the same way canvas_content does
     const padding = 2000.0; // CanvasContent.padding
     double minX = -padding;
     double minY = -padding;
-    
+
     for (final n in nodes) {
       minX = minX < n.position.x - padding ? minX : n.position.x - padding;
       minY = minY < n.position.y - padding ? minY : n.position.y - padding;
     }
-    
+
     // Return position in canvas rendering coordinates (node.position - min offset)
     final renderX = node.position.x - minX;
     final renderY = node.position.y - minY;
-    
-    // Debug logging
-    // ignore: avoid_print
-    print('DEBUG: Node ${node.name} stored at (${node.position.x}, ${node.position.y}), '
-        'minX=$minX, minY=$minY, rendering at ($renderX, $renderY)');
-    
+
     return Offset(renderX, renderY);
   }
 
