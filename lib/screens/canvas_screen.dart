@@ -28,6 +28,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
   Rect? _contentBounds;
+  Offset _canvasOrigin = Offset.zero;
   String? _recentlyCreatedNodeId;
   Timer? _newNodeHighlightTimer;
   Rect? _viewportRect;
@@ -101,7 +102,9 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   onNodeDragEnd: _onNodeDragEnd,
                   onCanvasTap: _onCanvasTap,
                   onCanvasDoubleTap: _onCanvasDoubleTap,
-                  onCanvasInfoChanged: (_) {},
+                  onCanvasInfoChanged: (origin) {
+                    setState(() => _canvasOrigin = origin);
+                  },
                   onBoundsChanged: (bounds) {
                     setState(() => _contentBounds = bounds);
                     _updateViewportRect();
@@ -188,6 +191,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   bounds: _contentBounds!,
                   viewport: _viewportRect!,
                   nodes: nodesAsync.valueOrNull ?? const [],
+                  origin: _canvasOrigin,
                   onJumpToScene: (scenePos) {
                     _canvasKey.currentState?.centerOn(scenePos);
                   },
@@ -279,16 +283,18 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () async {
+                      if (!mounted) return;
+                      // ignore: use_build_context_synchronously
+                      final ctx = context; // Capture context before async gap
                       final nav =
                           await Navigator.push<search.SearchNavigation?>(
-                            context,
+                            ctx,
                             MaterialPageRoute(
                               builder: (_) => const SearchNodesScreen(),
                             ),
                           );
 
-                      if (nav == null) return;
-                      if (!mounted) return;
+                      if (nav == null || !mounted) return;
 
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
@@ -299,8 +305,9 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                           .selectNode(nav.nodeId);
 
                       if (nav.blockId.isNotEmpty && mounted) {
+                        // ignore: use_build_context_synchronously
                         Navigator.push(
-                          context,
+                          ctx,
                           MaterialPageRoute(
                             builder: (_) => NodeEditorScreen(
                               nodeId: nav.nodeId,
@@ -403,16 +410,18 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () async {
+                      if (!mounted) return;
+                      // ignore: use_build_context_synchronously
+                      final ctx = context; // Capture context before async gap
                       final nav =
                           await Navigator.push<search.SearchNavigation?>(
-                            context,
+                            ctx,
                             MaterialPageRoute(
                               builder: (_) => const SearchNodesScreen(),
                             ),
                           );
 
-                      if (nav == null) return;
-                      if (!mounted) return;
+                      if (nav == null || !mounted) return;
 
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
@@ -423,8 +432,9 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                           .selectNode(nav.nodeId);
 
                       if (nav.blockId.isNotEmpty && mounted) {
+                        // ignore: use_build_context_synchronously
                         Navigator.push(
-                          context,
+                          ctx,
                           MaterialPageRoute(
                             builder: (_) => NodeEditorScreen(
                               nodeId: nav.nodeId,
@@ -517,21 +527,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       orElse: () => nodes.first,
     );
 
-    // Calculate minX and minY the same way canvas_content does
-    const padding = 2000.0; // CanvasContent.padding
-    double minX = -padding;
-    double minY = -padding;
-
-    for (final n in nodes) {
-      minX = minX < n.position.x - padding ? minX : n.position.x - padding;
-      minY = minY < n.position.y - padding ? minY : n.position.y - padding;
-    }
-
-    // Return position in canvas rendering coordinates (node.position - min offset)
-    final renderX = node.position.x - minX;
-    final renderY = node.position.y - minY;
-
-    return Offset(renderX, renderY);
+    // Convert node position to render coordinates by adding origin offset
+    return Offset(
+      node.position.x + _canvasOrigin.dx,
+      node.position.y + _canvasOrigin.dy,
+    );
   }
 
   Widget _buildFAB(ThemeData theme) {

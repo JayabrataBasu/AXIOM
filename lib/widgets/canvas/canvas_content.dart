@@ -284,8 +284,8 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
     // Origin position in scene coordinates (where 0,0 is rendered)
     final originInScene = Offset(-minX, -minY);
 
-    // Create bounds rect
-    final bounds = Rect.fromLTWH(minX, minY, width, height);
+    // Create bounds rect in scene coordinates (render space)
+    final bounds = Rect.fromLTWH(0, 0, width, height);
 
     // Report canvas info and bounds after build
     WidgetsBinding.instance.addPostFrameCallback((_) {

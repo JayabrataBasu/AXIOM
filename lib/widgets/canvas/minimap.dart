@@ -8,12 +8,14 @@ class CanvasMinimap extends StatelessWidget {
     required this.bounds,
     required this.viewport,
     required this.nodes,
+    required this.origin,
     required this.onJumpToScene,
   });
 
   final Rect bounds;
   final Rect viewport;
   final List<IdeaNode> nodes;
+  final Offset origin;
   final ValueChanged<Offset> onJumpToScene;
 
   @override
@@ -33,6 +35,13 @@ class CanvasMinimap extends StatelessWidget {
     final vpTopLeft = project(viewport.topLeft);
     final vpSize = Size(viewport.width * scale, viewport.height * scale);
 
+    // Ensure jump target stays within rendered bounds
+    Offset clampToBounds(Offset scene) {
+      final clampedX = scene.dx.clamp(bounds.left, bounds.right);
+      final clampedY = scene.dy.clamp(bounds.top, bounds.bottom);
+      return Offset(clampedX, clampedY);
+    }
+
     return Material(
       elevation: 6,
       color: Colors.transparent,
@@ -43,7 +52,7 @@ class CanvasMinimap extends StatelessWidget {
             bounds.left + (local.dx - padding) / scale,
             bounds.top + (local.dy - padding) / scale,
           );
-          onJumpToScene(scene);
+          onJumpToScene(clampToBounds(scene));
         },
         child: Container(
           width: size,
@@ -58,7 +67,9 @@ class CanvasMinimap extends StatelessWidget {
             children: [
               // Nodes
               ...nodes.map((n) {
-                final pos = project(Offset(n.position.x, n.position.y));
+                final pos = project(
+                  Offset(n.position.x + origin.dx, n.position.y + origin.dy),
+                );
                 return Positioned(
                   left: pos.dx - 2,
                   top: pos.dy - 2,

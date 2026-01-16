@@ -16,9 +16,9 @@ class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   void _showFeatureHint(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
