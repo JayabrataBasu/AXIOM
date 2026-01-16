@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../constants/spacing.dart';
 import '../models/workspace_session.dart';
 import '../providers/workspace_providers.dart';
@@ -20,20 +22,25 @@ class _WorkspaceSessionsScreenState
 
   Future<void> _openSession(WorkspaceSession session) async {
     try {
-      // Set as active workspace - this will trigger navigation in the app shell
-      await ref
-          .read(activeWorkspaceIdProvider.notifier)
-          .setActiveWorkspace(session.id);
+      // ignore: avoid_print
+      print('WORKSPACES: opening workspace -> ${session.id}');
 
-      // Pop back to let the app routing handle the navigation
+      // Read all providers BEFORE any async operations (avoid using ref after widget disposal)
+      final activeWorkspaceNotifier =
+          ref.read(activeWorkspaceIdProvider.notifier);
+
+      // Set active workspace without awaiting (fire and forget)
+      unawaited(activeWorkspaceNotifier.setActiveWorkspace(session.id));
+
+      // Navigate immediately - AppShell will handle loading the workspace
       if (mounted) {
-        Navigator.of(context).pop();
+        context.go('/workspace/${session.id}');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error opening workspace: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error opening workspace: $e')),
+        );
       }
     }
   }

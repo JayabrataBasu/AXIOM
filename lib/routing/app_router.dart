@@ -11,9 +11,6 @@ import '../main.dart' show AppShell;
 
 /// Provider for GoRouter instance
 final routerProvider = Provider<GoRouter>((ref) {
-  final isOnboarding = ref.watch(isOnboardingProvider);
-  final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
-
   return GoRouter(
     // Start with splash screen
     initialLocation: '/splash',
@@ -53,6 +50,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'workspace',
         builder: (context, state) {
           final workspaceId = state.pathParameters['id']!;
+          // ignore: avoid_print
+          print('ROUTER: Navigating to /workspace/$workspaceId');
           return AppShell(workspaceId: workspaceId);
         },
         routes: [
@@ -80,6 +79,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/',
         name: 'root',
         builder: (context, state) {
+          // Read providers inside the builder, not at router level
+          // This prevents router rebuilds when active workspace changes
+          final container = ProviderScope.containerOf(context);
+          final isOnboarding = container.read(isOnboardingProvider);
+          final activeWorkspaceId = container.read(activeWorkspaceIdProvider);
+
           // Determine where to go based on app state
           if (isOnboarding) {
             return const WelcomeScreen();

@@ -27,6 +27,10 @@ class ActiveWorkspaceNotifier extends StateNotifier<String?> {
 
   /// Set the active workspace and persist
   Future<void> setActiveWorkspace(String workspaceId) async {
+    // Debug logging for navigation issues
+    // ignore: avoid_print
+    print('ACTIVE_WORKSPACE: setting active workspace -> $workspaceId');
+
     state = workspaceId;
     await _preferencesService.setString(_storageKey, workspaceId);
   }

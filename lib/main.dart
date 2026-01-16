@@ -9,6 +9,7 @@ import 'services/canvas_sketch_service.dart';
 import 'services/preferences_service.dart';
 import 'providers/workspace_state_provider.dart';
 import 'providers/workspace_providers.dart';
+
 import 'theme/axiom_theme.dart';
 import 'routing/app_router.dart';
 
@@ -78,25 +79,44 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ignore: avoid_print
+    print('APPSHELL: Building AppShell for workspace $workspaceId');
+    
     final sessionAsync = ref.watch(workspaceSessionProvider(workspaceId));
 
     return sessionAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (err, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: Center(child: Text('Error loading workspace: $err')),
-      ),
+      loading: () {
+        // ignore: avoid_print
+        print('APPSHELL: Loading workspace $workspaceId...');
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
+      error: (err, stack) {
+        // ignore: avoid_print
+        print('APPSHELL: Error loading workspace $workspaceId: $err');
+        return Scaffold(
+          appBar: AppBar(title: const Text('Error')),
+          body: Center(child: Text('Error loading workspace: $err')),
+        );
+      },
       data: (session) {
         if (session == null) {
-          // Workspace was deleted, go back to onboarding
+          // Workspace not found - return loading indicator and schedule a refresh
+          // This handles transient cache misses where the repo hasn't loaded yet
+          // ignore: avoid_print
+          print('APPSHELL: workspace not found for id $workspaceId — will refresh provider');
+
+          // Invalidate and refresh the provider to retry
           Future.microtask(() {
-            ref.read(activeWorkspaceIdProvider.notifier).clearActive();
+            ref.refresh(workspaceSessionProvider(workspaceId));
           });
+
           return const Scaffold(
-            body: Center(child: Text('Workspace not found')),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
+
+        // ignore: avoid_print
+        print('APPSHELL: Successfully loaded workspace $workspaceId (${session.label})');
 
         // Route to appropriate workspace viewer based on type
         switch (session.workspaceType) {
