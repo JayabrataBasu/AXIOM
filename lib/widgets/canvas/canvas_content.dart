@@ -14,6 +14,7 @@ class CanvasContent extends ConsumerStatefulWidget {
     super.key,
     required this.nodes,
     required this.selectedNodeId,
+    this.highlightNodeId,
     required this.onNodeTap,
     required this.onNodeDoubleTap,
     required this.onNodeDragEnd,
@@ -25,6 +26,7 @@ class CanvasContent extends ConsumerStatefulWidget {
 
   final List<IdeaNode> nodes;
   final String? selectedNodeId;
+  final String? highlightNodeId;
   final ValueChanged<String> onNodeTap;
   final ValueChanged<String> onNodeDoubleTap;
   final void Function(String nodeId, Offset delta) onNodeDragEnd;
@@ -430,12 +432,14 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
               // Render nodes
               ...widget.nodes.map((node) {
                 final isSelected = node.id == widget.selectedNodeId;
+                final isHighlighted = node.id == widget.highlightNodeId;
                 return Positioned(
                   left: node.position.x - minX,
                   top: node.position.y - minY,
                   child: IdeaNodeCard(
                     node: node,
                     isSelected: isSelected,
+                    isHighlighted: isHighlighted,
                     onTap: () => widget.onNodeTap(node.id),
                     onDoubleTap: () => widget.onNodeDoubleTap(node.id),
                     onDragEnd: (delta) => widget.onNodeDragEnd(node.id, delta),

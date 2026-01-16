@@ -8,6 +8,7 @@ class IdeaNodeCard extends ConsumerStatefulWidget {
     super.key,
     required this.node,
     required this.isSelected,
+    required this.isHighlighted,
     required this.onTap,
     required this.onDoubleTap,
     required this.onDragEnd,
@@ -15,6 +16,7 @@ class IdeaNodeCard extends ConsumerStatefulWidget {
 
   final IdeaNode node;
   final bool isSelected;
+  final bool isHighlighted;
   final VoidCallback onTap;
   final VoidCallback onDoubleTap;
   final ValueChanged<Offset> onDragEnd;
@@ -31,6 +33,17 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final highlightActive = widget.isHighlighted;
+    final borderColor = widget.isSelected
+      ? colorScheme.primary.withValues(alpha: 0.8)
+      : highlightActive
+        ? colorScheme.primary.withValues(alpha: 0.6)
+        : Colors.white.withValues(alpha: 0.05);
+    final borderWidth = widget.isSelected
+      ? 1.5
+      : highlightActive
+        ? 1.3
+        : 1.0;
 
     return Transform.translate(
       offset: _isDragging ? _dragOffset : Offset.zero,
@@ -61,40 +74,41 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
           });
           widget.onDragEnd(finalOffset);
         },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          constraints: const BoxConstraints(
-            minWidth: 180,
-            maxWidth: 280,
-            minHeight: 60,
-          ),
-          decoration: BoxDecoration(
-            // Match Stitch design: surface-dark color with etched shadow
-            color: const Color(0xFF24272C),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: widget.isSelected
-                  ? colorScheme.primary.withValues(alpha: 0.8)
-                  : Colors.white.withValues(alpha: 0.05),
-              width: widget.isSelected ? 1.5 : 1,
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 160),
+          scale: highlightActive && !_isDragging ? 1.03 : 1.0,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            constraints: const BoxConstraints(
+              minWidth: 180,
+              maxWidth: 280,
+              minHeight: 60,
             ),
-            boxShadow: [
-              // Dark shadow on bottom-right
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 4,
-                offset: const Offset(2, 4),
+            decoration: BoxDecoration(
+              // Match Stitch design: surface-dark color with etched shadow
+              color: const Color(0xFF24272C),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: borderColor,
+                width: borderWidth,
               ),
-              // Glow effect when selected
-              if (widget.isSelected)
+              boxShadow: [
+                // Dark shadow on bottom-right
                 BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.2),
-                  blurRadius: 15,
-                  spreadRadius: 0,
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                  offset: const Offset(2, 4),
                 ),
-            ],
-          ),
-          child: Material(
+                // Glow effect when selected or highlighted
+                if (widget.isSelected || highlightActive)
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.25),
+                    blurRadius: 15,
+                    spreadRadius: 0,
+                  ),
+              ],
+            ),
+            child: Material(
             color: Colors.transparent,
             child: Padding(
               padding: const EdgeInsets.all(12),

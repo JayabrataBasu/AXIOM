@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +28,8 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
   Rect? _contentBounds;
+  String? _recentlyCreatedNodeId;
+  Timer? _newNodeHighlightTimer;
   // ignore: prefer_final_fields
   bool _sketchMode = false;
   bool _doodleMode = false;
@@ -37,6 +41,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
   @override
   void dispose() {
+    _newNodeHighlightTimer?.cancel();
     _focusNode.dispose();
     super.dispose();
   }
@@ -88,6 +93,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 child: CanvasContent(
                   nodes: nodes,
                   selectedNodeId: viewState.selectedNodeId,
+                  highlightNodeId: _recentlyCreatedNodeId,
                   onNodeTap: _onNodeTap,
                   onNodeDoubleTap: _onNodeDoubleTap,
                   onNodeDragEnd: _onNodeDragEnd,
@@ -620,6 +626,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
     // Select the new node
     ref.read(canvasViewProvider.notifier).selectNode(node.id);
+    _highlightNewNode(node.id);
 
     // Show a snackbar
     if (mounted) {
@@ -634,6 +641,18 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         ),
       );
     }
+  }
+
+  void _highlightNewNode(String nodeId) {
+    _newNodeHighlightTimer?.cancel();
+    setState(() {
+      _recentlyCreatedNodeId = nodeId;
+    });
+
+    _newNodeHighlightTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      setState(() => _recentlyCreatedNodeId = null);
+    });
   }
 
   void _onCanvasTap() {
@@ -660,6 +679,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         );
     // Select the new node
     ref.read(canvasViewProvider.notifier).selectNode(node.id);
+    _highlightNewNode(node.id);
   }
 
   void _openNodeEditor(String nodeId) {

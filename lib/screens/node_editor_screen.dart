@@ -5,11 +5,6 @@ import '../services/audio_service.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
-import '../widgets/blocks/sketch_block_editor.dart';
-import '../widgets/blocks/math_block_editor.dart';
-import '../widgets/blocks/audio_block_editor.dart';
-import '../widgets/blocks/audio_recorder_dialog.dart';
-import '../widgets/blocks/workspace_ref_block.dart';
 
 /// Full-screen editor for an IdeaNode.
 class NodeEditorScreen extends ConsumerStatefulWidget {
