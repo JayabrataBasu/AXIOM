@@ -1,5 +1,16 @@
 import '../models/models.dart';
 
+/// Navigation payload from search result to canvas and editor.
+class SearchNavigation {
+  const SearchNavigation({
+    required this.nodeId,
+    required this.blockId,
+  });
+
+  final String nodeId;
+  final String blockId; // Empty string if no specific block
+}
+
 /// Search result containing a matching node and preview of matching content.
 class SearchResult {
   SearchResult({

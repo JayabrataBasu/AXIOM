@@ -13,9 +13,14 @@ import '../widgets/blocks/workspace_ref_block.dart';
 
 /// Full-screen editor for an IdeaNode.
 class NodeEditorScreen extends ConsumerStatefulWidget {
-  const NodeEditorScreen({super.key, required this.nodeId});
+  const NodeEditorScreen({
+    super.key,
+    required this.nodeId,
+    this.highlightBlockId,
+  });
 
   final String nodeId;
+  final String? highlightBlockId;
 
   @override
   ConsumerState<NodeEditorScreen> createState() => _NodeEditorScreenState();
@@ -27,12 +32,48 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   late TextEditingController _nodeNameController;
   late FocusNode _nodeNameFocusNode;
   String? _activeNodeId;
+  String? _highlightedBlockId;
+  late Timer _highlightFadeTimer;
 
   @override
   void initState() {
     super.initState();
     _nodeNameController = TextEditingController();
     _nodeNameFocusNode = FocusNode();
+    _highlightedBlockId = widget.highlightBlockId;
+    
+    // Start fade-out timer for highlight (visible for 3 seconds)
+    if (_highlightedBlockId != null) {
+      _highlightFadeTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _highlightedBlockId = null;
+          });
+        }
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(NodeEditorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // If the highlightBlockId changed (e.g., user tapped another search result), restart highlight
+    if (oldWidget.highlightBlockId != widget.highlightBlockId && widget.highlightBlockId != null) {
+      _highlightFadeTimer.cancel();
+      setState(() {
+        _highlightedBlockId = widget.highlightBlockId;
+      });
+      
+      // Restart fade-out timer
+      _highlightFadeTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _highlightedBlockId = null;
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -41,6 +82,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     _nameDebounce?.cancel();
     _nodeNameController.dispose();
     _nodeNameFocusNode.dispose();
+    _highlightFadeTimer.cancel();
     super.dispose();
   }
 
@@ -294,7 +336,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   }
 
   Widget _buildBlockEditor(IdeaNode node, ContentBlock block, int index) {
-    return switch (block) {
+    final isHighlighted = _highlightedBlockId == block.id;
+    
+    final editor = switch (block) {
       TextBlock() => TextBlockEditor(
         key: ValueKey(block.id),
         block: block,
@@ -385,6 +429,19 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         child: const Text('Tool Block (Coming Soon)'),
       ),
     };
+    
+    // Wrap with highlight decoration if this block is highlighted
+    if (isHighlighted) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.amber.shade700, width: 3),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: editor,
+      );
+    }
+    
+    return editor;
   }
 
   Future<void> _showAddBlockDialog(IdeaNode node) async {

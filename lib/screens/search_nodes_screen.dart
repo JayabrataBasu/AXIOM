@@ -262,12 +262,21 @@ class _SearchNodesScreenState extends ConsumerState<SearchNodesScreen> {
             color: theme.colorScheme.primary,
           ),
         ),
-        onTap: () => Navigator.pop(context, result.node.id),
+        onTap: () => Navigator.pop(
+          context,
+          search.SearchNavigation(
+            nodeId: result.node.id,
+            blockId: result.blockId,
+          ),
+        ),
         onLongPress: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => NodeEditorScreen(nodeId: result.node.id),
+              builder: (_) => NodeEditorScreen(
+                nodeId: result.node.id,
+                highlightBlockId: result.blockId,
+              ),
             ),
           );
         },

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../models/node_template.dart';
 import '../providers/providers.dart';
+import '../services/search_service.dart' as search;
 import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
 import '../widgets/dialogs/add_canvas_item_dialog.dart';
@@ -253,22 +254,35 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () async {
-                      final selectedNodeId = await Navigator.push<String?>(
+                      final nav = await Navigator.push<search.SearchNavigation?>(
                         context,
                         MaterialPageRoute(
                           builder: (_) => const SearchNodesScreen(),
                         ),
                       );
 
-                      if (selectedNodeId == null) return;
+                      if (nav == null) return;
 
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                      final position = _getNodePosition(nodes, selectedNodeId);
+                      final position =
+                          _getNodePosition(nodes, nav.nodeId);
                       _canvasKey.currentState?.centerOn(position);
                       ref
                           .read(canvasViewProvider.notifier)
-                          .selectNode(selectedNodeId);
+                          .selectNode(nav.nodeId);
+
+                      if (nav.blockId.isNotEmpty && mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => NodeEditorScreen(
+                              nodeId: nav.nodeId,
+                              highlightBlockId: nav.blockId,
+                            ),
+                          ),
+                        );
+                      }
                     },
                     tooltip: 'Search nodes',
                     constraints: const BoxConstraints(
@@ -306,22 +320,34 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               IconButton(
                 icon: const Icon(Icons.search),
                 onPressed: () async {
-                  final selectedNodeId = await Navigator.push<String?>(
+                  final nav = await Navigator.push<search.SearchNavigation?>(
                     context,
                     MaterialPageRoute(
                       builder: (_) => const SearchNodesScreen(),
                     ),
                   );
 
-                  if (selectedNodeId == null) return;
+                  if (nav == null) return;
 
                   final nodes =
                       ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                  final position = _getNodePosition(nodes, selectedNodeId);
+                  final position = _getNodePosition(nodes, nav.nodeId);
                   _canvasKey.currentState?.centerOn(position);
                   ref
                       .read(canvasViewProvider.notifier)
-                      .selectNode(selectedNodeId);
+                      .selectNode(nav.nodeId);
+
+                  if (nav.blockId.isNotEmpty && mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => NodeEditorScreen(
+                          nodeId: nav.nodeId,
+                          highlightBlockId: nav.blockId,
+                        ),
+                      ),
+                    );
+                  }
                 },
                 tooltip: 'Search nodes',
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
