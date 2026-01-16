@@ -24,6 +24,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
   bool _sketchMode = false;
+  bool _doodleMode = false;
+  List<DoodleStroke> _doodleStrokes = [];
+  List<Offset> _currentDoodleStroke = [];
+  Color _doodleColor = Colors.white;
+  double _doodleWidth = 2.0;
 
   @override
   void dispose() {
@@ -70,7 +75,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
               data: (nodes) => InfiniteCanvas(
                 key: _canvasKey,
-                panEnabled: !_sketchMode,
+                panEnabled: !_sketchMode && !_doodleMode,
                 onScaleChanged: (scale) {
                   setState(() => _currentZoom = scale);
                 },
@@ -101,14 +106,83 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
             // Sketch tools palette (only visible in sketch mode)
             if (_sketchMode) const SketchToolsPalette(),
             // FAB for creating new nodes
-            Positioned(
-              bottom: 24,
-              right: 24,
-              child: _buildFAB(theme),
-            ),
+            Positioned(bottom: 24, right: 24, child: _buildFAB(theme)),
+            // Doodle layer (draw on canvas without creating nodes)
+            if (_doodleMode)
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanStart: (details) {
+                    setState(() {
+                      _currentDoodleStroke = [details.globalPosition];
+                    });
+                  },
+                  onPanUpdate: (details) {
+                    setState(() {
+                      _currentDoodleStroke.add(details.globalPosition);
+                    });
+                  },
+                  onPanEnd: (_) {
+                    if (_currentDoodleStroke.isNotEmpty) {
+                      setState(() {
+                        _doodleStrokes.add(
+                          DoodleStroke(
+                            points: _currentDoodleStroke,
+                            color: _doodleColor,
+                            width: _doodleWidth,
+                            createdAt: DateTime.now(),
+                          ),
+                        );
+                        _currentDoodleStroke = [];
+                      });
+                    }
+                  },
+                  child: CustomPaint(
+                    painter: DoodleCanvasPainter(
+                      strokes: _doodleStrokes,
+                      currentStroke: _currentDoodleStroke,
+                      currentColor: _doodleColor,
+                      currentWidth: _doodleWidth,
+                    ),
+                    size: Size.infinite,
+                  ),
+                ),
+              ),
+            // Node navigator (locate and jump to nodes)
+            _buildNodeNavigator(nodesAsync, viewState),
+            // Doodle toolbar
+            if (nodesAsync.hasValue)
+              DoodleToolbar(
+                isEnabled: _doodleMode,
+                onEnableToggle: () =>
+                    setState(() => _doodleMode = !_doodleMode),
+                onColorChanged: (color) => setState(() => _doodleColor = color),
+                onWidthChanged: (width) => setState(() => _doodleWidth = width),
+                onClear: () => setState(() => _doodleStrokes.clear()),
+                color: _doodleColor,
+                width: _doodleWidth,
+              ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNodeNavigator(
+    AsyncValue<List<IdeaNode>> nodesAsync,
+    CanvasViewState viewState,
+  ) {
+    return nodesAsync.when(
+      data: (nodes) => NodeNavigator(
+        nodes: nodes,
+        selectedNodeId: viewState.selectedNodeId,
+        onNodeSelect: (nodeId) {
+          _canvasKey.currentState?.centerOn(_getNodePosition(nodes, nodeId));
+          ref.read(canvasViewProvider.notifier).selectNode(nodeId);
+        },
+      ),
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -122,9 +196,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         // Glass panel effect matching Stitch design
         color: Colors.black.withValues(alpha: 0.55),
         border: Border(
-          bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         backgroundBlendMode: BlendMode.multiply,
       ),
@@ -166,7 +238,10 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                       // TODO: Implement search
                     },
                     tooltip: 'Search nodes',
-                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
                     iconSize: 24,
                   ),
                   const SizedBox(width: 4),
@@ -219,6 +294,15 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     Navigator.of(context).pop();
   }
 
+  Offset _getNodePosition(List<IdeaNode> nodes, String nodeId) {
+    if (nodes.isEmpty) return Offset.zero;
+    final node = nodes.firstWhere(
+      (n) => n.id == nodeId,
+      orElse: () => nodes.first,
+    );
+    return Offset(node.position.x, node.position.y);
+  }
+
   Widget _buildFAB(ThemeData theme) {
     return Material(
       type: MaterialType.transparency,
@@ -239,11 +323,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
             ],
           ),
-          child: Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 28,
-          ),
+          child: Icon(Icons.add, color: Colors.white, size: 28),
         ),
       ),
     );
