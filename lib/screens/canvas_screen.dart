@@ -30,6 +30,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   Rect? _contentBounds;
   String? _recentlyCreatedNodeId;
   Timer? _newNodeHighlightTimer;
+  Rect? _viewportRect;
   // ignore: prefer_final_fields
   bool _sketchMode = false;
   bool _doodleMode = false;
@@ -89,6 +90,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 contentBounds: _contentBounds,
                 onScaleChanged: (scale) {
                   setState(() => _currentZoom = scale);
+                  _updateViewportRect();
                 },
                 child: CanvasContent(
                   nodes: nodes,
@@ -102,6 +104,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   onCanvasInfoChanged: (_) {},
                   onBoundsChanged: (bounds) {
                     setState(() => _contentBounds = bounds);
+                    _updateViewportRect();
                   },
                 ),
               ),
@@ -176,6 +179,20 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
             // Node navigator (locate and jump to nodes)
             _buildNodeNavigator(nodesAsync, viewState),
+            // Minimap overlay
+            if (_contentBounds != null && _viewportRect != null)
+              Positioned(
+                left: 16,
+                bottom: 16,
+                child: CanvasMinimap(
+                  bounds: _contentBounds!,
+                  viewport: _viewportRect!,
+                  nodes: nodesAsync.valueOrNull ?? const [],
+                  onJumpToScene: (scenePos) {
+                    _canvasKey.currentState?.centerOn(scenePos);
+                  },
+                ),
+              ),
             // Doodle toolbar
             if (nodesAsync.hasValue)
               DoodleToolbar(
@@ -271,6 +288,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                           );
 
                       if (nav == null) return;
+                      if (!mounted) return;
 
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
@@ -394,6 +412,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                           );
 
                       if (nav == null) return;
+                      if (!mounted) return;
 
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
@@ -653,6 +672,12 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       if (!mounted) return;
       setState(() => _recentlyCreatedNodeId = null);
     });
+  }
+
+  void _updateViewportRect() {
+    final rect = _canvasKey.currentState?.sceneViewportRect;
+    if (rect == null) return;
+    setState(() => _viewportRect = rect);
   }
 
   void _onCanvasTap() {

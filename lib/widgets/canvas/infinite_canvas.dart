@@ -91,6 +91,20 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
     return MatrixUtils.transformPoint(_controller.value, canvasPosition);
   }
 
+  /// Current viewport rect in scene coordinates.
+  Rect? get sceneViewportRect {
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return null;
+    final scale = currentScale;
+    final translation = _controller.value.getTranslation();
+    final size = renderBox.size;
+    final left = -translation.x / scale;
+    final top = -translation.y / scale;
+    final width = size.width / scale;
+    final height = size.height / scale;
+    return Rect.fromLTWH(left, top, width, height);
+  }
+
   /// Center the viewport on a specific canvas position.
   void centerOn(Offset position, {bool animate = true}) {
     final renderBox = context.findRenderObject() as RenderBox?;

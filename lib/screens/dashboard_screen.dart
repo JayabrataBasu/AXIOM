@@ -15,6 +15,12 @@ import '../models/workspace_session.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
+  void _showFeatureHint(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionsAsync = ref.watch(workspaceSessionsNotifierProvider);
@@ -73,7 +79,7 @@ class DashboardScreen extends ConsumerWidget {
         IconButton(
           icon: const Icon(Icons.search),
           onPressed: () {
-            // TODO: Implement search
+            _showFeatureHint(context, 'Global search coming soon.');
           },
         ),
         const SizedBox(width: AxiomSpacing.sm),
@@ -154,7 +160,7 @@ class DashboardScreen extends ConsumerWidget {
                   title: const Text('Settings'),
                   onTap: () {
                     Navigator.pop(context);
-                    // TODO: Navigate to settings
+                    _showFeatureHint(context, 'Settings coming soon.');
                   },
                 ),
                 ListTile(
@@ -162,7 +168,7 @@ class DashboardScreen extends ConsumerWidget {
                   title: const Text('Help'),
                   onTap: () {
                     Navigator.pop(context);
-                    // TODO: Show help
+                    _showFeatureHint(context, 'Help center coming soon.');
                   },
                 ),
               ],

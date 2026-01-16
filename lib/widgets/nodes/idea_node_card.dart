@@ -35,13 +35,13 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
     final colorScheme = theme.colorScheme;
     final highlightActive = widget.isHighlighted;
     final borderColor = widget.isSelected
-      ? colorScheme.primary.withValues(alpha: 0.8)
-      : highlightActive
+        ? colorScheme.primary.withValues(alpha: 0.8)
+        : highlightActive
         ? colorScheme.primary.withValues(alpha: 0.6)
         : Colors.white.withValues(alpha: 0.05);
     final borderWidth = widget.isSelected
-      ? 1.5
-      : highlightActive
+        ? 1.5
+        : highlightActive
         ? 1.3
         : 1.0;
 
@@ -88,10 +88,7 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
               // Match Stitch design: surface-dark color with etched shadow
               color: const Color(0xFF24272C),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: borderColor,
-                width: borderWidth,
-              ),
+              border: Border.all(color: borderColor, width: borderWidth),
               boxShadow: [
                 // Dark shadow on bottom-right
                 BoxShadow(
@@ -109,54 +106,55 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
               ],
             ),
             child: Material(
-            color: Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Node preview content
-                  if (widget.node.previewText.isNotEmpty)
-                    Text(
-                      widget.node.previewText,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                      ),
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  else
-                    Text(
-                      'Empty node',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.4),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  const SizedBox(height: 8),
-                  // Block count indicator with icon
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.layers_outlined,
-                        size: 12,
-                        color: Colors.white.withValues(alpha: 0.4),
-                      ),
-                      const SizedBox(width: 4),
+              color: Colors.transparent,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Node preview content
+                    if (widget.node.previewText.isNotEmpty)
                       Text(
-                        '${widget.node.blocks.length} block${widget.node.blocks.length != 1 ? 's' : ''}',
+                        widget.node.previewText,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                        ),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    else
+                      Text(
+                        'Empty node',
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.4),
-                          fontSize: 10,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    // Block count indicator with icon
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.layers_outlined,
+                          size: 12,
+                          color: Colors.white.withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${widget.node.blocks.length} block${widget.node.blocks.length != 1 ? 's' : ''}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

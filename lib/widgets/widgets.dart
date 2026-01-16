@@ -6,3 +6,4 @@ export 'canvas_sketch_layer.dart';
 export 'dialogs/dialogs.dart';
 export 'doodle_layer.dart';
 export 'node_navigator.dart';
+export 'canvas/minimap.dart';

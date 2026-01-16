@@ -14,6 +14,8 @@ class CanvasSketchLayer extends ConsumerStatefulWidget {
 
 class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   List<CanvasSketchPoint> _currentStroke = [];
+  int _lastUpdateMillis = 0;
+  static const int _throttleMs = 8;
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +45,11 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
           onPanUpdate: (details) {
             final toolState = ref.read(sketchToolsProvider);
             if (toolState.tool == SketchTool.selector) return;
-
             if (_currentStroke.isNotEmpty) {
+              final now = DateTime.now().millisecondsSinceEpoch;
+              if (now - _lastUpdateMillis < _throttleMs) return;
+              _lastUpdateMillis = now;
+
               setState(() {
                 _currentStroke.add(
                   CanvasSketchPoint(
