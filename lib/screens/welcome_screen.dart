@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../constants/spacing.dart';
+import '../theme/design_tokens.dart';
 import '../models/node_template.dart';
-import '../models/workspace_session.dart';
 import '../providers/workspace_providers.dart';
 import '../providers/workspace_state_provider.dart';
 
-/// Welcome screen shown on app first launch or when no active workspace
+/// Modern workspace creation screen matching create_workspace_entry_point design
 class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -17,9 +16,7 @@ class WelcomeScreen extends ConsumerStatefulWidget {
 
 class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   final _nameController = TextEditingController();
-  NodeTemplate? _selectedTemplate;
   bool _isLoading = false;
-  bool _showCreateForm = false;
 
   @override
   void dispose() {
@@ -27,60 +24,29 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     super.dispose();
   }
 
-  Future<void> _handleSelectWorkspace(WorkspaceSession workspace) async {
-    setState(() => _isLoading = true);
+  Future<void> _handleCreateFromScratch() async {
+    // Show dialog to get workspace name
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => _CreateWorkspaceDialog(
+        onNameChanged: (value) => _nameController.text = value,
+      ),
+    );
 
-    try {
-      // Set as active workspace
-      await ref
-          .read(activeWorkspaceIdProvider.notifier)
-          .setActiveWorkspace(workspace.id);
-
-      // Navigate to the workspace
-      if (mounted) {
-        context.go('/workspace/${workspace.id}');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  Future<void> _handleCreateWorkspace() async {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a workspace name')),
-      );
-      return;
-    }
+    if (name == null || name.isEmpty) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // Create workspace session first
       final workspaceId = await ref
           .read(workspaceSessionsNotifierProvider.notifier)
-          .createSession(
-            label: name,
-            workspaceType: 'canvas',
-            template: _selectedTemplate,
-          );
+          .createSession(label: name, workspaceType: 'canvas', template: null);
 
-      // Set as active workspace
       await ref
           .read(activeWorkspaceIdProvider.notifier)
           .setActiveWorkspace(workspaceId.id);
 
       if (mounted) {
-        // Navigate to the newly created workspace
         context.go('/workspace/${workspaceId.id}');
       }
     } catch (e) {
@@ -96,323 +62,426 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     }
   }
 
+  Future<void> _handleTemplateSelect(NodeTemplate template) async {
+    // Show dialog to get workspace name
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => _CreateWorkspaceDialog(
+        templateName: template.name,
+        onNameChanged: (value) => _nameController.text = value,
+      ),
+    );
+
+    if (name == null || name.isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final workspaceId = await ref
+          .read(workspaceSessionsNotifierProvider.notifier)
+          .createSession(
+            label: name,
+            workspaceType: 'canvas',
+            template: template,
+          );
+
+      await ref
+          .read(activeWorkspaceIdProvider.notifier)
+          .setActiveWorkspace(workspaceId.id);
+
+      if (mounted) {
+        context.go('/workspace/${workspaceId.id}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleViewExisting() async {
+    context.go('/dashboard');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
-    final workspacesAsync = ref.watch(workspaceSessionsNotifierProvider);
-
     return Scaffold(
-      body: SafeArea(
-        child: workspacesAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Error: $error')),
-          data: (workspaces) {
-            final hasWorkspaces = workspaces.isNotEmpty;
-
-            return SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isSmallScreen ? Spacing.m : Spacing.xl,
-                  vertical: Spacing.l,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Branding
-                    Center(
-                      child: Column(
-                        children: [
-                          // Logo/Icon
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '💭',
-                                style: theme.textTheme.displayLarge,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: Spacing.m),
-                          // App Title
-                          Text(
-                            'Axiom',
-                            style: theme.textTheme.displaySmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(height: Spacing.s),
-                          // Tagline
-                          Text(
-                            'Organize your thoughts. Calculate everything.',
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.7,
-                              ),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: Spacing.xl),
-
-                    // Show existing workspaces if any
-                    if (hasWorkspaces && !_showCreateForm) ...[
-                      Text(
-                        'Continue with Workspace',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: Spacing.m),
-
-                      // Workspace List
-                      ...workspaces.map(
-                        (workspace) => Card(
-                          margin: const EdgeInsets.only(bottom: Spacing.m),
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.workspaces,
-                              size: 32,
-                              color: colorScheme.primary,
-                            ),
-                            title: Text(
-                              workspace.label.isNotEmpty
-                                  ? workspace.label
-                                  : 'Untitled Workspace',
-                            ),
-                            subtitle: Text(
-                              'Updated ${_formatDate(workspace.updatedAt)}',
-                              style: theme.textTheme.bodySmall,
-                            ),
-                            trailing: const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                            ),
-                            onTap: _isLoading
-                                ? null
-                                : () => _handleSelectWorkspace(workspace),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: Spacing.l),
-
-                      // Create New Button
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text('Create New Workspace'),
-                        onPressed: _isLoading
-                            ? null
-                            : () => setState(() => _showCreateForm = true),
-                      ),
-                    ] else ...[
-                      // Show create form
-                      if (!hasWorkspaces)
-                        Container(
-                          padding: const EdgeInsets.all(Spacing.m),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primaryContainer.withValues(
-                              alpha: 0.3,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Getting Started',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: Spacing.s),
-                              Text(
-                                'Create your first workspace to start capturing ideas and performing calculations. You can create multiple workspaces and switch between them anytime.',
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                      if (_showCreateForm)
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back),
-                              onPressed: () =>
-                                  setState(() => _showCreateForm = false),
-                            ),
-                            const SizedBox(width: Spacing.s),
-                            Text(
-                              'Create New Workspace',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                      const SizedBox(height: Spacing.l),
-
-                      // Workspace Name Input
-                      TextField(
-                        controller: _nameController,
-                        enabled: !_isLoading,
-                        decoration: InputDecoration(
-                          labelText: 'Workspace Name',
-                          hintText: 'My First Workspace',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.workspaces),
-                        ),
-                      ),
-                      const SizedBox(height: Spacing.l),
-
-                      // Template Selection
-                      Text(
-                        'Choose a Starting Template (Optional)',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: Spacing.m),
-
-                      // Template Grid
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: isSmallScreen ? 2 : 3,
-                          crossAxisSpacing: Spacing.m,
-                          mainAxisSpacing: Spacing.m,
-                          childAspectRatio: 1.1,
-                        ),
-                        itemCount: NodeTemplate.templates.length,
-                        itemBuilder: (context, index) {
-                          final template = NodeTemplate.templates[index];
-                          final isSelected = _selectedTemplate == template;
-
-                          return GestureDetector(
-                            onTap: _isLoading
-                                ? null
-                                : () {
-                                    setState(() {
-                                      _selectedTemplate = isSelected
-                                          ? null
-                                          : template;
-                                    });
-                                  },
-                            child: Card(
-                              elevation: isSelected ? 4 : 1,
-                              color: isSelected
-                                  ? colorScheme.primaryContainer
-                                  : colorScheme.surface,
-                              child: Padding(
-                                padding: const EdgeInsets.all(Spacing.s),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      template.icon,
-                                      style: const TextStyle(fontSize: 28),
-                                    ),
-                                    const SizedBox(height: Spacing.xs),
-                                    Text(
-                                      template.name,
-                                      style: theme.textTheme.labelMedium
-                                          ?.copyWith(
-                                            fontWeight: isSelected
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: Spacing.xl),
-
-                      // Action Buttons
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          FilledButton.icon(
-                            icon: _isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.add),
-                            label: Text(
-                              _isLoading
-                                  ? 'Creating Workspace...'
-                                  : 'Create Workspace',
-                            ),
-                            onPressed: _isLoading
-                                ? null
-                                : _handleCreateWorkspace,
-                          ),
-                          if (hasWorkspaces) ...[
-                            const SizedBox(height: Spacing.m),
-                            OutlinedButton(
-                              onPressed: _isLoading
-                                  ? null
-                                  : () =>
-                                        setState(() => _showCreateForm = false),
-                              child: const Text('Cancel'),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-
-                    const SizedBox(height: Spacing.xl),
-
-                    // Footer hint
-                    Center(
-                      child: Text(
-                        'Workspaces are saved locally on your device',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ),
-                    ),
+      backgroundColor: AxiomColors.backgroundDark,
+      body: Stack(
+        children: [
+          // Subtle gradient background
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.topCenter,
+                  radius: 1.5,
+                  colors: [
+                    AxiomColors.primary.withValues(alpha: 0.15),
+                    Colors.transparent,
                   ],
                 ),
               ),
-            );
-          },
+            ),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                // Top bar
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: Colors.white.withValues(alpha: 0.7),
+                        ),
+                        onPressed: () => context.go('/dashboard'),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'Create Workspace',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 48), // Balance the back button
+                    ],
+                  ),
+                ),
+
+                // Main content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 24),
+
+                        // Create from scratch card
+                        _GlassCard(
+                          onTap: _isLoading ? null : _handleCreateFromScratch,
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AxiomColors.primary.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.add,
+                                    color: AxiomColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Create From Scratch',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Start with a blank canvas',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Templates section header
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Templates',
+                              style: AxiomTypography.h3.copyWith(
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Template cards
+                        ...NodeTemplate.templates.map(
+                          (template) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _TemplateCard(
+                              template: template,
+                              onTap: _isLoading
+                                  ? null
+                                  : () => _handleTemplateSelect(template),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // View existing workspaces button
+                        TextButton(
+                          onPressed: _isLoading ? null : _handleViewExisting,
+                          child: Text(
+                            'View Existing Workspaces',
+                            style: TextStyle(
+                              color: AxiomColors.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Loading overlay
+          if (_isLoading)
+            Container(
+              color: Colors.black54,
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassCard extends StatelessWidget {
+  const _GlassCard({required this.child, this.onTap});
+
+  final Widget child;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1c1f26), Color(0xFF111318)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.08),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: child,
         ),
       ),
     );
   }
+}
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+class _TemplateCard extends StatelessWidget {
+  const _TemplateCard({required this.template, this.onTap});
 
-    if (difference.inMinutes < 1) return 'just now';
-    if (difference.inHours < 1) return '${difference.inMinutes}m ago';
-    if (difference.inDays < 1) return '${difference.inHours}h ago';
-    if (difference.inDays < 7) return '${difference.inDays}d ago';
+  final NodeTemplate template;
+  final VoidCallback? onTap;
 
-    return '${date.day}/${date.month}/${date.year}';
+  @override
+  Widget build(BuildContext context) {
+    return _GlassCard(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AxiomColors.surfaceDark,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(
+                  template.icon,
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    template.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    template.description,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CreateWorkspaceDialog extends StatefulWidget {
+  const _CreateWorkspaceDialog({
+    required this.onNameChanged,
+    this.templateName,
+  });
+
+  final ValueChanged<String> onNameChanged;
+  final String? templateName;
+
+  @override
+  State<_CreateWorkspaceDialog> createState() => _CreateWorkspaceDialogState();
+}
+
+class _CreateWorkspaceDialogState extends State<_CreateWorkspaceDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AxiomColors.surfaceDark,
+      title: Text(
+        widget.templateName != null
+            ? 'Name your ${widget.templateName} workspace'
+            : 'Name your workspace',
+        style: const TextStyle(color: Colors.white),
+      ),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: 'My Workspace',
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: AxiomColors.primary),
+          ),
+        ),
+        onSubmitted: (value) {
+          if (value.trim().isNotEmpty) {
+            widget.onNameChanged(value.trim());
+            Navigator.of(context).pop(value.trim());
+          }
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final name = _controller.text.trim();
+            if (name.isNotEmpty) {
+              widget.onNameChanged(name);
+              Navigator.of(context).pop(name);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AxiomColors.primary,
+            foregroundColor: Colors.black,
+          ),
+          child: const Text('Create'),
+        ),
+      ],
+    );
   }
 }

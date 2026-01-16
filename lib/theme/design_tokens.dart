@@ -36,6 +36,9 @@ class AxiomColors {
   // Canvas Grid
   static const Color gridDot = Color(0xFF2D3839);
 
+  // Accent Colors
+  static const Color accentTeal = Color(0xFF334D46);
+
   // Status Colors
   static const Color success = Color(0xFF10B981);
   static const Color error = Color(0xFFEF4444);
@@ -109,6 +112,12 @@ class AxiomTypography {
     height: 1.4,
     letterSpacing: 0,
   );
+
+  // Alias styles for common use
+  static const TextStyle h1 = display;
+  static const TextStyle h3 = heading3;
+  static const TextStyle button = labelLarge;
+  static const TextStyle body1 = bodyLarge;
 
   // Body Text
   static const TextStyle bodyLarge = TextStyle(
@@ -190,6 +199,7 @@ class AxiomRadius {
   static const double sm = 8.0;
   static const double md = 12.0;
   static const double lg = 16.0;
+  static const double large = 16.0; // Alias for lg
   static const double xl = 24.0;
   static const double xxl = 28.0;
   static const double full = 9999.0;

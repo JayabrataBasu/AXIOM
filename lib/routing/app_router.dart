@@ -26,7 +26,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
 
-      // Welcome/Onboarding Screen
+      // Onboarding Screen (first-time experience)
+      GoRoute(
+        path: '/onboarding',
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      // Welcome/Workspace Creation Screen
       GoRoute(
         path: '/welcome',
         name: 'welcome',

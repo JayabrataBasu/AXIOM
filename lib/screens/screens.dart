@@ -6,3 +6,4 @@ export 'workspace_sessions_screen.dart';
 export 'welcome_screen.dart';
 export 'splash_screen.dart';
 export 'dashboard_screen.dart';
+export 'onboarding_screen.dart';

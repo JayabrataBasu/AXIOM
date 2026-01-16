@@ -65,12 +65,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
     }
 
-    // Navigate to welcome or dashboard after splash
+    // Navigate to onboarding after splash
     if (mounted) {
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
-        // Use context.pushReplacementNamed instead of go to avoid black screen
-        context.pushReplacementNamed('welcome');
+        context.pushReplacementNamed('onboarding');
       }
     }
   }
