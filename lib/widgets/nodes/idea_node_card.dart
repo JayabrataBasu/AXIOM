@@ -69,22 +69,29 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
             minHeight: 60,
           ),
           decoration: BoxDecoration(
-            color: widget.isSelected
-                ? colorScheme.primaryContainer
-                : colorScheme.surface,
+            // Match Stitch design: surface-dark color with etched shadow
+            color: const Color(0xFF24272C),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: widget.isSelected
-                  ? colorScheme.primary
-                  : colorScheme.outlineVariant,
-              width: widget.isSelected ? 2 : 1,
+                  ? colorScheme.primary.withValues(alpha: 0.8)
+                  : Colors.white.withValues(alpha: 0.05),
+              width: widget.isSelected ? 1.5 : 1,
             ),
             boxShadow: [
+              // Dark shadow on bottom-right
               BoxShadow(
-                color: Colors.black.withValues(alpha: _isDragging ? 0.2 : 0.08),
-                blurRadius: _isDragging ? 12 : 6,
-                offset: Offset(0, _isDragging ? 6 : 2),
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 4,
+                offset: const Offset(2, 4),
               ),
+              // Glow effect when selected
+              if (widget.isSelected)
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.2),
+                  blurRadius: 15,
+                  spreadRadius: 0,
+                ),
             ],
           ),
           child: Material(
@@ -99,8 +106,10 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                   if (widget.node.previewText.isNotEmpty)
                     Text(
                       widget.node.previewText,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        height: 1.4,
                       ),
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
@@ -108,26 +117,27 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                   else
                     Text(
                       'Empty node',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.4),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
                   const SizedBox(height: 8),
-                  // Block count indicator
+                  // Block count indicator with icon
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.layers_outlined,
-                        size: 14,
-                        color: colorScheme.onSurface.withValues(alpha: 0.5),
+                        size: 12,
+                        color: Colors.white.withValues(alpha: 0.4),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${widget.node.blocks.length} block${widget.node.blocks.length != 1 ? 's' : ''}',
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: Colors.white.withValues(alpha: 0.4),
+                          fontSize: 10,
                         ),
                       ),
                     ],

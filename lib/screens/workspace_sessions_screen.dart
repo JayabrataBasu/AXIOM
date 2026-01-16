@@ -26,8 +26,9 @@ class _WorkspaceSessionsScreenState
       print('WORKSPACES: opening workspace -> ${session.id}');
 
       // Read all providers BEFORE any async operations (avoid using ref after widget disposal)
-      final activeWorkspaceNotifier =
-          ref.read(activeWorkspaceIdProvider.notifier);
+      final activeWorkspaceNotifier = ref.read(
+        activeWorkspaceIdProvider.notifier,
+      );
 
       // Set active workspace without awaiting (fire and forget)
       unawaited(activeWorkspaceNotifier.setActiveWorkspace(session.id));
@@ -38,9 +39,9 @@ class _WorkspaceSessionsScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error opening workspace: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error opening workspace: $e')));
       }
     }
   }

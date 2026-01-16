@@ -7,7 +7,6 @@ import 'screens/screens.dart';
 import 'services/settings_service.dart';
 import 'services/canvas_sketch_service.dart';
 import 'services/preferences_service.dart';
-import 'providers/workspace_state_provider.dart';
 import 'providers/workspace_providers.dart';
 
 import 'theme/axiom_theme.dart';
@@ -81,7 +80,7 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // ignore: avoid_print
     print('APPSHELL: Building AppShell for workspace $workspaceId');
-    
+
     final sessionAsync = ref.watch(workspaceSessionProvider(workspaceId));
 
     return sessionAsync.when(
@@ -103,10 +102,13 @@ class AppShell extends ConsumerWidget {
           // Workspace not found - return loading indicator and schedule a refresh
           // This handles transient cache misses where the repo hasn't loaded yet
           // ignore: avoid_print
-          print('APPSHELL: workspace not found for id $workspaceId — will refresh provider');
+          print(
+            'APPSHELL: workspace not found for id $workspaceId — will refresh provider',
+          );
 
           // Invalidate and refresh the provider to retry
           Future.microtask(() {
+            // ignore: unused_result
             ref.refresh(workspaceSessionProvider(workspaceId));
           });
 
@@ -116,7 +118,9 @@ class AppShell extends ConsumerWidget {
         }
 
         // ignore: avoid_print
-        print('APPSHELL: Successfully loaded workspace $workspaceId (${session.label})');
+        print(
+          'APPSHELL: Successfully loaded workspace $workspaceId (${session.label})',
+        );
 
         // Route to appropriate workspace viewer based on type
         switch (session.workspaceType) {

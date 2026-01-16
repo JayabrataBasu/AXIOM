@@ -8,7 +8,6 @@ import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
 import '../widgets/dialogs/add_canvas_item_dialog.dart';
 import 'node_editor_screen.dart';
-import 'workspace_sessions_screen.dart';
 
 /// The main canvas screen - the primary thinking surface.
 class CanvasScreen extends ConsumerStatefulWidget {
@@ -24,7 +23,6 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _canvasKey = GlobalKey<InfiniteCanvasState>();
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
-  Offset _originInScene = Offset.zero;
   bool _sketchMode = false;
 
   @override
@@ -84,9 +82,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   onNodeDragEnd: _onNodeDragEnd,
                   onCanvasTap: _onCanvasTap,
                   onCanvasDoubleTap: _onCanvasDoubleTap,
-                  onCanvasInfoChanged: (origin) {
-                    _originInScene = origin;
-                  },
+                  onCanvasInfoChanged: (_) {},
                 ),
               ),
             ),
@@ -104,14 +100,12 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
             ),
             // Sketch tools palette (only visible in sketch mode)
             if (_sketchMode) const SketchToolsPalette(),
-            // Zoom indicator
+            // FAB for creating new nodes
             Positioned(
-              bottom: 16,
-              right: 16,
-              child: _buildZoomIndicator(theme),
+              bottom: 24,
+              right: 24,
+              child: _buildFAB(theme),
             ),
-            // Help hint
-            Positioned(bottom: 16, left: 16, child: _buildHelpHint(theme)),
           ],
         ),
       ),
@@ -120,189 +114,135 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
   Widget _buildToolbar(BuildContext context, ThemeData theme) {
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
-    final toolbarChildren = _buildToolbarChildren(
-      context,
-      theme,
-      isSmallScreen,
-    );
+    final workspaceLabel = _getWorkspaceLabel();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.9),
+        // Glass panel effect matching Stitch design
+        color: Colors.black.withValues(alpha: 0.55),
         border: Border(
-          bottom: BorderSide(color: theme.colorScheme.outlineVariant),
+          bottom: BorderSide(
+            color: Colors.white.withValues(alpha: 0.05),
+          ),
         ),
+        backgroundBlendMode: BlendMode.multiply,
       ),
       child: SafeArea(
         bottom: false,
-        child: isSmallScreen
-            // Allow horizontal scrolling on tight layouts to avoid pixel overflow.
-            ? SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: toolbarChildren,
+        child: Row(
+          children: [
+            // Back button
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: _onBackPressed,
+              tooltip: 'Go back',
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              iconSize: 24,
+            ),
+            // Title - centered
+            Expanded(
+              child: Center(
+                child: Text(
+                  workspaceLabel.toUpperCase(),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
+            ),
+            // Right actions
+            if (!isSmallScreen)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Search button
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      // TODO: Implement search
+                    },
+                    tooltip: 'Search nodes',
+                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                    iconSize: 24,
+                  ),
+                  const SizedBox(width: 4),
+                  // Zoom indicator
+                  Container(
+                    height: 32,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${(_currentZoom * 100).toStringAsFixed(0)}%',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               )
-            : Row(children: toolbarChildren),
-      ),
-    );
-  }
-
-  List<Widget> _buildToolbarChildren(
-    BuildContext context,
-    ThemeData theme,
-    bool isSmallScreen,
-  ) {
-    final children = <Widget>[];
-
-    if (!isSmallScreen) {
-      children.add(
-        Text(
-          'Axiom',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
-      children.add(const Spacer());
-    }
-
-    children.addAll([
-      IconButton(
-        icon: Icon(_sketchMode ? Icons.brush : Icons.brush_outlined),
-        tooltip: _sketchMode ? 'Exit sketch mode' : 'Enter sketch mode',
-        color: _sketchMode ? theme.colorScheme.primary : null,
-        onPressed: () {
-          setState(() => _sketchMode = !_sketchMode);
-        },
-      ),
-      const SizedBox(width: 4),
-      IconButton(
-        icon: const Icon(Icons.center_focus_strong),
-        tooltip: 'Center on origin',
-        onPressed: () {
-          _canvasKey.currentState?.centerOn(_originInScene);
-        },
-      ),
-      IconButton(
-        icon: const Icon(Icons.remove),
-        tooltip: 'Zoom out',
-        onPressed: () {
-          final newZoom = (_currentZoom * 0.8).clamp(0.1, 4.0);
-          _canvasKey.currentState?.setZoom(newZoom);
-        },
-      ),
-      IconButton(
-        icon: const Icon(Icons.add),
-        tooltip: 'Zoom in',
-        onPressed: () {
-          final newZoom = (_currentZoom * 1.25).clamp(0.1, 4.0);
-          _canvasKey.currentState?.setZoom(newZoom);
-        },
-      ),
-      const SizedBox(width: 4),
-      if (isSmallScreen)
-        IconButton(
-          icon: const Icon(Icons.add_circle_outline),
-          tooltip: 'Create new node',
-          onPressed: _createNewNode,
-        )
-      else
-        ElevatedButton.icon(
-          icon: const Icon(Icons.add_circle_outline),
-          label: const Text('Create Node'),
-          onPressed: _createNewNode,
-        ),
-    ]);
-
-    if (!isSmallScreen) {
-      children.add(const Spacer());
-    } else {
-      children.add(const SizedBox(width: 8));
-    }
-
-    children.add(
-      PopupMenuButton<String>(
-        icon: const Icon(Icons.more_vert),
-        tooltip: 'More options',
-        onSelected: (value) {
-          if (value == 'debug') {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const _DebugScreenWrapper(),
+            else
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  // TODO: Implement search
+                },
+                tooltip: 'Search nodes',
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                iconSize: 24,
               ),
-            );
-          } else if (value == 'workspaces') {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const WorkspaceSessionsScreen(),
-              ),
-            );
-          }
-        },
-        itemBuilder: (context) => const [
-          PopupMenuItem(
-            value: 'workspaces',
-            child: Row(
-              children: [
-                Icon(Icons.workspaces),
-                SizedBox(width: 8),
-                Text('Workspace Sessions'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'debug',
-            child: Row(
-              children: [
-                Icon(Icons.bug_report),
-                SizedBox(width: 8),
-                Text('Debug View'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return children;
-  }
-
-  Widget _buildZoomIndicator(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Text(
-        '${(_currentZoom * 100).round()}%',
-        style: theme.textTheme.labelMedium,
-      ),
-    );
-  }
-
-  Widget _buildHelpHint(ThemeData theme) {
-    final maxWidth = MediaQuery.of(context).size.width - 32;
-
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: maxWidth.clamp(260, 440).toDouble(),
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: theme.colorScheme.outlineVariant),
+          ],
         ),
-        child: Text(
-          'Click "Create Node" or double-tap • Drag to move • Double-click node to edit',
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+      ),
+    );
+  }
+
+  String _getWorkspaceLabel() {
+    // Get workspace name from provider or use default
+    return 'Workspace';
+  }
+
+  void _onBackPressed() {
+    Navigator.of(context).pop();
+  }
+
+  Widget _buildFAB(ThemeData theme) {
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: _createNewNode,
+        borderRadius: BorderRadius.circular(28),
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 28,
           ),
         ),
       ),
@@ -465,31 +405,5 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       ref.read(canvasViewProvider.notifier).clearSelection();
       await ref.read(nodesNotifierProvider.notifier).deleteNode(nodeId);
     }
-  }
-}
-
-/// Wrapper for the debug screen to maintain navigation.
-class _DebugScreenWrapper extends StatelessWidget {
-  const _DebugScreenWrapper();
-
-  @override
-  Widget build(BuildContext context) {
-    // Import dynamically to avoid circular dependency
-    return const _DebugScreenPlaceholder();
-  }
-}
-
-class _DebugScreenPlaceholder extends ConsumerWidget {
-  const _DebugScreenPlaceholder();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Re-use the debug screen from screens
-    return Scaffold(
-      appBar: AppBar(title: const Text('Debug View')),
-      body: const Center(
-        child: Text('Debug view - use back button to return to canvas'),
-      ),
-    );
   }
 }

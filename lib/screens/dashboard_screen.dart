@@ -339,10 +339,9 @@ class DashboardScreen extends ConsumerWidget {
 
         // Read all providers BEFORE any async operations
         final router = ref.read(routerProvider);
-        final activeWorkspaceNotifier =
-            ref.read(activeWorkspaceIdProvider.notifier);
-        final repo = ref.read(workspaceRepositoryProvider);
-        final messenger = ScaffoldMessenger.of(context);
+        final activeWorkspaceNotifier = ref.read(
+          activeWorkspaceIdProvider.notifier,
+        );
 
         // Set active workspace and navigate immediately
         unawaited(activeWorkspaceNotifier.setActiveWorkspace(session.id));
