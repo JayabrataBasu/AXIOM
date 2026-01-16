@@ -23,8 +23,10 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _canvasKey = GlobalKey<InfiniteCanvasState>();
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
+  // ignore: prefer_final_fields
   bool _sketchMode = false;
   bool _doodleMode = false;
+  // ignore: prefer_final_fields
   List<DoodleStroke> _doodleStrokes = [];
   List<Offset> _currentDoodleStroke = [];
   Color _doodleColor = Colors.white;
@@ -197,7 +199,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
         },
       ),
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 

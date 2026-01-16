@@ -309,7 +309,7 @@ class _DoodleToolbarState extends State<DoodleToolbar> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${widget.width.toStringAsFixed(0)}',
+                          widget.width.toStringAsFixed(0),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 10,

@@ -54,6 +54,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Edit Node'),
+            elevation: 0,
             actions: [
               IconButton(
                 icon: const Icon(Icons.add_link),
@@ -69,45 +70,70 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           ),
           body: Column(
             children: [
-              // Node info header
+              // Node name editing header
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: Row(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.colorScheme.outlineVariant,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ID: ${node.id.substring(0, 8)}...',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              fontFamily: 'monospace',
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Position: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
-                            ),
-                          ),
-                        ],
+                    // Node name (editable)
+                    TextField(
+                      initialValue: node.name,
+                      onSubmitted: (name) => _updateNodeName(node.id, name),
+                      decoration: InputDecoration(
+                        hintText: 'Untitled Node',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
+                      ),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.6,
+                    const SizedBox(height: 8),
+                    // Node metadata
+                    Row(
+                      children: [
+                        Text(
+                          'ID: ${node.id.substring(0, 8)}...',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontFamily: 'monospace',
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 16),
+                        Text(
+                          'Pos: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

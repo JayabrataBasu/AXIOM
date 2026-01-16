@@ -22,8 +22,12 @@ final nodesProvider = FutureProvider<List<IdeaNode>>((ref) async {
   }
 
   final repository = ref.watch(nodeRepositoryProvider);
-  // TODO: Update repository to support workspace-scoped queries
-  return repository.getAll();
+  // Get all nodes for the active workspace
+  // Note: Currently returns all nodes. When workspace isolation is implemented,
+  // add workspaceId field to IdeaNode and filter here.
+  final allNodes = await repository.getAll();
+  // Future: return allNodes.where((n) => n.workspaceId == activeWorkspaceId).toList();
+  return allNodes;
 });
 
 /// Notifier for managing nodes with CRUD operations.
