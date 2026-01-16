@@ -23,10 +23,18 @@ class NodeEditorScreen extends ConsumerStatefulWidget {
 
 class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   Timer? _saveDebounce;
+  late TextEditingController _nodeNameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nodeNameController = TextEditingController();
+  }
 
   @override
   void dispose() {
     _saveDebounce?.cancel();
+    _nodeNameController.dispose();
     super.dispose();
   }
 
@@ -77,9 +85,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surfaceContainerHighest,
                   border: Border(
-                    bottom: BorderSide(
-                      color: theme.colorScheme.outlineVariant,
-                    ),
+                    bottom: BorderSide(color: theme.colorScheme.outlineVariant),
                   ),
                 ),
                 child: Column(
@@ -87,7 +93,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                   children: [
                     // Node name (editable)
                     TextField(
-                      initialValue: node.name,
+                      controller: _nodeNameController..text = node.name,
                       onSubmitted: (name) => _updateNodeName(node.id, name),
                       decoration: InputDecoration(
                         hintText: 'Untitled Node',
@@ -103,37 +109,40 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Node metadata
-                    Row(
-                      children: [
-                        Text(
-                          'ID: ${node.id.substring(0, 8)}...',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontFamily: 'monospace',
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.5,
+                    // Node metadata (scrollable to handle long content)
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          Text(
+                            'ID: ${node.id.substring(0, 8)}...',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontFamily: 'monospace',
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          'Pos: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.5,
+                          const SizedBox(width: 16),
+                          Text(
+                            'Pos: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.5,
+                          const SizedBox(width: 16),
+                          Text(
+                            '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -750,6 +759,19 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
 
   void _removeLink(String nodeId, String targetNodeId) {
     ref.read(nodesNotifierProvider.notifier).removeLink(nodeId, targetNodeId);
+  }
+
+  Future<void> _updateNodeName(String nodeId, String newName) async {
+    if (newName.isEmpty || newName.trim().isEmpty) return;
+
+    final notifier = ref.read(nodesNotifierProvider.notifier);
+    final nodes = ref.read(nodesProvider).value ?? [];
+    final node = _findNode(nodes, nodeId);
+
+    if (node != null) {
+      final updatedNode = node.copyWith(name: newName.trim());
+      await notifier.updateNode(updatedNode);
+    }
   }
 
   IdeaNode? _findNode(List<IdeaNode> nodes, String id) {
