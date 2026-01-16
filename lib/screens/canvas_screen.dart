@@ -25,6 +25,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   final _canvasKey = GlobalKey<InfiniteCanvasState>();
   final _focusNode = FocusNode();
   double _currentZoom = 1.0;
+  Rect? _contentBounds;
   // ignore: prefer_final_fields
   bool _sketchMode = false;
   bool _doodleMode = false;
@@ -80,6 +81,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               data: (nodes) => InfiniteCanvas(
                 key: _canvasKey,
                 panEnabled: !_sketchMode && !_doodleMode,
+                contentBounds: _contentBounds,
                 onScaleChanged: (scale) {
                   setState(() => _currentZoom = scale);
                 },
@@ -92,6 +94,9 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   onCanvasTap: _onCanvasTap,
                   onCanvasDoubleTap: _onCanvasDoubleTap,
                   onCanvasInfoChanged: (_) {},
+                  onBoundsChanged: (bounds) {
+                    setState(() => _contentBounds = bounds);
+                  },
                 ),
               ),
             ),

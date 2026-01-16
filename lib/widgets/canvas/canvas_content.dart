@@ -20,6 +20,7 @@ class CanvasContent extends ConsumerStatefulWidget {
     required this.onCanvasTap,
     required this.onCanvasDoubleTap,
     this.onCanvasInfoChanged,
+    this.onBoundsChanged,
   });
 
   final List<IdeaNode> nodes;
@@ -29,8 +30,12 @@ class CanvasContent extends ConsumerStatefulWidget {
   final void Function(String nodeId, Offset delta) onNodeDragEnd;
   final VoidCallback onCanvasTap;
   final ValueChanged<Offset> onCanvasDoubleTap;
+
   /// Callback to report the origin position in scene coordinates
   final ValueChanged<Offset>? onCanvasInfoChanged;
+
+  /// Callback to report canvas bounds
+  final ValueChanged<Rect>? onBoundsChanged;
 
   /// Constant padding around content
   static const double padding = 2000.0;
@@ -72,12 +77,26 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
         final target = nodeMap[link.targetNodeId];
         if (target == null) continue;
 
-        final start = Offset(source.position.x - minX + w / 2, source.position.y - minY + h / 2);
-        final end = Offset(target.position.x - minX + w / 2, target.position.y - minY + h / 2);
+        final start = Offset(
+          source.position.x - minX + w / 2,
+          source.position.y - minY + h / 2,
+        );
+        final end = Offset(
+          target.position.x - minX + w / 2,
+          target.position.y - minY + h / 2,
+        );
 
         final distance = _distanceToSegment(localPosition, start, end);
-        if (distance <= threshold && (closest == null || distance < closest.distance)) {
-          closest = _LinkHit(source: source, target: target, link: link, start: start, end: end, distance: distance);
+        if (distance <= threshold &&
+            (closest == null || distance < closest.distance)) {
+          closest = _LinkHit(
+            source: source,
+            target: target,
+            link: link,
+            start: start,
+            end: end,
+            distance: distance,
+          );
         }
       }
     }
@@ -98,8 +117,12 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
 
   Future<void> _showLinkDetails(_LinkHit hit) async {
     final label = hit.link.label.isNotEmpty ? hit.link.label : 'Link';
-    final previewFrom = hit.source.previewText.isNotEmpty ? hit.source.previewText : hit.source.id;
-    final previewTo = hit.target.previewText.isNotEmpty ? hit.target.previewText : hit.target.id;
+    final previewFrom = hit.source.previewText.isNotEmpty
+        ? hit.source.previewText
+        : hit.source.id;
+    final previewTo = hit.target.previewText.isNotEmpty
+        ? hit.target.previewText
+        : hit.target.id;
 
     await showModalBottomSheet(
       context: context,
@@ -113,8 +136,14 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
             children: [
               Text(label, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              Text('From: $previewFrom', style: Theme.of(context).textTheme.bodyMedium),
-              Text('To: $previewTo', style: Theme.of(context).textTheme.bodyMedium),
+              Text(
+                'From: $previewFrom',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Text(
+                'To: $previewTo',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -145,10 +174,16 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
   }
 
   void _removeLink(_LinkHit hit) {
-    ref.read(nodesNotifierProvider.notifier).removeLink(hit.source.id, hit.link.targetNodeId);
+    ref
+        .read(nodesNotifierProvider.notifier)
+        .removeLink(hit.source.id, hit.link.targetNodeId);
   }
 
-  void _showContextMenu(BuildContext context, Offset position, Offset scenePos) {
+  void _showContextMenu(
+    BuildContext context,
+    Offset position,
+    Offset scenePos,
+  ) {
     _removeContextMenu();
 
     final overlay = Overlay.of(context);
@@ -180,7 +215,10 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
@@ -224,21 +262,33 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
     double maxY = padding;
 
     for (final node in widget.nodes) {
-      minX = minX < node.position.x - padding ? minX : node.position.x - padding;
-      minY = minY < node.position.y - padding ? minY : node.position.y - padding;
-      maxX = maxX > node.position.x + padding ? maxX : node.position.x + padding;
-      maxY = maxY > node.position.y + padding ? maxY : node.position.y + padding;
+      minX = minX < node.position.x - padding
+          ? minX
+          : node.position.x - padding;
+      minY = minY < node.position.y - padding
+          ? minY
+          : node.position.y - padding;
+      maxX = maxX > node.position.x + padding
+          ? maxX
+          : node.position.x + padding;
+      maxY = maxY > node.position.y + padding
+          ? maxY
+          : node.position.y + padding;
     }
 
     final width = maxX - minX;
     final height = maxY - minY;
-    
+
     // Origin position in scene coordinates (where 0,0 is rendered)
     final originInScene = Offset(-minX, -minY);
-    
-    // Report canvas info after build
+
+    // Create bounds rect
+    final bounds = Rect.fromLTWH(minX, minY, width, height);
+
+    // Report canvas info and bounds after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onCanvasInfoChanged?.call(originInScene);
+      widget.onBoundsChanged?.call(bounds);
     });
 
     return Listener(
@@ -254,18 +304,19 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
           final hit = _hitTestLinks(event.localPosition, minX, minY);
           if (hit != null) {
             _removeLink(hit);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Link removed')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Link removed')));
             _lastSecondaryDown = null;
             return;
           }
 
           final now = DateTime.now();
           final scenePos = event.localPosition + Offset(minX, minY);
-          
+
           if (_lastSecondaryDown != null &&
-              now.difference(_lastSecondaryDown!) < const Duration(milliseconds: 550)) {
+              now.difference(_lastSecondaryDown!) <
+                  const Duration(milliseconds: 550)) {
             // Double-click: create node immediately
             widget.onCanvasDoubleTap(scenePos);
             _lastSecondaryDown = null;
@@ -274,10 +325,12 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
             _lastSecondaryDown = now;
             final clickTime = now;
             final clickPosition = event.localPosition;
-            
+
             // Show context menu after delay if it wasn't a double-click
             Future.delayed(const Duration(milliseconds: 600), () {
-              if (mounted && _lastSecondaryDown == clickTime && context.mounted) {
+              if (mounted &&
+                  _lastSecondaryDown == clickTime &&
+                  context.mounted) {
                 _showContextMenu(context, clickPosition, scenePos);
               }
             });
@@ -286,7 +339,9 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
       },
       onPointerHover: (event) {
         final hit = _hitTestLinks(event.localPosition, minX, minY);
-        final linkId = hit == null ? null : '${hit.source.id}-${hit.link.targetNodeId}';
+        final linkId = hit == null
+            ? null
+            : '${hit.source.id}-${hit.link.targetNodeId}';
         if (linkId != _hoveredLinkId) {
           setState(() => _hoveredLinkId = linkId);
         }
@@ -294,7 +349,9 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
       onPointerMove: (event) {
         if (event.kind != PointerDeviceKind.mouse) return;
         final hit = _hitTestLinks(event.localPosition, minX, minY);
-        final linkId = hit == null ? null : '${hit.source.id}-${hit.link.targetNodeId}';
+        final linkId = hit == null
+            ? null
+            : '${hit.source.id}-${hit.link.targetNodeId}';
         if (linkId != _hoveredLinkId) {
           setState(() => _hoveredLinkId = linkId);
         }
@@ -318,70 +375,76 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
           widget.onCanvasTap();
         },
         child: SizedBox(
-        width: width,
-        height: height,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Grid background
-            CustomPaint(
-              size: Size(width, height),
-              painter: _GridPainter(
-                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
-                gridSize: 50,
+          width: width,
+          height: height,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Grid background
+              CustomPaint(
+                size: Size(width, height),
+                painter: _GridPainter(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  gridSize: 50,
+                ),
               ),
-            ),
-            // Canvas sketch layer (beneath nodes)
-            SizedBox(
-              width: width,
-              height: height,
-              child: CanvasSketchLayer(),
-            ),
-            // Connection lines between nodes
-            CustomPaint(
-              size: Size(width, height),
-              painter: NodeConnectionsPainter(
-                nodes: widget.nodes,
-                minX: minX,
-                minY: minY,
-                selectedNodeId: widget.selectedNodeId,
-                hoveredLinkId: _hoveredLinkId,
+              // Canvas sketch layer (beneath nodes)
+              SizedBox(
+                width: width,
+                height: height,
+                child: CanvasSketchLayer(),
               ),
-            ),
-            // Origin marker
-            Positioned(
-              left: -minX - 10,
-              top: -minY - 10,
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+              // Connection lines between nodes
+              CustomPaint(
+                size: Size(width, height),
+                painter: NodeConnectionsPainter(
+                  nodes: widget.nodes,
+                  minX: minX,
+                  minY: minY,
+                  selectedNodeId: widget.selectedNodeId,
+                  hoveredLinkId: _hoveredLinkId,
+                ),
+              ),
+              // Origin marker
+              Positioned(
+                left: -minX - 10,
+                top: -minY - 10,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.3),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.5),
+                    ),
                   ),
                 ),
               ),
-            ),
-            // Render nodes
-            ...widget.nodes.map((node) {
-              final isSelected = node.id == widget.selectedNodeId;
-              return Positioned(
-                left: node.position.x - minX,
-                top: node.position.y - minY,
-                child: IdeaNodeCard(
-                  node: node,
-                  isSelected: isSelected,
-                  onTap: () => widget.onNodeTap(node.id),
-                  onDoubleTap: () => widget.onNodeDoubleTap(node.id),
-                  onDragEnd: (delta) => widget.onNodeDragEnd(node.id, delta),
-                ),
-              );
-            }),
-          ],
+              // Render nodes
+              ...widget.nodes.map((node) {
+                final isSelected = node.id == widget.selectedNodeId;
+                return Positioned(
+                  left: node.position.x - minX,
+                  top: node.position.y - minY,
+                  child: IdeaNodeCard(
+                    node: node,
+                    isSelected: isSelected,
+                    onTap: () => widget.onNodeTap(node.id),
+                    onDoubleTap: () => widget.onNodeDoubleTap(node.id),
+                    onDragEnd: (delta) => widget.onNodeDragEnd(node.id, delta),
+                  ),
+                );
+              }),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -389,10 +452,7 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
 
 /// Paints a grid pattern on the canvas.
 class _GridPainter extends CustomPainter {
-  _GridPainter({
-    required this.color,
-    required this.gridSize,
-  });
+  _GridPainter({required this.color, required this.gridSize});
 
   final Color color;
   final double gridSize;

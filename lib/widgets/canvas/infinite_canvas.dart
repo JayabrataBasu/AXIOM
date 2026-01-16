@@ -13,6 +13,7 @@ class InfiniteCanvas extends StatefulWidget {
     this.onScaleChanged,
     this.transformationController,
     this.panEnabled = true,
+    this.contentBounds,
   });
 
   final Widget child;
@@ -22,6 +23,7 @@ class InfiniteCanvas extends StatefulWidget {
   final ValueChanged<double>? onScaleChanged;
   final TransformationController? transformationController;
   final bool panEnabled;
+  final Rect? contentBounds; // If set, constrains panning to this rect
 
   @override
   State<InfiniteCanvas> createState() => InfiniteCanvasState();
@@ -30,6 +32,7 @@ class InfiniteCanvas extends StatefulWidget {
 class InfiniteCanvasState extends State<InfiniteCanvas> {
   late TransformationController _controller;
   bool _ownController = false;
+  bool _isClamping = false;
 
   @override
   void initState() {
@@ -40,10 +43,14 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
       _controller = TransformationController();
       _ownController = true;
     }
+
+    // Clamp whenever the matrix changes (pans/zooms) to keep view within bounds
+    _controller.addListener(_clampToBounds);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_clampToBounds);
     if (_ownController) {
       _controller.dispose();
     }
@@ -100,6 +107,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
       ..scaleByVector3(Vector3(scale, scale, 1));
 
     _controller.value = matrix;
+    _clampToBounds();
   }
 
   /// Set zoom level.
@@ -120,6 +128,7 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
 
     _controller.value = matrix;
     widget.onScaleChanged?.call(clampedScale);
+    _clampToBounds();
   }
 
   /// Zoom to fit all content with given bounds and padding.
@@ -153,6 +162,49 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
 
     _controller.value = matrix;
     widget.onScaleChanged?.call(scale);
+    _clampToBounds();
+  }
+
+  /// Clamps the view to stay within content bounds.
+  void _clampToBounds() {
+    if (widget.contentBounds == null) return;
+
+    // Prevent re-entrant updates from our own clamping
+    if (_isClamping) return;
+
+    final renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final viewportSize = renderBox.size;
+    final scale = currentScale;
+    final bounds = widget.contentBounds!;
+
+    // Calculate the boundaries in viewport space
+    final minTranslateX = viewportSize.width - bounds.right * scale;
+    final maxTranslateX = -bounds.left * scale;
+    final minTranslateY = viewportSize.height - bounds.bottom * scale;
+    final maxTranslateY = -bounds.top * scale;
+
+    final currentMatrix = _controller.value;
+    final translation = currentMatrix.getTranslation();
+
+    var tx = translation.x;
+    var ty = translation.y;
+
+    // Clamp translation
+    if (tx < minTranslateX) tx = minTranslateX;
+    if (tx > maxTranslateX) tx = maxTranslateX;
+    if (ty < minTranslateY) ty = minTranslateY;
+    if (ty > maxTranslateY) ty = maxTranslateY;
+
+    if (tx != translation.x || ty != translation.y) {
+      _isClamping = true;
+      final newMatrix = Matrix4.identity()
+        ..translateByVector3(Vector3(tx, ty, 0))
+        ..scaleByVector3(Vector3(scale, scale, 1));
+      _controller.value = newMatrix;
+      _isClamping = false;
+    }
   }
 
   @override
@@ -181,11 +233,12 @@ class InfiniteCanvasState extends State<InfiniteCanvas> {
 
           _controller.value = matrix;
           widget.onScaleChanged?.call(newScale);
+          _clampToBounds();
         }
       },
       child: InteractiveViewer(
         transformationController: _controller,
-        boundaryMargin: const EdgeInsets.all(double.infinity),
+        boundaryMargin: EdgeInsets.zero,
         minScale: widget.minScale,
         maxScale: widget.maxScale,
         constrained: false,
