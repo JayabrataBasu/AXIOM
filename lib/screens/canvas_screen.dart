@@ -12,7 +12,9 @@ import 'workspace_sessions_screen.dart';
 
 /// The main canvas screen - the primary thinking surface.
 class CanvasScreen extends ConsumerStatefulWidget {
-  const CanvasScreen({super.key});
+  const CanvasScreen({super.key, this.workspaceId});
+
+  final String? workspaceId;
 
   @override
   ConsumerState<CanvasScreen> createState() => _CanvasScreenState();

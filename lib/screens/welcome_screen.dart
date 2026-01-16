@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../constants/spacing.dart';
 import '../models/node_template.dart';
 import '../models/workspace_session.dart';
@@ -35,7 +36,10 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
           .read(activeWorkspaceIdProvider.notifier)
           .setActiveWorkspace(workspace.id);
 
-      // Navigation will be handled by app shell listening to activeWorkspaceId
+      // Navigate to the workspace
+      if (mounted) {
+        context.go('/workspace/${workspace.id}');
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -76,7 +80,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
           .setActiveWorkspace(workspaceId.id);
 
       if (mounted) {
-        // Navigation will be handled by app shell listening to activeWorkspaceId
+        // Navigate to the newly created workspace
+        context.go('/workspace/${workspaceId.id}');
       }
     } catch (e) {
       if (mounted) {

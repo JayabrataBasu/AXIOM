@@ -105,7 +105,7 @@ class AppShell extends ConsumerWidget {
           case 'canvas':
           default:
             // Default to canvas screen for regular workspaces
-            return const CanvasScreen();
+            return CanvasScreen(workspaceId: workspaceId);
         }
       },
     );
