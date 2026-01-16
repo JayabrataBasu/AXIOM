@@ -297,17 +297,33 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
                       if (nodes.isEmpty) return;
 
-                      // Calculate bounds of all nodes
-                      double minX = nodes.first.position.x;
-                      double minY = nodes.first.position.y;
-                      double maxX = nodes.first.position.x;
-                      double maxY = nodes.first.position.y;
+                      // Calculate canvas bounds the same way CanvasContent does
+                      const padding = 2000.0; // CanvasContent.padding
+                      double canvasMinX = -padding;
+                      double canvasMinY = -padding;
+
+                      for (final n in nodes) {
+                        canvasMinX = canvasMinX < n.position.x - padding
+                            ? canvasMinX
+                            : n.position.x - padding;
+                        canvasMinY = canvasMinY < n.position.y - padding
+                            ? canvasMinY
+                            : n.position.y - padding;
+                      }
+
+                      // Calculate bounds in rendering coordinates
+                      double minX = nodes.first.position.x - canvasMinX;
+                      double minY = nodes.first.position.y - canvasMinY;
+                      double maxX = nodes.first.position.x - canvasMinX;
+                      double maxY = nodes.first.position.y - canvasMinY;
 
                       for (final node in nodes) {
-                        if (node.position.x < minX) minX = node.position.x;
-                        if (node.position.y < minY) minY = node.position.y;
-                        if (node.position.x > maxX) maxX = node.position.x;
-                        if (node.position.y > maxY) maxY = node.position.y;
+                        final renderX = node.position.x - canvasMinX;
+                        final renderY = node.position.y - canvasMinY;
+                        if (renderX < minX) minX = renderX;
+                        if (renderY < minY) minY = renderY;
+                        if (renderX > maxX) maxX = renderX;
+                        if (renderY > maxY) maxY = renderY;
                       }
 
                       // Add approximate node dimensions (230x120)
@@ -402,17 +418,33 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
                       if (nodes.isEmpty) return;
 
-                      // Calculate bounds of all nodes
-                      double minX = nodes.first.position.x;
-                      double minY = nodes.first.position.y;
-                      double maxX = nodes.first.position.x;
-                      double maxY = nodes.first.position.y;
+                      // Calculate canvas bounds the same way CanvasContent does
+                      const padding = 2000.0; // CanvasContent.padding
+                      double canvasMinX = -padding;
+                      double canvasMinY = -padding;
+
+                      for (final n in nodes) {
+                        canvasMinX = canvasMinX < n.position.x - padding
+                            ? canvasMinX
+                            : n.position.x - padding;
+                        canvasMinY = canvasMinY < n.position.y - padding
+                            ? canvasMinY
+                            : n.position.y - padding;
+                      }
+
+                      // Calculate bounds in rendering coordinates
+                      double minX = nodes.first.position.x - canvasMinX;
+                      double minY = nodes.first.position.y - canvasMinY;
+                      double maxX = nodes.first.position.x - canvasMinX;
+                      double maxY = nodes.first.position.y - canvasMinY;
 
                       for (final node in nodes) {
-                        if (node.position.x < minX) minX = node.position.x;
-                        if (node.position.y < minY) minY = node.position.y;
-                        if (node.position.x > maxX) maxX = node.position.x;
-                        if (node.position.y > maxY) maxY = node.position.y;
+                        final renderX = node.position.x - canvasMinX;
+                        final renderY = node.position.y - canvasMinY;
+                        if (renderX < minX) minX = renderX;
+                        if (renderY < minY) minY = renderY;
+                        if (renderX > maxX) maxX = renderX;
+                        if (renderY > maxY) maxY = renderY;
                       }
 
                       // Add approximate node dimensions (230x120)
