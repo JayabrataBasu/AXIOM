@@ -8,6 +8,7 @@ import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
 import '../widgets/dialogs/add_canvas_item_dialog.dart';
 import 'node_editor_screen.dart';
+import 'search_nodes_screen.dart';
 
 /// The main canvas screen - the primary thinking surface.
 class CanvasScreen extends ConsumerStatefulWidget {
@@ -251,8 +252,23 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   // Search button
                   IconButton(
                     icon: const Icon(Icons.search),
-                    onPressed: () {
-                      // TODO: Implement search
+                    onPressed: () async {
+                      final selectedNodeId = await Navigator.push<String?>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SearchNodesScreen(),
+                        ),
+                      );
+
+                      if (selectedNodeId == null) return;
+
+                      final nodes =
+                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                      final position = _getNodePosition(nodes, selectedNodeId);
+                      _canvasKey.currentState?.centerOn(position);
+                      ref
+                          .read(canvasViewProvider.notifier)
+                          .selectNode(selectedNodeId);
                     },
                     tooltip: 'Search nodes',
                     constraints: const BoxConstraints(
@@ -289,8 +305,23 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
             else
               IconButton(
                 icon: const Icon(Icons.search),
-                onPressed: () {
-                  // TODO: Implement search
+                onPressed: () async {
+                  final selectedNodeId = await Navigator.push<String?>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SearchNodesScreen(),
+                    ),
+                  );
+
+                  if (selectedNodeId == null) return;
+
+                  final nodes =
+                      ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                  final position = _getNodePosition(nodes, selectedNodeId);
+                  _canvasKey.currentState?.centerOn(position);
+                  ref
+                      .read(canvasViewProvider.notifier)
+                      .selectNode(selectedNodeId);
                 },
                 tooltip: 'Search nodes',
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),

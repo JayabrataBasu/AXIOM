@@ -5,28 +5,32 @@ This directory contains the custom fonts used in AXIOM's Stitch UI design system
 ## Required Fonts
 
 ### Space Grotesk (Display Font)
+
 Used for headings, titles, and prominent UI elements.
 
 **Weights needed:**
+
 - Light (300)
 - Regular (400)
 - Medium (500)
 - SemiBold (600)
 - Bold (700)
 
-**Download from:** https://fonts.google.com/specimen/Space+Grotesk
+**Download from:** <https://fonts.google.com/specimen/Space+Grotesk>
 
 ### Manrope (Body Font)
+
 Used for body text, labels, and general content.
 
 **Weights needed:**
+
 - Light (300)
 - Regular (400)
 - Medium (500)
 - SemiBold (600)
 - Bold (700)
 
-**Download from:** https://fonts.google.com/specimen/Manrope
+**Download from:** <https://fonts.google.com/specimen/Manrope>
 
 ## Installation Instructions
 

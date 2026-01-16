@@ -1,4 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:code_text_field/code_text_field.dart';
+import 'package:highlight/highlight.dart';
+import 'package:highlight/languages/bash.dart' as bash;
+import 'package:highlight/languages/cpp.dart' as cpp;
+import 'package:highlight/languages/dart.dart' as dart;
+import 'package:highlight/languages/go.dart' as go;
+import 'package:highlight/languages/java.dart' as java;
+import 'package:highlight/languages/javascript.dart' as javascript;
+import 'package:highlight/languages/json.dart' as json;
+import 'package:highlight/languages/python.dart' as python;
+import 'package:highlight/languages/rust.dart' as rust;
+import 'package:highlight/languages/sql.dart' as sql;
+import 'package:highlight/languages/typescript.dart' as typescript;
+import 'package:highlight/languages/yaml.dart' as yaml;
+import 'package:flutter_highlight/themes/github.dart';
+import 'package:flutter_highlight/themes/monokai-sublime.dart';
 import '../../models/models.dart';
 
 /// Enum representing the available block types for the add block menu.
@@ -59,7 +75,7 @@ class BlockTypeSelector extends StatelessWidget {
 }
 
 /// Base card wrapper for block editors.
-class BlockEditorCard extends StatelessWidget {
+class BlockEditorCard extends StatefulWidget {
   const BlockEditorCard({
     super.key,
     required this.blockType,
@@ -76,11 +92,42 @@ class BlockEditorCard extends StatelessWidget {
   final Widget? trailing;
 
   @override
+  State<BlockEditorCard> createState() => _BlockEditorCardState();
+}
+
+class _BlockEditorCardState extends State<BlockEditorCard> {
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Block?'),
+        content: Text(
+          'Delete this ${widget.blockType.toLowerCase()} block? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              widget.onDelete();
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      elevation: 1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -97,8 +144,12 @@ class BlockEditorCard extends StatelessWidget {
               children: [
                 // Drag handle
                 ReorderableDragStartListener(
-                  index: dragIndex,
-                  child: const Icon(Icons.drag_handle, size: 20),
+                  index: widget.dragIndex,
+                  child: Icon(
+                    Icons.drag_handle,
+                    size: 20,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 // Block type badge
@@ -113,7 +164,7 @@ class BlockEditorCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      blockType.toUpperCase(),
+                      widget.blockType.toUpperCase(),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,
@@ -123,21 +174,29 @@ class BlockEditorCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (trailing != null) ...[const SizedBox(width: 8), trailing!],
+                if (widget.trailing != null) ...[
+                  const SizedBox(width: 8),
+                  widget.trailing!,
+                ],
                 const Spacer(),
-                // Delete button
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20),
-                  onPressed: onDelete,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  tooltip: 'Delete block',
+                // Delete button with tooltip
+                Tooltip(
+                  message:
+                      'Delete this ${widget.blockType.toLowerCase()} block',
+                  child: IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    onPressed: () => _confirmDelete(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    color: theme.colorScheme.error.withValues(alpha: 0.7),
+                    hoverColor: theme.colorScheme.error.withValues(alpha: 0.2),
+                  ),
                 ),
               ],
             ),
           ),
           // Block content
-          Padding(padding: const EdgeInsets.all(12), child: child),
+          Padding(padding: const EdgeInsets.all(12), child: widget.child),
         ],
       ),
     );
@@ -188,19 +247,60 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlockEditorCard(
       blockType: 'Text',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
-      child: TextField(
-        controller: _controller,
-        maxLines: null,
-        minLines: 2,
-        decoration: const InputDecoration(
-          hintText: 'Enter text...',
-          border: OutlineInputBorder(),
-        ),
-        onChanged: widget.onContentChanged,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Text field
+          TextField(
+            controller: _controller,
+            maxLines: null,
+            minLines: 3,
+            style: theme.textTheme.bodyMedium,
+            decoration: InputDecoration(
+              hintText: 'Enter text content...',
+              hintStyle: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(12),
+              isDense: true,
+            ),
+            onChanged: widget.onContentChanged,
+          ),
+          // Character count
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _controller,
+              builder: (context, value, _) => Text(
+                '${value.text.length} characters',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -439,8 +539,7 @@ class CodeBlockEditor extends StatefulWidget {
 }
 
 class _CodeBlockEditorState extends State<CodeBlockEditor> {
-  late TextEditingController _contentController;
-  late TextEditingController _languageController;
+  late CodeController _codeController;
 
   static const _commonLanguages = [
     '',
@@ -449,7 +548,6 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
     'javascript',
     'typescript',
     'java',
-    'c',
     'cpp',
     'rust',
     'go',
@@ -462,14 +560,15 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
   @override
   void initState() {
     super.initState();
-    _contentController = TextEditingController(text: widget.block.content);
-    _languageController = TextEditingController(text: widget.block.language);
+    _codeController = CodeController(
+      text: widget.block.content,
+      language: _resolveLanguage(widget.block.language),
+    );
   }
 
   @override
   void dispose() {
-    _contentController.dispose();
-    _languageController.dispose();
+    _codeController.dispose();
     super.dispose();
   }
 
@@ -477,8 +576,13 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
   void didUpdateWidget(CodeBlockEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.block.id != widget.block.id) {
-      _contentController.text = widget.block.content;
-      _languageController.text = widget.block.language;
+      _codeController.text = widget.block.content;
+      _codeController.language = _resolveLanguage(widget.block.language);
+      return;
+    }
+
+    if (oldWidget.block.language != widget.block.language) {
+      _codeController.language = _resolveLanguage(widget.block.language);
     }
   }
 
@@ -504,30 +608,142 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
         }).toList(),
         onChanged: (value) {
           if (value != null) {
-            _languageController.text = value;
             widget.onLanguageChanged(value);
           }
         },
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: TextField(
-          controller: _contentController,
-          maxLines: null,
-          minLines: 4,
-          style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
-          decoration: const InputDecoration(
-            hintText: '// Enter code...',
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Language info badge
+          if (widget.block.language.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  widget.block.language.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          // Code editor with monospace font
+          Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: theme.colorScheme.outlineVariant),
+            ),
+            child: Stack(
+              children: [
+                CodeTheme(
+                  data: CodeThemeData(
+                    styles: theme.brightness == Brightness.dark
+                        ? monokaiSublimeTheme
+                        : githubTheme,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: CodeField(
+                      controller: _codeController,
+                      maxLines: null,
+                      minLines: 5,
+                      textStyle: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurface,
+                        height: 1.5,
+                      ),
+                      onChanged: widget.onContentChanged,
+                    ),
+                  ),
+                ),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _codeController,
+                  builder: (context, value, _) {
+                    if (value.text.isNotEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return IgnorePointer(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          '// Enter code here...',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.3,
+                            ),
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-          onChanged: widget.onContentChanged,
-        ),
+          // Code stats
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _codeController,
+              builder: (context, value, _) {
+                final text = value.text;
+                final lineCount = text.isEmpty ? 0 : text.split('\n').length;
+                return Row(
+                  children: [
+                    Text(
+                      '$lineCount lines',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${text.length} chars',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Mode? _resolveLanguage(String language) {
+    return switch (language) {
+      'dart' => dart.dart,
+      'python' => python.python,
+      'javascript' => javascript.javascript,
+      'typescript' => typescript.typescript,
+      'java' => java.java,
+      'cpp' => cpp.cpp,
+      'rust' => rust.rust,
+      'go' => go.go,
+      'sql' => sql.sql,
+      'json' => json.json,
+      'yaml' => yaml.yaml,
+      'bash' => bash.bash,
+      _ => null,
+    };
   }
 }
 

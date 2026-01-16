@@ -23,18 +23,24 @@ class NodeEditorScreen extends ConsumerStatefulWidget {
 
 class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   Timer? _saveDebounce;
+  Timer? _nameDebounce;
   late TextEditingController _nodeNameController;
+  late FocusNode _nodeNameFocusNode;
+  String? _activeNodeId;
 
   @override
   void initState() {
     super.initState();
     _nodeNameController = TextEditingController();
+    _nodeNameFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _saveDebounce?.cancel();
+    _nameDebounce?.cancel();
     _nodeNameController.dispose();
+    _nodeNameFocusNode.dispose();
     super.dispose();
   }
 
@@ -58,6 +64,8 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
             body: const Center(child: Text('This node no longer exists.')),
           );
         }
+
+        _syncNodeNameController(node);
 
         return Scaffold(
           appBar: AppBar(
@@ -93,12 +101,18 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                   children: [
                     // Node name (editable)
                     TextField(
-                      controller: _nodeNameController..text = node.name,
+                      controller: _nodeNameController,
+                      focusNode: _nodeNameFocusNode,
+                      onChanged: (name) =>
+                          _updateNodeNameDebounced(node.id, name),
                       onSubmitted: (name) => _updateNodeName(node.id, name),
+                      textInputAction: TextInputAction.done,
                       decoration: InputDecoration(
                         hintText: 'Untitled Node',
                         hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.3,
+                          ),
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
@@ -229,6 +243,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                     : ReorderableListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: node.blocks.length,
+                        buildDefaultDragHandles: false,
                         onReorder: (oldIndex, newIndex) {
                           _reorderBlocks(node, oldIndex, newIndex);
                         },
@@ -759,6 +774,25 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
 
   void _removeLink(String nodeId, String targetNodeId) {
     ref.read(nodesNotifierProvider.notifier).removeLink(nodeId, targetNodeId);
+  }
+
+  void _syncNodeNameController(IdeaNode node) {
+    if (_activeNodeId != node.id) {
+      _activeNodeId = node.id;
+      _nodeNameController.text = node.name;
+      return;
+    }
+
+    if (!_nodeNameFocusNode.hasFocus && _nodeNameController.text != node.name) {
+      _nodeNameController.text = node.name;
+    }
+  }
+
+  void _updateNodeNameDebounced(String nodeId, String newName) {
+    _nameDebounce?.cancel();
+    _nameDebounce = Timer(const Duration(milliseconds: 400), () {
+      _updateNodeName(nodeId, newName);
+    });
   }
 
   Future<void> _updateNodeName(String nodeId, String newName) async {
