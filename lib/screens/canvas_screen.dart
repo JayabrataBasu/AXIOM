@@ -254,19 +254,19 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () async {
-                      final nav = await Navigator.push<search.SearchNavigation?>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SearchNodesScreen(),
-                        ),
-                      );
+                      final nav =
+                          await Navigator.push<search.SearchNavigation?>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SearchNodesScreen(),
+                            ),
+                          );
 
                       if (nav == null) return;
 
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                      final position =
-                          _getNodePosition(nodes, nav.nodeId);
+                      final position = _getNodePosition(nodes, nav.nodeId);
                       _canvasKey.currentState?.centerOn(position);
                       ref
                           .read(canvasViewProvider.notifier)
@@ -333,9 +333,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                       ref.read(nodesNotifierProvider).valueOrNull ?? [];
                   final position = _getNodePosition(nodes, nav.nodeId);
                   _canvasKey.currentState?.centerOn(position);
-                  ref
-                      .read(canvasViewProvider.notifier)
-                      .selectNode(nav.nodeId);
+                  ref.read(canvasViewProvider.notifier).selectNode(nav.nodeId);
 
                   if (nav.blockId.isNotEmpty && mounted) {
                     Navigator.push(
@@ -374,7 +372,27 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       (n) => n.id == nodeId,
       orElse: () => nodes.first,
     );
-    return Offset(node.position.x, node.position.y);
+    
+    // Calculate minX and minY the same way canvas_content does
+    const padding = 2000.0; // CanvasContent.padding
+    double minX = -padding;
+    double minY = -padding;
+    
+    for (final n in nodes) {
+      minX = minX < n.position.x - padding ? minX : n.position.x - padding;
+      minY = minY < n.position.y - padding ? minY : n.position.y - padding;
+    }
+    
+    // Return position in canvas rendering coordinates (node.position - min offset)
+    final renderX = node.position.x - minX;
+    final renderY = node.position.y - minY;
+    
+    // Debug logging
+    // ignore: avoid_print
+    print('DEBUG: Node ${node.name} stored at (${node.position.x}, ${node.position.y}), '
+        'minX=$minX, minY=$minY, rendering at ($renderX, $renderY)');
+    
+    return Offset(renderX, renderY);
   }
 
   Widget _buildFAB(ThemeData theme) {

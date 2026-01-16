@@ -41,7 +41,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     _nodeNameController = TextEditingController();
     _nodeNameFocusNode = FocusNode();
     _highlightedBlockId = widget.highlightBlockId;
-    
+
     // Start fade-out timer for highlight (visible for 3 seconds)
     if (_highlightedBlockId != null) {
       _highlightFadeTimer = Timer(const Duration(seconds: 3), () {
@@ -57,14 +57,15 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   @override
   void didUpdateWidget(NodeEditorScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // If the highlightBlockId changed (e.g., user tapped another search result), restart highlight
-    if (oldWidget.highlightBlockId != widget.highlightBlockId && widget.highlightBlockId != null) {
+    if (oldWidget.highlightBlockId != widget.highlightBlockId &&
+        widget.highlightBlockId != null) {
       _highlightFadeTimer.cancel();
       setState(() {
         _highlightedBlockId = widget.highlightBlockId;
       });
-      
+
       // Restart fade-out timer
       _highlightFadeTimer = Timer(const Duration(seconds: 3), () {
         if (mounted) {
@@ -337,7 +338,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
 
   Widget _buildBlockEditor(IdeaNode node, ContentBlock block, int index) {
     final isHighlighted = _highlightedBlockId == block.id;
-    
+
     final editor = switch (block) {
       TextBlock() => TextBlockEditor(
         key: ValueKey(block.id),
@@ -429,7 +430,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         child: const Text('Tool Block (Coming Soon)'),
       ),
     };
-    
+
     // Wrap with highlight decoration if this block is highlighted
     if (isHighlighted) {
       return DecoratedBox(
@@ -440,7 +441,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         child: editor,
       );
     }
-    
+
     return editor;
   }
 
