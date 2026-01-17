@@ -53,6 +53,8 @@ class MatrixWorkspaceShell extends ConsumerStatefulWidget {
 
 class _MatrixWorkspaceShellState extends ConsumerState<MatrixWorkspaceShell> {
   late WorkspaceSession _session;
+  bool _hasBeenModified = false;
+  bool _isForking = false;
 
   @override
   void initState() {
@@ -60,11 +62,57 @@ class _MatrixWorkspaceShellState extends ConsumerState<MatrixWorkspaceShell> {
     _session = widget.session;
   }
 
+  /// Fork-on-modify: automatically fork on first modification to preserve original.
   Future<void> _saveSession(WorkspaceSession updated) async {
-    _session = updated;
-    await ref
-        .read(workspaceSessionsNotifierProvider.notifier)
-        .updateSession(updated);
+    // If this is the first modification, fork the session
+    if (!_hasBeenModified && !_isForking) {
+      _hasBeenModified = true;
+      _isForking = true;
+
+      try {
+        // Fork the original session to preserve it
+        final forked = await ref
+            .read(workspaceSessionsNotifierProvider.notifier)
+            .forkSession(_session.id);
+
+        // Update the forked session with the new data
+        final updatedFork = forked.copyWith(
+          data: updated.data,
+          updatedAt: DateTime.now(),
+        );
+
+        setState(() {
+          _session = updatedFork;
+          _isForking = false;
+        });
+
+        await ref
+            .read(workspaceSessionsNotifierProvider.notifier)
+            .updateSession(updatedFork);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Session forked - original preserved'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        setState(() => _isForking = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Fork failed: $e')),
+          );
+        }
+      }
+    } else {
+      // Subsequent modifications just update the session
+      _session = updated;
+      await ref
+          .read(workspaceSessionsNotifierProvider.notifier)
+          .updateSession(updated);
+    }
   }
 
   @override
