@@ -245,7 +245,6 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   ),
                 ),
               ),
-
           ],
         ),
       ),
