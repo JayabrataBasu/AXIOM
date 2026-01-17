@@ -28,7 +28,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   late FocusNode _nodeNameFocusNode;
   String? _activeNodeId;
   String? _highlightedBlockId;
-  late Timer _highlightFadeTimer;
+  Timer? _highlightFadeTimer;
 
   @override
   void initState() {
@@ -46,6 +46,8 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           });
         }
       });
+    } else {
+      _highlightFadeTimer = null;
     }
   }
 
@@ -56,7 +58,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     // If the highlightBlockId changed (e.g., user tapped another search result), restart highlight
     if (oldWidget.highlightBlockId != widget.highlightBlockId &&
         widget.highlightBlockId != null) {
-      _highlightFadeTimer.cancel();
+      _highlightFadeTimer?.cancel();
       setState(() {
         _highlightedBlockId = widget.highlightBlockId;
       });
@@ -78,7 +80,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     _nameDebounce?.cancel();
     _nodeNameController.dispose();
     _nodeNameFocusNode.dispose();
-    _highlightFadeTimer.cancel();
+    _highlightFadeTimer?.cancel();
     super.dispose();
   }
 

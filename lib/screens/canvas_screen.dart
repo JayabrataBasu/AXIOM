@@ -79,7 +79,12 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        ref.read(nodesNotifierProvider.notifier).reload();
+                        // Defer reload to next frame to avoid lifecycle races
+                        Future.microtask(() {
+                          if (mounted) {
+                            ref.read(nodesNotifierProvider.notifier).reload();
+                          }
+                        });
                       },
                       child: const Text('Retry'),
                     ),
@@ -468,7 +473,14 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                         maxX + 230,
                         maxY + 120,
                       );
-                      _canvasKey.currentState?.zoomToFit(bounds);
+
+                      // Defer zoom to next frame to avoid lifecycle races
+                      // if provider notifications are in-flight
+                      Future.delayed(const Duration(milliseconds: 1), () {
+                        if (mounted) {
+                          _canvasKey.currentState?.zoomToFit(bounds);
+                        }
+                      });
                     },
                     tooltip: 'Fit all nodes',
                     constraints: const BoxConstraints(
@@ -657,7 +669,14 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                         maxX + 230,
                         maxY + 120,
                       );
-                      _canvasKey.currentState?.zoomToFit(bounds);
+
+                      // Defer zoom to next frame to avoid lifecycle races
+                      // if provider notifications are in-flight
+                      Future.delayed(const Duration(milliseconds: 1), () {
+                        if (mounted) {
+                          _canvasKey.currentState?.zoomToFit(bounds);
+                        }
+                      });
                     },
                     tooltip: 'Fit all nodes',
                     constraints: const BoxConstraints(

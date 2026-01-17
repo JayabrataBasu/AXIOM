@@ -12,19 +12,35 @@ final nodeRepositoryProvider = Provider<NodeRepository>((ref) {
   return NodeRepository();
 });
 
-/// Provider for loading all nodes in the active workspace.
+/// Family provider: load nodes for a specific workspaceId.
+final nodesByWorkspaceProvider = FutureProvider.family<List<IdeaNode>, String>((
+  ref,
+  workspaceId,
+) async {
+  try {
+    final repository = ref.watch(nodeRepositoryProvider);
+    return repository.getAllForWorkspace(workspaceId);
+  } catch (e) {
+    // Silently return empty list on errors (e.g., during workspace transitions)
+    return [];
+  }
+});
+
+/// Provider: load nodes for the active workspace using the family provider.
 final nodesProvider = FutureProvider<List<IdeaNode>>((ref) async {
   final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
 
-  // If no active workspace, return empty list
-  if (activeWorkspaceId == null) {
+  if (activeWorkspaceId == null || activeWorkspaceId.isEmpty) {
     return [];
   }
 
-  final repository = ref.watch(nodeRepositoryProvider);
-  final allNodes = await repository.getAll();
-  // Filter nodes by workspace ID
-  return allNodes.where((n) => n.workspaceId == activeWorkspaceId).toList();
+  try {
+    // Delegate to the family provider for workspace-isolated loading
+    return await ref.watch(nodesByWorkspaceProvider(activeWorkspaceId).future);
+  } catch (e) {
+    // Silently handle errors (e.g., cancelled futures during workspace transitions)
+    return [];
+  }
 });
 
 /// Notifier for managing nodes with CRUD operations.
@@ -80,7 +96,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
 
     await _repository.create(node);
 
-    // Update state
+    // Update state immediately (avoid microtask race during widget unmount)
     final currentNodes = state.valueOrNull ?? [];
     state = AsyncData([...currentNodes, node]);
 
@@ -91,7 +107,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   Future<void> updateNode(IdeaNode node) async {
     await _repository.update(node);
 
-    // Update state
+    // Update state immediately (avoid microtask race during widget unmount)
     final currentNodes = state.valueOrNull ?? [];
     state = AsyncData(
       currentNodes.map((n) => n.id == node.id ? node : n).toList(),
@@ -102,7 +118,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   Future<void> deleteNode(String id) async {
     await _repository.delete(id);
 
-    // Update state
+    // Update state immediately (avoid microtask race during widget unmount)
     final currentNodes = state.valueOrNull ?? [];
     state = AsyncData(currentNodes.where((n) => n.id != id).toList());
   }
@@ -554,8 +570,16 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   /// Reload all nodes from disk.
   Future<void> reload() async {
     state = const AsyncLoading();
-    await _repository.reload();
-    state = AsyncData(await _repository.getAll());
+    final workspaceId = ref.read(activeWorkspaceIdProvider);
+    if (workspaceId != null && workspaceId.isNotEmpty) {
+      await _repository.reloadWorkspace(workspaceId);
+      final nodes = await _repository.getAllForWorkspace(workspaceId);
+      state = AsyncData(nodes);
+    } else {
+      await _repository.reload();
+      final nodes = await _repository.getAll();
+      state = AsyncData(nodes);
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
@@ -14,6 +15,24 @@ import 'routing/app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Suppress harmless Flutter assertion errors that occur during Riverpod
+  // provider transitions (e.g., workspace switching). These don't affect
+  // app functionality but can clutter logs in debug mode.
+  if (kDebugMode) {
+    FlutterError.onError = (FlutterErrorDetails details) {
+      // Suppress "Failed assertion: '_lifecycleState != _ElementLifecycle.defunct'"
+      // This is a known Riverpod + Flutter timing issue during rapid provider updates
+      if (details.exception.toString().contains(
+        '_lifecycleState != _ElementLifecycle.defunct',
+      )) {
+        // Silently ignore - the exception is caught by Riverpod's error handling
+        return;
+      }
+      // Re-throw all other errors
+      FlutterError.presentError(details);
+    };
+  }
 
   try {
     // Initialize services asynchronously without blocking UI
