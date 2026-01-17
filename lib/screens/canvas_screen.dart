@@ -32,6 +32,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   String? _recentlyCreatedNodeId;
   Timer? _newNodeHighlightTimer;
   Rect? _viewportRect;
+  bool _minimapVisible = false;
   // ignore: prefer_final_fields
   bool _sketchMode = false;
   bool _doodleMode = false;
@@ -182,19 +183,66 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
             // Node navigator (locate and jump to nodes)
             _buildNodeNavigator(nodesAsync, viewState),
-            // Minimap overlay
-            if (_contentBounds != null && _viewportRect != null)
-              Positioned(
-                left: 16,
-                bottom: 16,
-                child: CanvasMinimap(
-                  bounds: _contentBounds!,
-                  viewport: _viewportRect!,
-                  nodes: nodesAsync.valueOrNull ?? const [],
-                  origin: _canvasOrigin,
-                  onJumpToScene: (scenePos) {
-                    _canvasKey.currentState?.centerOn(scenePos);
-                  },
+            // Minimap modal dialog
+            if (_minimapVisible &&
+                _contentBounds != null &&
+                _viewportRect != null)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => setState(() => _minimapVisible = false),
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    child: Center(
+                      child: Material(
+                        elevation: 12,
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Canvas Map',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () =>
+                                        setState(() => _minimapVisible = false),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: 400,
+                                height: 300,
+                                child: CanvasMinimap(
+                                  bounds: _contentBounds!,
+                                  viewport: _viewportRect!,
+                                  nodes: nodesAsync.valueOrNull ?? const [],
+                                  origin: _canvasOrigin,
+                                  onJumpToScene: (scenePos) {
+                                    _canvasKey.currentState?.centerOn(scenePos);
+                                    setState(() => _minimapVisible = false);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             // Doodle toolbar
@@ -372,6 +420,18 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                       _canvasKey.currentState?.zoomToFit(bounds);
                     },
                     tooltip: 'Fit all nodes',
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    iconSize: 24,
+                  ),
+                  const SizedBox(width: 4),
+                  // Minimap button
+                  IconButton(
+                    icon: const Icon(Icons.map),
+                    onPressed: () => setState(() => _minimapVisible = true),
+                    tooltip: 'Show canvas map',
                     constraints: const BoxConstraints(
                       minWidth: 40,
                       minHeight: 40,

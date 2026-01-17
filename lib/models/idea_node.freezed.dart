@@ -27,6 +27,9 @@ mixin _$IdeaNode {
   /// Optional name/title for the node
   String get name => throw _privateConstructorUsedError;
 
+  /// Workspace this node belongs to (for isolation)
+  String get workspaceId => throw _privateConstructorUsedError;
+
   /// Timestamp when this node was created
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -61,6 +64,7 @@ abstract class $IdeaNodeCopyWith<$Res> {
   $Res call({
     String id,
     String name,
+    String workspaceId,
     DateTime createdAt,
     DateTime updatedAt,
     Position position,
@@ -88,6 +92,7 @@ class _$IdeaNodeCopyWithImpl<$Res, $Val extends IdeaNode>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? workspaceId = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? position = null,
@@ -103,6 +108,10 @@ class _$IdeaNodeCopyWithImpl<$Res, $Val extends IdeaNode>
             name: null == name
                 ? _value.name
                 : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            workspaceId: null == workspaceId
+                ? _value.workspaceId
+                : workspaceId // ignore: cast_nullable_to_non_nullable
                       as String,
             createdAt: null == createdAt
                 ? _value.createdAt
@@ -152,6 +161,7 @@ abstract class _$$IdeaNodeImplCopyWith<$Res>
   $Res call({
     String id,
     String name,
+    String workspaceId,
     DateTime createdAt,
     DateTime updatedAt,
     Position position,
@@ -179,6 +189,7 @@ class __$$IdeaNodeImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? workspaceId = null,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? position = null,
@@ -194,6 +205,10 @@ class __$$IdeaNodeImplCopyWithImpl<$Res>
         name: null == name
             ? _value.name
             : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        workspaceId: null == workspaceId
+            ? _value.workspaceId
+            : workspaceId // ignore: cast_nullable_to_non_nullable
                   as String,
         createdAt: null == createdAt
             ? _value.createdAt
@@ -226,6 +241,7 @@ class _$IdeaNodeImpl extends _IdeaNode {
   const _$IdeaNodeImpl({
     required this.id,
     this.name = '',
+    this.workspaceId = '',
     required this.createdAt,
     required this.updatedAt,
     this.position = const Position(),
@@ -246,6 +262,11 @@ class _$IdeaNodeImpl extends _IdeaNode {
   @override
   @JsonKey()
   final String name;
+
+  /// Workspace this node belongs to (for isolation)
+  @override
+  @JsonKey()
+  final String workspaceId;
 
   /// Timestamp when this node was created
   @override
@@ -287,7 +308,7 @@ class _$IdeaNodeImpl extends _IdeaNode {
 
   @override
   String toString() {
-    return 'IdeaNode(id: $id, name: $name, createdAt: $createdAt, updatedAt: $updatedAt, position: $position, blocks: $blocks, links: $links)';
+    return 'IdeaNode(id: $id, name: $name, workspaceId: $workspaceId, createdAt: $createdAt, updatedAt: $updatedAt, position: $position, blocks: $blocks, links: $links)';
   }
 
   @override
@@ -297,6 +318,8 @@ class _$IdeaNodeImpl extends _IdeaNode {
             other is _$IdeaNodeImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.workspaceId, workspaceId) ||
+                other.workspaceId == workspaceId) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -313,6 +336,7 @@ class _$IdeaNodeImpl extends _IdeaNode {
     runtimeType,
     id,
     name,
+    workspaceId,
     createdAt,
     updatedAt,
     position,
@@ -338,6 +362,7 @@ abstract class _IdeaNode extends IdeaNode {
   const factory _IdeaNode({
     required final String id,
     final String name,
+    final String workspaceId,
     required final DateTime createdAt,
     required final DateTime updatedAt,
     final Position position,
@@ -356,6 +381,10 @@ abstract class _IdeaNode extends IdeaNode {
   /// Optional name/title for the node
   @override
   String get name;
+
+  /// Workspace this node belongs to (for isolation)
+  @override
+  String get workspaceId;
 
   /// Timestamp when this node was created
   @override

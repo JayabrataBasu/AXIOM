@@ -36,26 +36,50 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
   }
 
   Future<void> _savePosition() async {
-    await _settingsService.set(
-      'sketchPalettePosition',
-      {'x': _position.dx, 'y': _position.dy},
-    );
+    await _settingsService.set('sketchPalettePosition', {
+      'x': _position.dx,
+      'y': _position.dy,
+    });
   }
 
-  // Standard color palette
+  // Expanded color palette with more options
   static const List<Color> _colors = [
+    // Neutrals
     Colors.black,
-    Colors.red,
-    Colors.orange,
-    Colors.yellow,
-    Colors.green,
-    Colors.blue,
-    Colors.indigo,
-    Colors.purple,
-    Colors.pink,
+    Colors.white,
     Colors.grey,
-    Colors.brown,
+    // Reds
+    Colors.red,
+    Color(0xFFE57373),
+    Color(0xFFEF5350),
+    // Oranges
+    Colors.orange,
+    Color(0xFFFFB74D),
+    Color(0xFFFFA726),
+    // Yellows
+    Colors.yellow,
+    Color(0xFFFDD835),
+    Color(0xFFFFD54F),
+    // Greens
+    Colors.green,
+    Color(0xFF81C784),
+    Color(0xFF66BB6A),
+    // Blues
+    Colors.blue,
+    Color(0xFF64B5F6),
+    Color(0xFF42A5F5),
+    // Purples
+    Colors.purple,
+    Color(0xFFBA68C8),
+    Color(0xFFAB47BC),
+    // Pinks
+    Colors.pink,
+    Color(0xFFF06292),
+    Color(0xFFEC407A),
+    // Cyans
     Colors.cyan,
+    Color(0xFF4DD0E1),
+    Color(0xFF26C6DA),
   ];
 
   @override
@@ -85,7 +109,9 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.3),
               ),
             ),
             child: SingleChildScrollView(
@@ -94,64 +120,80 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                 children: [
                   // Header with drag handle
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.1),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.drag_handle,
-                          size: 20,
+                          size: 16,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Sketch Tools',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Sketch',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
-                        const Spacer(),
                         IconButton(
-                          icon: Icon(_isExpanded ? Icons.unfold_less : Icons.unfold_more),
+                          icon: Icon(
+                            _isExpanded ? Icons.unfold_less : Icons.unfold_more,
+                          ),
                           onPressed: () {
                             setState(() => _isExpanded = !_isExpanded);
                           },
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          iconSize: 20,
+                          iconSize: 18,
                         ),
                       ],
                     ),
                   ),
-                  
+                  // Tools section (expandable)
                   if (_isExpanded) ...[
-                    // Tool selection
+                    const Divider(height: 1),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Tool',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            alignment: WrapAlignment.spaceEvenly,
+                          GridView.count(
+                            crossAxisCount: 3,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                            childAspectRatio: 1.2,
                             children: [
                               _ToolButton(
                                 icon: Icons.edit,
                                 label: 'Pen',
                                 isSelected: toolState.tool == SketchTool.pen,
                                 onPressed: () {
-                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.pen);
+                                  ref
+                                      .read(sketchToolsProvider.notifier)
+                                      .setTool(SketchTool.pen);
                                 },
                               ),
                               _ToolButton(
@@ -159,7 +201,9 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                                 label: 'Brush',
                                 isSelected: toolState.tool == SketchTool.brush,
                                 onPressed: () {
-                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.brush);
+                                  ref
+                                      .read(sketchToolsProvider.notifier)
+                                      .setTool(SketchTool.brush);
                                 },
                               ),
                               _ToolButton(
@@ -167,7 +211,9 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                                 label: 'Marker',
                                 isSelected: toolState.tool == SketchTool.marker,
                                 onPressed: () {
-                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.marker);
+                                  ref
+                                      .read(sketchToolsProvider.notifier)
+                                      .setTool(SketchTool.marker);
                                 },
                               ),
                               _ToolButton(
@@ -175,7 +221,9 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                                 label: 'Pencil',
                                 isSelected: toolState.tool == SketchTool.pencil,
                                 onPressed: () {
-                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.pencil);
+                                  ref
+                                      .read(sketchToolsProvider.notifier)
+                                      .setTool(SketchTool.pencil);
                                 },
                               ),
                               _ToolButton(
@@ -183,7 +231,9 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                                 label: 'Eraser',
                                 isSelected: toolState.tool == SketchTool.eraser,
                                 onPressed: () {
-                                  ref.read(sketchToolsProvider.notifier).setTool(SketchTool.eraser);
+                                  ref
+                                      .read(sketchToolsProvider.notifier)
+                                      .setTool(SketchTool.eraser);
                                 },
                               ),
                             ],
@@ -192,189 +242,231 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                       ),
                     ),
                     const Divider(height: 1),
-                    
-                    // Color palette
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Color',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          GridView.count(
-                            crossAxisCount: 4,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            mainAxisSpacing: 8,
-                            crossAxisSpacing: 8,
-                            children: _colors.map((color) {
-                              return GestureDetector(
-                                onTap: () {
-                                  ref.read(sketchToolsProvider.notifier).setColor(color);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: toolState.color == color ? Colors.white : Colors.transparent,
-                                      width: toolState.color == color ? 3 : 0,
-                                    ),
-                                    boxShadow: toolState.color == color
+                  ],
+                  // Color palette
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Color',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        GridView.count(
+                          crossAxisCount: 6,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          mainAxisSpacing: 4,
+                          crossAxisSpacing: 4,
+                          children: _colors.map((color) {
+                            return GestureDetector(
+                              onTap: () {
+                                ref
+                                    .read(sketchToolsProvider.notifier)
+                                    .setColor(color);
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: toolState.color == color
+                                        ? Colors.white
+                                        : Colors.transparent,
+                                    width: toolState.color == color ? 2 : 0,
+                                  ),
+                                  boxShadow: toolState.color == color
                                       ? [
                                           BoxShadow(
                                             color: color.withValues(alpha: 0.5),
-                                            blurRadius: 8,
-                                            spreadRadius: 2,
+                                            blurRadius: 4,
+                                            spreadRadius: 1,
                                           ),
                                         ]
                                       : null,
-                                  ),
-                                  child: toolState.color == color
-                                    ? const Icon(Icons.check, color: Colors.white, size: 16)
+                                ),
+                                child: toolState.color == color
+                                    ? const Icon(
+                                        Icons.check,
+                                        color: Colors.white,
+                                        size: 12,
+                                      )
                                     : null,
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    
-                    // Brush size slider
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Brush Size',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '${toolState.brushSize.toStringAsFixed(1)}px',
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Slider(
-                            value: toolState.brushSize,
-                            min: 1.0,
-                            max: 50.0,
-                            divisions: 49,
-                            onChanged: (value) {
-                              ref.read(sketchToolsProvider.notifier).setBrushSize(value);
-                            },
-                          ),
-                        ],
-                      ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
-                    const Divider(height: 1),
-                    
-                    // Opacity slider
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Opacity',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '${(toolState.opacity * 100).toStringAsFixed(0)}%',
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Slider(
-                            value: toolState.opacity,
-                            min: 0.0,
-                            max: 1.0,
-                            divisions: 10,
-                            onChanged: (value) {
-                              ref.read(sketchToolsProvider.notifier).setOpacity(value);
-                            },
-                          ),
-                        ],
-                      ),
+                  ),
+                  const Divider(height: 1),
+
+                  // Brush size slider
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
                     ),
-                  ],
-                  
-                  // Footer with collapse hint
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
-                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-                    ),
-                    child: _isExpanded
-                      ? Text(
-                          'Drag to move palette',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                          ),
-                          textAlign: TextAlign.center,
-                        )
-                      : Column(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              width: 32,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                color: toolState.color,
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
                             Text(
-                              '${toolState.brushSize.toStringAsFixed(1)}px',
-                              style: Theme.of(context).textTheme.labelSmall,
-                              textAlign: TextAlign.center,
+                              'Brush Size',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${toolState.brushSize.toStringAsFixed(1)}px',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 8),
+                        Slider(
+                          value: toolState.brushSize,
+                          min: 1.0,
+                          max: 50.0,
+                          divisions: 49,
+                          onChanged: (value) {
+                            ref
+                                .read(sketchToolsProvider.notifier)
+                                .setBrushSize(value);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+
+                  // Opacity slider
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Opacity',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${(toolState.opacity * 100).toStringAsFixed(0)}%',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Slider(
+                          value: toolState.opacity,
+                          min: 0.0,
+                          max: 1.0,
+                          divisions: 10,
+                          onChanged: (value) {
+                            ref
+                                .read(sketchToolsProvider.notifier)
+                                .setOpacity(value);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+
+                  // Footer with collapse hint
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerLow,
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(12),
+                      ),
+                    ),
+                    child: _isExpanded
+                        ? Text(
+                            'Drag to move palette',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.5),
+                                ),
+                            textAlign: TextAlign.center,
+                          )
+                        : Column(
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: toolState.color,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.outline
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${toolState.brushSize.toStringAsFixed(1)}px',
+                                style: Theme.of(context).textTheme.labelSmall,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               ),
@@ -408,14 +500,19 @@ class _ToolButton extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.surfaceContainer,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(8),
             border: isSelected
-              ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2)
-              : Border.all(
-                  color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-                ),
+                ? Border.all(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  )
+                : Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.3),
+                  ),
           ),
           child: Material(
             color: Colors.transparent,
@@ -427,8 +524,8 @@ class _ToolButton extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: isSelected
-                    ? Colors.white
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                   size: 24,
                 ),
               ),
@@ -440,8 +537,8 @@ class _ToolButton extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.onSurfaceVariant,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],

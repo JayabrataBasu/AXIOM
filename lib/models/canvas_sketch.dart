@@ -45,11 +45,13 @@ class CanvasSketchStroke {
     required this.points,
     required this.color,
     required this.width,
+    this.isEraser = false,
   });
 
   final List<CanvasSketchPoint> points;
   final int color; // Stored as int (Color.value)
   final double width;
+  final bool isEraser; // True if this stroke is an eraser stroke
 
   factory CanvasSketchStroke.fromJson(Map<String, dynamic> json) {
     final rawPoints = json['points'] as List<dynamic>? ?? [];
@@ -59,6 +61,7 @@ class CanvasSketchStroke {
           .toList(),
       color: json['color'] as int? ?? 0xFF000000,
       width: (json['width'] as num?)?.toDouble() ?? 2.0,
+      isEraser: json['isEraser'] as bool? ?? false,
     );
   }
 
@@ -67,6 +70,7 @@ class CanvasSketchStroke {
       'points': points.map((p) => p.toJson()).toList(),
       'color': color,
       'width': width,
+      'isEraser': isEraser,
     };
   }
 
@@ -76,20 +80,18 @@ class CanvasSketchStroke {
     if (other is! CanvasSketchStroke) return false;
     return other.points == points &&
         other.color == color &&
-        other.width == width;
+        other.width == width &&
+        other.isEraser == isEraser;
   }
 
   @override
-  int get hashCode => points.hashCode ^ color.hashCode ^ width.hashCode;
+  int get hashCode =>
+      points.hashCode ^ color.hashCode ^ width.hashCode ^ isEraser.hashCode;
 }
 
 /// A point in canvas-relative coordinates.
 class CanvasSketchPoint {
-  CanvasSketchPoint({
-    required this.x,
-    required this.y,
-    this.pressure = 1.0,
-  });
+  CanvasSketchPoint({required this.x, required this.y, this.pressure = 1.0});
 
   final double x;
   final double y;
@@ -104,11 +106,7 @@ class CanvasSketchPoint {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'x': x,
-      'y': y,
-      'pressure': pressure,
-    };
+    return {'x': x, 'y': y, 'pressure': pressure};
   }
 
   @override

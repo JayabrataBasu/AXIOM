@@ -15,7 +15,7 @@ class CanvasSketchLayer extends ConsumerStatefulWidget {
 class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   List<CanvasSketchPoint> _currentStroke = [];
   int _lastUpdateMillis = 0;
-  static const int _throttleMs = 8;
+  static const int _throttleMs = 4; // Reduced from 8 for snappier feel
 
   @override
   Widget build(BuildContext context) {
@@ -67,14 +67,19 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
             final toolState = ref.read(sketchToolsProvider);
             final notifier = ref.read(canvasSketchNotifierProvider.notifier);
 
-            // Create stroke with current tool settings
-            final stroke = CanvasSketchStroke(
-              points: _currentStroke,
-              color: toolState.color.toARGB32(),
-              width: toolState.brushSize,
-            );
-
-            notifier.addStroke(stroke);
+            // Handle eraser tool by removing strokes at intersection points
+            if (toolState.tool == SketchTool.eraser) {
+              notifier.eraseStrokesAt(_currentStroke, toolState.brushSize);
+            } else {
+              // Create stroke with current tool settings
+              final stroke = CanvasSketchStroke(
+                points: _currentStroke,
+                color: toolState.color.toARGB32(),
+                width: toolState.brushSize,
+                isEraser: false,
+              );
+              notifier.addStroke(stroke);
+            }
             setState(() {
               _currentStroke = [];
             });
@@ -119,6 +124,11 @@ class _CanvasSketchLayerPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = stroke.width;
+
+      if (stroke.isEraser) {
+        // For eraser, use blend mode to clear
+        paint.blendMode = BlendMode.clear;
+      }
 
       _drawStroke(canvas, paint, stroke.points);
     }

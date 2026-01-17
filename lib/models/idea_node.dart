@@ -153,6 +153,9 @@ class IdeaNode with _$IdeaNode {
     /// Optional name/title for the node
     @Default('') String name,
 
+    /// Workspace this node belongs to (for isolation)
+    @Default('') String workspaceId,
+
     /// Timestamp when this node was created
     required DateTime createdAt,
 

@@ -22,12 +22,9 @@ final nodesProvider = FutureProvider<List<IdeaNode>>((ref) async {
   }
 
   final repository = ref.watch(nodeRepositoryProvider);
-  // Get all nodes for the active workspace
-  // Note: Currently returns all nodes. When workspace isolation is implemented,
-  // add workspaceId field to IdeaNode and filter here.
   final allNodes = await repository.getAll();
-  // Future: return allNodes.where((n) => n.workspaceId == activeWorkspaceId).toList();
-  return allNodes;
+  // Filter nodes by workspace ID
+  return allNodes.where((n) => n.workspaceId == activeWorkspaceId).toList();
 });
 
 /// Notifier for managing nodes with CRUD operations.
@@ -50,6 +47,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     NodeTemplate? template,
   }) async {
     final now = DateTime.now();
+    final activeWorkspaceId = ref.read(activeWorkspaceIdProvider);
 
     // Generate blocks from template or create default text block
     final blocks = template != null
@@ -59,6 +57,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     final node = IdeaNode(
       id: _uuid.v4(),
       name: name ?? '',
+      workspaceId: activeWorkspaceId ?? '',
       createdAt: now,
       updatedAt: now,
       position: position,

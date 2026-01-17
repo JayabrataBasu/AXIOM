@@ -93,6 +93,65 @@ class CanvasSketchNotifier extends StateNotifier<AsyncValue<CanvasSketch>> {
     _loadSketch();
   }
 
+  /// Erase strokes at intersection points with the eraser path.
+  Future<void> eraseStrokesAt(
+    List<CanvasSketchPoint> eraserPath,
+    double eraserRadius,
+  ) async {
+    try {
+      state.whenData((sketch) async {
+        final newStrokes = <CanvasSketchStroke>[];
+        const eraserThreshold = 20.0; // Points within this distance are erased
+
+        for (final stroke in sketch.strokes) {
+          final remainingPoints = <CanvasSketchPoint>[];
+
+          for (final point in stroke.points) {
+            // Check if point is within eraser radius of any eraser point
+            bool isErased = false;
+            for (final eraserPoint in eraserPath) {
+              final distance =
+                  (point.x - eraserPoint.x).abs() +
+                  (point.y - eraserPoint.y).abs();
+              if (distance < (eraserRadius + eraserThreshold)) {
+                isErased = true;
+                break;
+              }
+            }
+
+            if (!isErased) {
+              remainingPoints.add(point);
+            }
+          }
+
+          // Only keep strokes with remaining points
+          if (remainingPoints.isNotEmpty) {
+            newStrokes.add(
+              CanvasSketchStroke(
+                points: remainingPoints,
+                color: stroke.color,
+                width: stroke.width,
+                isEraser: stroke.isEraser,
+              ),
+            );
+          }
+        }
+
+        final newSketch = CanvasSketch(
+          id: sketch.id,
+          strokes: newStrokes,
+          createdAt: sketch.createdAt,
+          updatedAt: DateTime.now(),
+        );
+        await _service.setCanvasSketch(newSketch);
+      });
+      final sketch = await _service.getCanvasSketch();
+      state = AsyncValue.data(CanvasSketch.fromJson(sketch.toJson()));
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+    }
+  }
+
   /// Replace the entire strokes list for the current sketch.
   Future<void> setCanvasStrokes(List<CanvasSketchStroke> strokes) async {
     try {
