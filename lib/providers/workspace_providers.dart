@@ -91,7 +91,7 @@ class WorkspaceSessionsNotifier extends AsyncNotifier<List<WorkspaceSession>> {
     // Find the next fork number by checking all sessions with similar names
     final allSessions = state.valueOrNull ?? [];
     final baseName = original.label.isNotEmpty ? original.label : 'Session';
-    
+
     // Count existing forks with pattern "baseName fork n"
     int nextForkNumber = 1;
     for (final session in allSessions) {
@@ -107,7 +107,7 @@ class WorkspaceSessionsNotifier extends AsyncNotifier<List<WorkspaceSession>> {
 
     final forkedId = _uuid.v4();
     var forked = await _repository.fork(sessionId, forkedId);
-    
+
     // Rename to include fork number
     final forkName = '$baseName fork $nextForkNumber';
     forked = forked.copyWith(label: forkName);

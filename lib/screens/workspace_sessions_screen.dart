@@ -170,17 +170,13 @@ class _WorkspaceSessionsScreenState
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(
-          SnackBar(content: Text('Forked as "${forked.label}"')),
-        );
+        ).showSnackBar(SnackBar(content: Text('Forked as "${forked.label}"')));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(
-          SnackBar(content: Text('Error forking workspace: $e')),
-        );
+        ).showSnackBar(SnackBar(content: Text('Error forking workspace: $e')));
       }
     }
   }
@@ -286,8 +282,8 @@ class _WorkspaceSessionsScreenState
                                             : 'Untitled',
                                         style: theme.textTheme.titleMedium
                                             ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
