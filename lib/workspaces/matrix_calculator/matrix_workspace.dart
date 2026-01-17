@@ -11,10 +11,12 @@ class MatrixWorkspace extends ConsumerStatefulWidget {
     super.key,
     required this.session,
     required this.onSessionChanged,
+    this.onShowSettings,
   });
 
   final WorkspaceSession session;
   final Future<void> Function(WorkspaceSession updated) onSessionChanged;
+  final VoidCallback? onShowSettings;
 
   @override
   ConsumerState<MatrixWorkspace> createState() => _MatrixWorkspaceState();
@@ -56,6 +58,12 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
               : 'Matrix Workspace',
         ),
         actions: [
+          if (widget.onShowSettings != null)
+            IconButton(
+              tooltip: 'Settings',
+              icon: const Icon(Icons.more_vert),
+              onPressed: widget.onShowSettings,
+            ),
           IconButton(
             tooltip: 'Save',
             icon: const Icon(Icons.save_outlined),
@@ -81,63 +89,150 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
   Widget _buildMatricesCard(ThemeData theme) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Text('Matrices', style: theme.textTheme.titleMedium),
+                Icon(Icons.grid_on, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Text('Matrices', style: theme.textTheme.titleLarge),
                 const Spacer(),
-                TextButton.icon(
+                FilledButton.icon(
                   onPressed: _showAddMatrixDialog,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add'),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('New Matrix'),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const Divider(height: 24),
             if (_data.matrices.isEmpty)
-              Text(
-                'No matrices yet. Add one to begin.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.grid_off,
+                        size: 48,
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No matrices yet',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Create your first matrix to begin',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else
-              Column(
-                children: _data.matrices.map((m) {
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.grid_on),
+              ...List.generate(_data.matrices.length, (index) {
+                final m = _data.matrices[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: ExpansionTile(
+                    leading: CircleAvatar(
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      child: Text(
+                        m.name.isNotEmpty ? m.name[0].toUpperCase() : 'M',
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     title: Text(
-                      m.name.isNotEmpty
-                          ? m.name
-                          : 'Matrix ${m.id.substring(0, 6)}',
+                      m.name.isNotEmpty ? m.name : 'Matrix ${index + 1}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(
-                      '${m.dimensions} • preview: ${_previewRow(m)}',
+                      '${m.data.length}×${m.data.isNotEmpty ? m.data[0].length : 0} matrix',
+                      style: theme.textTheme.bodySmall,
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit),
-                          tooltip: 'Edit matrix',
+                          icon: const Icon(Icons.edit_outlined),
+                          tooltip: 'Edit',
+                          iconSize: 20,
                           onPressed: () => _showAddMatrixDialog(editing: m),
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete_outline),
-                          tooltip: 'Delete matrix',
+                          tooltip: 'Delete',
+                          iconSize: 20,
                           onPressed: () => _deleteMatrix(m.id),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
-              ),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: _buildMatrixGrid(m, theme),
+                      ),
+                    ],
+                  ),
+                );
+              }),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMatrixGrid(Matrix matrix, ThemeData theme) {
+    if (matrix.data.isEmpty || matrix.data[0].isEmpty) {
+      return const Text('Empty matrix');
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Table(
+        border: TableBorder.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        defaultColumnWidth: const IntrinsicColumnWidth(),
+        children: matrix.data.map((row) {
+          return TableRow(
+            children: row.map((value) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Text(
+                  value.toStringAsFixed(2),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontFeatures: [const FontFeature.tabularFigures()],
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              );
+            }).toList(),
+          );
+        }).toList(),
       ),
     );
   }
@@ -146,21 +241,39 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
     final matrices = _data.matrices;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Operations', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.calculate, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Text('Operations', style: theme.textTheme.titleLarge),
+              ],
+            ),
+            const Divider(height: 24),
             if (matrices.isEmpty)
-              Text(
-                'Add at least one matrix to perform operations.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(
+                    'Add matrices to perform operations',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
                 ),
               )
             else ...[
               // Matrix selection
+              Text(
+                'Select Matrices',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -169,77 +282,99 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
                       value: _selectedA,
                       onChanged: (v) => setState(() => _selectedA = v),
                       matrices: matrices,
+                      theme: theme,
                     ),
                   ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: _matrixDropdown(
                       label: 'Matrix B',
                       value: _selectedB,
                       onChanged: (v) => setState(() => _selectedB = v),
                       matrices: matrices,
+                      theme: theme,
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 24),
+              // Single matrix operations
+              Text(
+                'Single Matrix Operations',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
               ),
               const SizedBox(height: 12),
-              // Unary operations
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _transpose,
-                      icon: const Icon(Icons.flip),
-                      label: const Text('Transpose'),
-                    ),
+                  _operationButton(
+                    theme,
+                    icon: Icons.flip,
+                    label: 'Transpose',
+                    onPressed: _transpose,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _invert,
-                      icon: const Icon(Icons.calculate),
-                      label: const Text('Invert'),
-                    ),
+                  _operationButton(
+                    theme,
+                    icon: Icons.calculate_outlined,
+                    label: 'Invert',
+                    onPressed: _invert,
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              // Binary and point operations
-              Row(
+              const SizedBox(height: 24),
+              // Two matrix operations
+              Text(
+                'Two Matrix Operations',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _multiply,
-                      icon: const Icon(Icons.grid_on),
-                      label: const Text('Multiply'),
-                    ),
+                  _operationButton(
+                    theme,
+                    icon: Icons.close,
+                    label: 'Multiply A×B',
+                    onPressed: _multiply,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pointAdd,
-                      icon: const Icon(Icons.add_location),
-                      label: const Text('+ Point'),
-                    ),
+                  _operationButton(
+                    theme,
+                    icon: Icons.circle_outlined,
+                    label: 'Dot Product',
+                    onPressed: _pointDot,
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
+              const SizedBox(height: 24),
+              // Point operations
+              Text(
+                'Point Operations',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pointScale,
-                      icon: const Icon(Icons.zoom_in),
-                      label: const Text('× Point'),
-                    ),
+                  _operationButton(
+                    theme,
+                    icon: Icons.add,
+                    label: 'Add Point',
+                    onPressed: _pointAdd,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _pointDot,
-                      icon: const Icon(Icons.circle),
-                      label: const Text('· Dot'),
-                    ),
+                  _operationButton(
+                    theme,
+                    icon: Icons.zoom_out_map,
+                    label: 'Scale Point',
+                    onPressed: _pointScale,
                   ),
                 ],
               ),
@@ -250,41 +385,104 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
     );
   }
 
+  Widget _operationButton(
+    ThemeData theme, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+    );
+  }
+
   Widget _buildHistoryCard(ThemeData theme) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('History', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.history, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Text('History', style: theme.textTheme.titleLarge),
+              ],
+            ),
+            const Divider(height: 24),
             if (_data.operations.isEmpty)
-              Text(
-                'No operations yet.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Text(
+                    'No operations yet',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
                 ),
               )
             else
-              Column(
-                children: _data.operations.map((op) {
-                  return ListTile(
-                    dense: true,
-                    leading: const Icon(Icons.history),
+              ...List.generate(_data.operations.length, (index) {
+                final op = _data.operations.reversed.toList()[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: theme.colorScheme.secondaryContainer,
+                      child: Icon(
+                        _getOperationIcon(op.type),
+                        color: theme.colorScheme.onSecondaryContainer,
+                        size: 20,
+                      ),
+                    ),
                     title: Text(
                       op.description.isNotEmpty
                           ? op.description
-                          : op.type.toUpperCase(),
+                          : op.type.replaceAll('_', ' ').toUpperCase(),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    subtitle: Text('Created ${op.createdAt.toLocal()}'),
-                  );
-                }).toList(),
-              ),
+                    subtitle: Text(
+                      _formatTime(op.createdAt),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                );
+              }),
           ],
         ),
       ),
     );
+  }
+
+  IconData _getOperationIcon(String type) {
+    return switch (type) {
+      'transpose' => Icons.flip,
+      'invert' => Icons.calculate_outlined,
+      'multiply' => Icons.close,
+      'point_add' => Icons.add,
+      'point_scale' => Icons.zoom_out_map,
+      'point_dot' => Icons.circle_outlined,
+      _ => Icons.functions,
+    };
+  }
+
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final diff = now.difference(time);
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 
   Widget _matrixDropdown({
@@ -292,21 +490,32 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
     required String? value,
     required ValueChanged<String?> onChanged,
     required List<Matrix> matrices,
+    required ThemeData theme,
   }) {
-    return DropdownButton<String>(
-      value: value ?? (matrices.isNotEmpty ? matrices.first.id : null),
-      hint: Text(label),
-      items: matrices
-          .map(
-            (m) => DropdownMenuItem(
-              value: m.id,
-              child: Text(
-                m.name.isNotEmpty ? m.name : 'Matrix ${m.id.substring(0, 6)}',
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outline),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButton<String>(
+        value: value ?? (matrices.isNotEmpty ? matrices.first.id : null),
+        hint: Text(label),
+        isExpanded: true,
+        underline: const SizedBox(),
+        items: matrices
+            .map(
+              (m) => DropdownMenuItem(
+                value: m.id,
+                child: Text(
+                  m.name.isNotEmpty ? m.name : 'Matrix ${m.id.substring(0, 6)}',
+                  style: theme.textTheme.bodyMedium,
+                ),
               ),
-            ),
-          )
-          .toList(),
-      onChanged: onChanged,
+            )
+            .toList(),
+        onChanged: onChanged,
+      ),
     );
   }
 
@@ -752,11 +961,5 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
     // Extract inverse
     final inv = List.generate(n, (r) => List.generate(n, (c) => aug[r][n + c]));
     return inv;
-  }
-
-  static String _previewRow(Matrix m) {
-    if (m.data.isEmpty) return 'empty';
-    final firstRow = m.data.first;
-    return firstRow.take(3).map((v) => v.toStringAsFixed(2)).join(', ');
   }
 }
