@@ -35,7 +35,10 @@ class FileService {
     final appDir = await getApplicationDocumentsDirectory();
     _rootDir = Directory(p.join(appDir.path, 'axiom_data'));
 
+    debugPrint('FileService root directory: ${_rootDir!.path}');
+
     if (!await _rootDir!.exists()) {
+      debugPrint('Creating root directory: ${_rootDir!.path}');
       await _rootDir!.create(recursive: true);
     }
 
@@ -159,8 +162,8 @@ class FileService {
     String workspaceId,
     String nodeId,
   ) async {
-    final workspaceDir = await getSubdirectory('workspaces/$workspaceId');
-    return p.join(workspaceDir.path, '$nodeId.json');
+    final workspaceNodesDir = await workspaceNodesDirectory(workspaceId);
+    return p.join(workspaceNodesDir.path, '$nodeId.json');
   }
 
   /// Get nodes directory for a specific workspace

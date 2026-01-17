@@ -142,7 +142,9 @@ class NodeRepository {
       final workspaceDir = await _fileService.workspaceNodesDirectory(
         workspaceId,
       );
+      debugPrint('Loading workspace nodes from: ${workspaceDir.path}');
       final files = await _fileService.listJsonFiles(workspaceDir);
+      debugPrint('Found ${files.length} node files');
 
       _cacheByWorkspace[workspaceId] = {};
 
@@ -163,9 +165,55 @@ class NodeRepository {
 
       _initializedWorkspaces[workspaceId] = true;
     } catch (e) {
-      // Workspace directory might not exist yet
+      // Workspace directory might not exist yet - check for legacy nodes to migrate
+      debugPrint(
+        'Workspace directory does not exist, checking for migration: $e',
+      );
       _cacheByWorkspace[workspaceId] = {};
+      await _migrateLegacyNodesForWorkspace(workspaceId);
       _initializedWorkspaces[workspaceId] = true;
+    }
+  }
+
+  /// Migrate legacy global nodes that belong to this workspace.
+  Future<void> _migrateLegacyNodesForWorkspace(String workspaceId) async {
+    try {
+      final nodesDir = await _fileService.nodesDirectory;
+      final files = await _fileService.listJsonFiles(nodesDir);
+
+      for (final file in files) {
+        final json = await _fileService.readJson(file.path);
+        if (json != null) {
+          try {
+            final node = IdeaNode.fromJson(json);
+
+            // Only migrate nodes that belong to this workspace
+            if (node.workspaceId == workspaceId) {
+              // Save to workspace-specific location
+              final newPath = await _fileService.workspaceNodeFilePath(
+                workspaceId,
+                node.id,
+              );
+              await _fileService.writeJson(newPath, node.toJson());
+
+              // Add to cache
+              _cacheByWorkspace[workspaceId]![node.id] = node;
+
+              // Delete old file
+              await _fileService.deleteFile(file.path);
+
+              debugPrint(
+                'Migrated node ${node.id} from global to workspace $workspaceId',
+              );
+            }
+          } catch (e) {
+            debugPrint('Error migrating node from ${file.path}: $e');
+          }
+        }
+      }
+    } catch (e) {
+      // No legacy nodes directory or migration failed - that's okay
+      debugPrint('Legacy node migration skipped: $e');
     }
   }
 
@@ -202,7 +250,9 @@ class NodeRepository {
     final filePath = node.workspaceId.isNotEmpty
         ? await _fileService.workspaceNodeFilePath(node.workspaceId, node.id)
         : await _fileService.nodeFilePath(node.id);
+    debugPrint('Saving node ${node.id} to: $filePath');
     await _fileService.writeJson(filePath, node.toJson());
+    debugPrint('Node saved successfully');
   }
 
   /// Force reload from disk (useful after external changes).
