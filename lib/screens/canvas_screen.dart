@@ -245,18 +245,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   ),
                 ),
               ),
-            // Doodle toolbar
-            if (nodesAsync.hasValue)
-              DoodleToolbar(
-                isEnabled: _doodleMode,
-                onEnableToggle: () =>
-                    setState(() => _doodleMode = !_doodleMode),
-                onColorChanged: (color) => setState(() => _doodleColor = color),
-                onWidthChanged: (width) => setState(() => _doodleWidth = width),
-                onClear: () => setState(() => _doodleStrokes.clear()),
-                color: _doodleColor,
-                width: _doodleWidth,
-              ),
+
           ],
         ),
       ),
@@ -373,6 +362,69 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                     iconSize: 24,
                   ),
                   const SizedBox(width: 4),
+                  // Tools dropdown menu
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.tune),
+                    tooltip: 'Tools & Options',
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    iconSize: 24,
+                    itemBuilder: (context) => [
+                      // Minimap option
+                      PopupMenuItem<String>(
+                        value: 'minimap',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.map,
+                              size: 20,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('Minimap'),
+                          ],
+                        ),
+                      ),
+                      // Sketch tools submenu
+                      PopupMenuItem<String>(
+                        value: 'sketch_toggle',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.draw,
+                              size: 20,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _sketchMode ? 'Exit Sketch Mode' : 'Sketch Mode',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'minimap':
+                          setState(() => _minimapVisible = true);
+                          break;
+                        case 'sketch_toggle':
+                          setState(() {
+                            _sketchMode = !_sketchMode;
+                            if (!_sketchMode) {
+                              // Clear sketch when exiting
+                              ref
+                                  .read(canvasSketchNotifierProvider.notifier)
+                                  .clearCanvas();
+                            }
+                          });
+                          break;
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 4),
                   // Zoom to fit button
                   IconButton(
                     icon: const Icon(Icons.fit_screen),
@@ -420,18 +472,6 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                       _canvasKey.currentState?.zoomToFit(bounds);
                     },
                     tooltip: 'Fit all nodes',
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
-                    ),
-                    iconSize: 24,
-                  ),
-                  const SizedBox(width: 4),
-                  // Minimap button
-                  IconButton(
-                    icon: const Icon(Icons.map),
-                    onPressed: () => setState(() => _minimapVisible = true),
-                    tooltip: 'Show canvas map',
                     constraints: const BoxConstraints(
                       minWidth: 40,
                       minHeight: 40,
@@ -511,6 +551,70 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                     ),
                     iconSize: 24,
                   ),
+                  const SizedBox(width: 4),
+                  // Tools dropdown menu
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.tune),
+                    tooltip: 'Tools & Options',
+                    constraints: const BoxConstraints(
+                      minWidth: 40,
+                      minHeight: 40,
+                    ),
+                    iconSize: 24,
+                    itemBuilder: (context) => [
+                      // Minimap option
+                      PopupMenuItem<String>(
+                        value: 'minimap',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.map,
+                              size: 20,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('Minimap'),
+                          ],
+                        ),
+                      ),
+                      // Sketch tools submenu
+                      PopupMenuItem<String>(
+                        value: 'sketch_toggle',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.draw,
+                              size: 20,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              _sketchMode ? 'Exit Sketch Mode' : 'Sketch Mode',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'minimap':
+                          setState(() => _minimapVisible = true);
+                          break;
+                        case 'sketch_toggle':
+                          setState(() {
+                            _sketchMode = !_sketchMode;
+                            if (!_sketchMode) {
+                              // Clear sketch when exiting
+                              ref
+                                  .read(canvasSketchNotifierProvider.notifier)
+                                  .clearCanvas();
+                            }
+                          });
+                          break;
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 4),
                   IconButton(
                     icon: const Icon(Icons.fit_screen),
                     onPressed: () {
