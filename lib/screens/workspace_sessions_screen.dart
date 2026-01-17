@@ -161,6 +161,30 @@ class _WorkspaceSessionsScreenState
     }
   }
 
+  Future<void> _forkSession(WorkspaceSession session) async {
+    try {
+      final forked = await ref
+          .read(workspaceSessionsNotifierProvider.notifier)
+          .forkSession(session.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(
+          SnackBar(content: Text('Forked as "${forked.label}"')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(
+          SnackBar(content: Text('Error forking workspace: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -233,72 +257,124 @@ class _WorkspaceSessionsScreenState
             itemBuilder: (context, index) {
               final session = filteredSessions[index];
               final icon = _getWorkspaceIcon(session.workspaceType);
+              final theme = Theme.of(context);
 
               return Card(
                 margin: const EdgeInsets.only(bottom: Spacing.m),
-                child: ListTile(
-                  leading: Icon(icon, size: 32),
-                  title: Text(
-                    session.label.isNotEmpty ? session.label : 'Untitled',
-                  ),
-                  subtitle: Text(
-                    'Type: ${session.workspaceType}',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  trailing: PopupMenuButton(
-                    icon: const Icon(Icons.more_vert),
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'open',
-                        child: ListTile(
-                          leading: Icon(Icons.open_in_new),
-                          title: Text('Open'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'rename',
-                        child: ListTile(
-                          leading: Icon(Icons.edit),
-                          title: Text('Rename'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'clone',
-                        child: ListTile(
-                          leading: Icon(Icons.content_copy),
-                          title: Text('Clone'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: ListTile(
-                          leading: Icon(Icons.delete),
-                          title: Text('Delete'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'open':
-                          _openSession(session);
-                          break;
-                        case 'rename':
-                          _renameSession(session);
-                          break;
-                        case 'clone':
-                          _cloneSession(session);
-                          break;
-                        case 'delete':
-                          _deleteSession(session);
-                          break;
-                      }
-                    },
-                  ),
+                child: InkWell(
                   onTap: () => _openSession(session),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Stack(
+                      children: [
+                        // Main content
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(icon, size: 32),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        session.label.isNotEmpty
+                                            ? session.label
+                                            : 'Untitled',
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        session.workspaceType,
+                                        style: theme.textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        // Top-right buttons
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Delete button (red)
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                color: theme.colorScheme.error,
+                                tooltip: 'Delete',
+                                onPressed: () => _deleteSession(session),
+                              ),
+                              // 3-dot menu
+                              PopupMenuButton(
+                                icon: const Icon(Icons.more_vert),
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'open',
+                                    child: ListTile(
+                                      leading: Icon(Icons.open_in_new),
+                                      title: Text('Open'),
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'fork',
+                                    child: ListTile(
+                                      leading: Icon(Icons.call_split),
+                                      title: Text('Fork'),
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'rename',
+                                    child: ListTile(
+                                      leading: Icon(Icons.edit),
+                                      title: Text('Rename'),
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'clone',
+                                    child: ListTile(
+                                      leading: Icon(Icons.content_copy),
+                                      title: Text('Clone'),
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ],
+                                onSelected: (value) {
+                                  switch (value) {
+                                    case 'open':
+                                      _openSession(session);
+                                      break;
+                                    case 'fork':
+                                      _forkSession(session);
+                                      break;
+                                    case 'rename':
+                                      _renameSession(session);
+                                      break;
+                                    case 'clone':
+                                      _cloneSession(session);
+                                      break;
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },

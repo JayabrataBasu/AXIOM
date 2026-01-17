@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -31,7 +32,21 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
   @override
   void initState() {
     super.initState();
-    _data = MatrixCalculatorData.fromJson(widget.session.data);
+    // Ensure we're working with clean JSON data
+    final jsonData = widget.session.data.isEmpty
+        ? const <String, dynamic>{}
+        : widget.session.data;
+
+    try {
+      // Convert to JSON string and back to ensure clean deserialization
+      final jsonString = jsonEncode(jsonData);
+      final cleanJson = jsonDecode(jsonString) as Map<String, dynamic>;
+      _data = MatrixCalculatorData.fromJson(cleanJson);
+    } catch (e) {
+      debugPrint('Error deserializing matrix data: $e');
+      _data = const MatrixCalculatorData();
+    }
+
     if (_data.matrices.isNotEmpty) {
       _selectedA = _data.matrices.first.id;
       if (_data.matrices.length > 1) _selectedB = _data.matrices[1].id;

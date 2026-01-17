@@ -83,9 +83,35 @@ class WorkspaceSessionsNotifier extends AsyncNotifier<List<WorkspaceSession>> {
   }
 
   /// Fork a session (create a new session based on an existing one).
+  /// Automatically names it "{original name} fork {n}" where n is the next fork number.
   Future<WorkspaceSession> forkSession(String sessionId) async {
+    final original = await _repository.getById(sessionId);
+    if (original == null) throw Exception('Original session not found');
+
+    // Find the next fork number by checking all sessions with similar names
+    final allSessions = state.valueOrNull ?? [];
+    final baseName = original.label.isNotEmpty ? original.label : 'Session';
+    
+    // Count existing forks with pattern "baseName fork n"
+    int nextForkNumber = 1;
+    for (final session in allSessions) {
+      final label = session.label;
+      if (label.startsWith('$baseName fork ')) {
+        final suffix = label.substring('$baseName fork '.length);
+        final num = int.tryParse(suffix);
+        if (num != null && num >= nextForkNumber) {
+          nextForkNumber = num + 1;
+        }
+      }
+    }
+
     final forkedId = _uuid.v4();
-    final forked = await _repository.fork(sessionId, forkedId);
+    var forked = await _repository.fork(sessionId, forkedId);
+    
+    // Rename to include fork number
+    final forkName = '$baseName fork $nextForkNumber';
+    forked = forked.copyWith(label: forkName);
+    await _repository.update(forked);
 
     // Update state
     final currentSessions = state.valueOrNull ?? [];
