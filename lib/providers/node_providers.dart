@@ -37,6 +37,15 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
   @override
   Future<List<IdeaNode>> build() async {
     _repository = ref.watch(nodeRepositoryProvider);
+
+    // Listen to activeWorkspaceId changes - load workspace-specific nodes
+    final activeWorkspaceId = ref.watch(activeWorkspaceIdProvider);
+
+    if (activeWorkspaceId != null && activeWorkspaceId.isNotEmpty) {
+      return _repository.getAllForWorkspace(activeWorkspaceId);
+    }
+
+    // Fallback: load all nodes if no active workspace
     return _repository.getAll();
   }
 
@@ -54,10 +63,15 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         ? template.createBlocks(_uuid, now)
         : [ContentBlock.text(id: _uuid.v4(), content: '', createdAt: now)];
 
+    // CRITICAL: Ensure workspace ID is never null or empty
+    if (activeWorkspaceId == null || activeWorkspaceId.isEmpty) {
+      throw StateError('Cannot create node: no active workspace');
+    }
+
     final node = IdeaNode(
       id: _uuid.v4(),
       name: name ?? '',
-      workspaceId: activeWorkspaceId ?? '',
+      workspaceId: activeWorkspaceId,
       createdAt: now,
       updatedAt: now,
       position: position,
