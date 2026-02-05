@@ -358,3 +358,65 @@ class AxiomDurations {
   static const Duration slow = Duration(milliseconds: 400);
   static const Duration splash = Duration(milliseconds: 2000);
 }
+
+/// Responsive breakpoints for adaptive layouts
+class AxiomBreakpoints {
+  AxiomBreakpoints._();
+
+  /// Mobile screens (phones in portrait) - max width
+  static const double mobile = 600.0;
+
+  /// Tablet screens - max width
+  static const double tablet = 1200.0;
+
+  /// Desktop screens - max width
+  static const double desktop = 1800.0;
+
+  /// Check if screen is mobile
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < mobile;
+
+  /// Check if screen is tablet
+  static bool isTablet(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    return width >= mobile && width < tablet;
+  }
+
+  /// Check if screen is desktop
+  static bool isDesktop(BuildContext context) =>
+      MediaQuery.sizeOf(context).width >= tablet;
+}
+
+/// Responsive builder widget for adaptive layouts
+class AxiomResponsive extends StatelessWidget {
+  const AxiomResponsive({
+    super.key,
+    required this.mobile,
+    this.tablet,
+    this.desktop,
+  });
+
+  /// Widget to show on mobile (<600px)
+  final Widget mobile;
+
+  /// Widget to show on tablet (600px - 1200px), defaults to mobile
+  final Widget? tablet;
+
+  /// Widget to show on desktop (>1200px), defaults to tablet or mobile
+  final Widget? desktop;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= AxiomBreakpoints.tablet) {
+          return desktop ?? tablet ?? mobile;
+        }
+        if (constraints.maxWidth >= AxiomBreakpoints.mobile) {
+          return tablet ?? mobile;
+        }
+        return mobile;
+      },
+    );
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../theme/design_tokens.dart';
 import '../../models/models.dart';
 import '../../providers/sketch_tools_provider.dart';
 import '../../services/sketch_service.dart';
@@ -83,46 +84,56 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final toolState = ref.watch(sketchToolsProvider);
 
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: AxiomColors.green));
     }
 
     return Column(
       children: [
-        // Header
+        // Header - Everforest styled
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: AxiomSpacing.sm + 2,
+            vertical: AxiomSpacing.sm,
+          ),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            color: AxiomColors.bg2,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AxiomRadius.md),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.drag_handle, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.drag_handle, size: 20, color: AxiomColors.grey1),
+              SizedBox(width: AxiomSpacing.sm),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AxiomSpacing.sm,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  color: AxiomColors.orange.withAlpha(25),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   'SKETCH',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
+                  style: AxiomTypography.labelSmall.copyWith(
+                    color: AxiomColors.orange,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               const Spacer(),
-              // Current tool indicator
+              // Current tool indicator - Everforest styled
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AxiomSpacing.sm,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: toolState.color.withValues(alpha: 0.2),
+                  color: toolState.color.withAlpha(50),
                   border: Border.all(color: toolState.color),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -140,21 +151,31 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                     const SizedBox(width: 6),
                     Text(
                       '${toolState.brushSize.toStringAsFixed(1)}px',
-                      style: theme.textTheme.labelSmall,
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: AxiomColors.fg,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: AxiomSpacing.sm),
               IconButton(
-                icon: const Icon(Icons.undo, size: 20),
+                icon: Icon(
+                  Icons.undo,
+                  size: 20,
+                  color: _strokes.isEmpty ? AxiomColors.grey2 : AxiomColors.fg,
+                ),
                 onPressed: _strokes.isEmpty ? null : _undo,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 tooltip: 'Undo last stroke',
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, size: 20),
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: AxiomColors.red,
+                ),
                 onPressed: widget.onDelete,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -163,12 +184,12 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             ],
           ),
         ),
-        // Canvas
+        // Canvas - Everforest bg5 (lightest) for drawing area
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: theme.colorScheme.outlineVariant),
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(12),
+            border: Border.all(color: AxiomColors.outlineVariant),
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(AxiomRadius.md),
             ),
           ),
           child: SizedBox(
@@ -235,8 +256,8 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               },
               child: Stack(
                 children: [
-                  // Background
-                  Container(color: Colors.white),
+                  // Background - Everforest bg5 for sketch canvas
+                  Container(color: AxiomColors.bg5),
                   // Canvas
                   RepaintBoundary(
                     child: CustomPaint(
@@ -255,13 +276,16 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             ),
           ),
         ),
-        // Footer with actions
+        // Footer with actions - Everforest styled
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: AxiomSpacing.sm + 2,
+            vertical: AxiomSpacing.sm,
+          ),
           decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(12),
+            color: AxiomColors.bg1,
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(AxiomRadius.md),
             ),
           ),
           child: Row(
@@ -269,14 +293,25 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             children: [
               Text(
                 '${_strokes.length} stroke${_strokes.length != 1 ? 's' : ''}',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                style: AxiomTypography.labelSmall.copyWith(
+                  color: AxiomColors.grey1,
                 ),
               ),
               TextButton.icon(
                 onPressed: _strokes.isEmpty ? null : _clear,
-                icon: const Icon(Icons.clear, size: 18),
-                label: const Text('Clear'),
+                icon: Icon(
+                  Icons.clear,
+                  size: 18,
+                  color: _strokes.isEmpty ? AxiomColors.grey2 : AxiomColors.red,
+                ),
+                label: Text(
+                  'Clear',
+                  style: TextStyle(
+                    color: _strokes.isEmpty
+                        ? AxiomColors.grey2
+                        : AxiomColors.red,
+                  ),
+                ),
               ),
             ],
           ),
@@ -325,7 +360,7 @@ class _SketchBlockDisplayState extends State<SketchBlockDisplay> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: AxiomColors.green));
     }
 
     return GestureDetector(
@@ -333,14 +368,14 @@ class _SketchBlockDisplayState extends State<SketchBlockDisplay> {
       child: Container(
         height: 200,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AxiomColors.outlineVariant),
+          borderRadius: BorderRadius.circular(AxiomRadius.sm),
         ),
         child: CustomPaint(
           painter: _SketchCanvasPainter(
             strokes: _strokes,
             currentStroke: [],
-            currentColor: Colors.black,
+            currentColor: AxiomColors.fg,
             currentWidth: 2.0,
             currentTool: SketchTool.pen,
           ),

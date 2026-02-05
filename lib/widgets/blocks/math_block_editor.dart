@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
+import '../../theme/design_tokens.dart';
 
 /// Editor for LaTeX math expressions (Stage 4).
 /// Shows both raw LaTeX input and rendered preview.
@@ -44,43 +45,59 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    // Everforest styled math editor
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // LaTeX input field
+        // LaTeX input field - Everforest styled
         TextField(
           controller: _controller,
           maxLines: 3,
           minLines: 1,
+          style: AxiomTypography.code.copyWith(color: AxiomColors.fg),
           onChanged: (value) {
             widget.onChanged(value);
             _validateLatex(value);
           },
           decoration: InputDecoration(
             hintText: r'Enter LaTeX (e.g., \int_0^1 x^2 dx)',
+            hintStyle: AxiomTypography.code.copyWith(color: AxiomColors.grey1),
+            filled: true,
+            fillColor: AxiomColors.bg0,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              borderSide: BorderSide(color: AxiomColors.outlineVariant),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              borderSide: BorderSide(color: AxiomColors.outlineVariant),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              borderSide: BorderSide(color: AxiomColors.blue, width: 2),
             ),
             suffixIcon: IconButton(
-              icon: Icon(_showPreview ? Icons.visibility : Icons.visibility_off),
+              icon: Icon(
+                _showPreview ? Icons.visibility : Icons.visibility_off,
+                color: AxiomColors.grey0,
+              ),
               onPressed: () {
                 setState(() => _showPreview = !_showPreview);
               },
             ),
             errorText: _parseError,
+            errorStyle: TextStyle(color: AxiomColors.red),
           ),
         ),
-        const SizedBox(height: 12),
-        // Preview section
+        SizedBox(height: AxiomSpacing.sm + 2),
+        // Preview section - Everforest styled
         if (_showPreview && _controller.text.isNotEmpty)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(AxiomSpacing.sm + 2),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: theme.colorScheme.outlineVariant),
+              color: AxiomColors.bg2,
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              border: Border.all(color: AxiomColors.outlineVariant),
             ),
             child: _buildMathPreview(),
           ),
@@ -90,7 +107,10 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
 
   Widget _buildMathPreview() {
     if (_controller.text.isEmpty) {
-      return const Text('Preview');
+      return Text(
+        'Preview',
+        style: AxiomTypography.bodyMedium.copyWith(color: AxiomColors.grey1),
+      );
     }
 
     try {
@@ -99,15 +119,20 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
         child: Math.tex(
           _controller.text,
           mathStyle: MathStyle.display,
+          textStyle: TextStyle(color: AxiomColors.fg, fontSize: 18),
           onErrorFallback: (error) {
-            return Text('Error: ${error.toString()}',
-                style: const TextStyle(color: Colors.red));
+            return Text(
+              'Error: ${error.toString()}',
+              style: AxiomTypography.bodySmall.copyWith(color: AxiomColors.red),
+            );
           },
         ),
       );
     } catch (e) {
-      return Text('Render error: ${e.toString()}',
-          style: const TextStyle(color: Colors.red));
+      return Text(
+        'Render error: ${e.toString()}',
+        style: AxiomTypography.bodySmall.copyWith(color: AxiomColors.red),
+      );
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../../theme/design_tokens.dart';
 
 /// Editor for audio recordings (Stage 6).
 /// Provides recording, playback, and duration display.
@@ -79,39 +80,47 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Everforest styled audio player
     final duration = _duration == Duration.zero
         ? Duration(milliseconds: widget.durationMs)
         : _duration;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(AxiomSpacing.sm + 2),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
+        color: AxiomColors.bg2,
+        borderRadius: BorderRadius.circular(AxiomRadius.sm),
+        border: Border.all(color: AxiomColors.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Playback controls
+          // Playback controls - Everforest styled
           Row(
             children: [
               FilledButton.icon(
                 onPressed: _loadFailed ? null : _togglePlayback,
                 icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
                 label: Text(_isPlaying ? 'Pause' : 'Play'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _loadFailed
+                      ? AxiomColors.grey2
+                      : AxiomColors.aqua,
+                  foregroundColor: AxiomColors.bg0,
+                ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: AxiomSpacing.sm + 2),
               // Duration display
               Text(
                 _formatDuration(duration),
-                style: theme.textTheme.labelMedium,
+                style: AxiomTypography.labelMedium.copyWith(
+                  color: AxiomColors.fg,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Progress indicator
+          SizedBox(height: AxiomSpacing.sm + 2),
+          // Progress indicator - Everforest styled
           StreamBuilder<Duration>(
             stream: _player.onPositionChanged,
             builder: (context, snapshot) {
@@ -129,23 +138,19 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
                   // Status text
                   Text(
                     _statusText,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: _loadFailed
-                          ? theme.colorScheme.error
-                          : theme.colorScheme.primary,
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: _loadFailed ? AxiomColors.red : AxiomColors.aqua,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  // Animated progress bar
+                  SizedBox(height: AxiomSpacing.sm),
+                  // Animated progress bar - Everforest colors
                   LinearProgressIndicator(
                     value: progress,
                     minHeight: 4,
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    backgroundColor: AxiomColors.bg3,
                     valueColor: AlwaysStoppedAnimation(
-                      _loadFailed
-                          ? theme.colorScheme.error
-                          : theme.colorScheme.primary,
+                      _loadFailed ? AxiomColors.red : AxiomColors.aqua,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -154,11 +159,15 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
                     children: [
                       Text(
                         _formatDuration(clamped),
-                        style: theme.textTheme.labelSmall,
+                        style: AxiomTypography.labelSmall.copyWith(
+                          color: AxiomColors.grey0,
+                        ),
                       ),
                       Text(
                         _formatDuration(duration),
-                        style: theme.textTheme.labelSmall,
+                        style: AxiomTypography.labelSmall.copyWith(
+                          color: AxiomColors.grey0,
+                        ),
                       ),
                     ],
                   ),

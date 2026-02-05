@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../theme/design_tokens.dart';
 import '../../providers/workspace_providers.dart';
 import '../../screens/workspace_shell.dart';
 
@@ -16,7 +17,6 @@ class WorkspaceRefBlockDisplay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final sessionAsync = ref.watch(workspaceSessionProvider(sessionId));
 
     final title = sessionAsync.maybeWhen(
@@ -28,36 +28,36 @@ class WorkspaceRefBlockDisplay extends ConsumerWidget {
       orElse: () => label.isNotEmpty ? label : 'Workspace Session',
     );
 
+    // Everforest styled workspace reference card
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(AxiomSpacing.sm + 2),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
+        color: AxiomColors.bg2,
+        borderRadius: BorderRadius.circular(AxiomRadius.sm),
+        border: Border.all(color: AxiomColors.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.widgets, color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
+              Icon(Icons.widgets, color: AxiomColors.yellow),
+              SizedBox(width: AxiomSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: theme.textTheme.labelMedium?.copyWith(
+                      style: AxiomTypography.labelMedium.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: AxiomColors.fg,
                       ),
                     ),
                     Text(
                       'ID: ${sessionId.substring(0, 8)}...',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.6,
-                        ),
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: AxiomColors.grey1,
                       ),
                     ),
                   ],
@@ -65,13 +65,17 @@ class WorkspaceRefBlockDisplay extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: AxiomSpacing.sm + 2),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: () => _openSession(context),
               icon: const Icon(Icons.open_in_new),
               label: const Text('Open Session'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AxiomColors.yellow,
+                foregroundColor: AxiomColors.bg0,
+              ),
             ),
           ),
         ],

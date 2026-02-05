@@ -13,70 +13,287 @@ import 'package:highlight/languages/rust.dart' as rust;
 import 'package:highlight/languages/sql.dart' as sql;
 import 'package:highlight/languages/typescript.dart' as typescript;
 import 'package:highlight/languages/yaml.dart' as yaml;
-import 'package:flutter_highlight/themes/github.dart';
 import 'package:flutter_highlight/themes/monokai-sublime.dart';
 import '../../models/models.dart';
 import '../../theme/design_tokens.dart';
 
 /// Enum representing the available block types for the add block menu.
 enum BlockType {
-  text(Icons.text_fields, 'Text', 'Plain text content'),
-  heading(Icons.title, 'Heading', 'Section header'),
-  bulletList(Icons.format_list_bulleted, 'Bullet List', 'Unordered list'),
-  code(Icons.code, 'Code', 'Code snippet'),
-  quote(Icons.format_quote, 'Quote', 'Citation or callout'),
-  sketch(Icons.gesture, 'Sketch', 'Freehand drawing'),
-  math(Icons.functions, 'Math', 'LaTeX expression'),
-  audio(Icons.mic, 'Audio', 'Voice recording'),
-  workspaceRef(Icons.widgets, 'Workspace', 'Link to workspace session');
+  text(Icons.text_fields, 'Text', 'Plain text content', BlockCategory.text),
+  heading(Icons.title, 'Heading', 'Section header', BlockCategory.text),
+  bulletList(
+    Icons.format_list_bulleted,
+    'Bullet List',
+    'Unordered list',
+    BlockCategory.text,
+  ),
+  quote(Icons.format_quote, 'Quote', 'Citation or callout', BlockCategory.text),
+  code(Icons.code, 'Code', 'Code snippet', BlockCategory.technical),
+  math(Icons.functions, 'Math', 'LaTeX expression', BlockCategory.technical),
+  sketch(Icons.gesture, 'Sketch', 'Freehand drawing', BlockCategory.media),
+  audio(Icons.mic, 'Audio', 'Voice recording', BlockCategory.media),
+  workspaceRef(
+    Icons.widgets,
+    'Workspace',
+    'Link to workspace session',
+    BlockCategory.integration,
+  );
 
-  const BlockType(this.icon, this.label, this.description);
+  const BlockType(this.icon, this.label, this.description, this.category);
   final IconData icon;
   final String label;
   final String description;
+  final BlockCategory category;
 }
 
-/// Dialog to select a block type when adding a new block.
-/// Everforest styled: bg1 background, green icon accent.
+/// Categories for organizing block types in the selector
+enum BlockCategory {
+  text('Text & Lists', Icons.text_fields),
+  media('Media', Icons.perm_media),
+  technical('Technical', Icons.terminal),
+  integration('Integration', Icons.link);
+
+  const BlockCategory(this.label, this.icon);
+  final String label;
+  final IconData icon;
+}
+
+/// Shows the block type selector as a bottom sheet
+/// Returns the selected BlockType or null if cancelled
+Future<BlockType?> showBlockTypeSelector(BuildContext context) {
+  return showModalBottomSheet<BlockType>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) => const _BlockTypeSelectorSheet(),
+  );
+}
+
+/// Bottom sheet selector for block types - Everforest styled with categories
+class _BlockTypeSelectorSheet extends StatelessWidget {
+  const _BlockTypeSelectorSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
+      decoration: BoxDecoration(
+        color: AxiomColors.bg1,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AxiomRadius.lg),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle indicator
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(top: AxiomSpacing.sm + 2),
+            decoration: BoxDecoration(
+              color: AxiomColors.grey2,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(AxiomSpacing.md),
+            child: Row(
+              children: [
+                Icon(Icons.add_box_rounded, color: AxiomColors.green, size: 28),
+                const SizedBox(width: AxiomSpacing.sm),
+                Text(
+                  'Add Block',
+                  style: AxiomTypography.heading2.copyWith(
+                    color: AxiomColors.fg,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(Icons.close, color: AxiomColors.grey0),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          Divider(color: AxiomColors.bg3, height: 1),
+          // Categories and block types
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AxiomSpacing.md,
+                vertical: AxiomSpacing.sm,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: BlockCategory.values.map((category) {
+                  final blocksInCategory = BlockType.values
+                      .where((b) => b.category == category)
+                      .toList();
+
+                  return _CategorySection(
+                    category: category,
+                    blocks: blocksInCategory,
+                    onBlockSelected: (type) => Navigator.of(context).pop(type),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A section showing a category with its block types
+class _CategorySection extends StatelessWidget {
+  const _CategorySection({
+    required this.category,
+    required this.blocks,
+    required this.onBlockSelected,
+  });
+
+  final BlockCategory category;
+  final List<BlockType> blocks;
+  final ValueChanged<BlockType> onBlockSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (blocks.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AxiomSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category header
+          Padding(
+            padding: const EdgeInsets.only(
+              left: AxiomSpacing.xs,
+              bottom: AxiomSpacing.sm,
+            ),
+            child: Row(
+              children: [
+                Icon(category.icon, size: 16, color: AxiomColors.grey1),
+                const SizedBox(width: AxiomSpacing.xs),
+                Text(
+                  category.label,
+                  style: AxiomTypography.labelMedium.copyWith(
+                    color: AxiomColors.grey0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Block type grid
+          Wrap(
+            spacing: AxiomSpacing.sm,
+            runSpacing: AxiomSpacing.sm,
+            children: blocks
+                .map(
+                  (type) => _BlockTypeChip(
+                    type: type,
+                    onTap: () => onBlockSelected(type),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A chip representing a block type - Everforest styled
+class _BlockTypeChip extends StatelessWidget {
+  const _BlockTypeChip({required this.type, required this.onTap});
+
+  final BlockType type;
+  final VoidCallback onTap;
+
+  Color get _accentColor {
+    return switch (type.category) {
+      BlockCategory.text => AxiomColors.green,
+      BlockCategory.media => AxiomColors.orange,
+      BlockCategory.technical => AxiomColors.blue,
+      BlockCategory.integration => AxiomColors.yellow,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AxiomColors.bg2,
+      borderRadius: BorderRadius.circular(AxiomRadius.sm),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AxiomRadius.sm),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AxiomSpacing.sm + 2,
+            vertical: AxiomSpacing.sm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: _accentColor.withAlpha(25),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(type.icon, size: 18, color: _accentColor),
+              ),
+              const SizedBox(width: AxiomSpacing.sm),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    type.label,
+                    style: AxiomTypography.labelMedium.copyWith(
+                      color: AxiomColors.fg,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    type.description,
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: AxiomColors.grey1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Legacy dialog for compatibility - uses bottom sheet internally
 class BlockTypeSelector extends StatelessWidget {
   const BlockTypeSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AxiomColors.bg1,
-      title: Text(
-        'Add Block',
-        style: AxiomTypography.heading2.copyWith(color: AxiomColors.fg),
-      ),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: BlockType.values.length,
-          itemBuilder: (context, index) {
-            final type = BlockType.values[index];
-            return ListTile(
-              leading: Icon(type.icon, color: AxiomColors.green),
-              title: Text(type.label, style: TextStyle(color: AxiomColors.fg)),
-              subtitle: Text(
-                type.description,
-                style: AxiomTypography.bodySmall.copyWith(
-                  color: AxiomColors.grey0,
-                ),
-              ),
-              onTap: () => Navigator.of(context).pop(type),
-            );
-          },
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel', style: TextStyle(color: AxiomColors.grey0)),
-        ),
-      ],
-    );
+    // Return a dialog that redirects to the bottom sheet
+    // This maintains backward compatibility
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.of(context).pop();
+      showBlockTypeSelector(context).then((type) {
+        if (type != null && context.mounted) {
+          Navigator.of(context).pop(type);
+        }
+      });
+    });
+    return const SizedBox.shrink();
   }
 }
 
@@ -372,42 +589,135 @@ class _HeadingBlockEditorState extends State<HeadingBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    // Everforest styled heading with typography tokens
+    final headingStyle = switch (widget.block.level) {
+      1 => AxiomTypography.heading1,
+      2 => AxiomTypography.heading2,
+      _ => AxiomTypography.heading3,
+    };
+
+    // Responsive: use popup menu on mobile, segmented button on tablet+
+    final isMobile = AxiomBreakpoints.isMobile(context);
 
     return BlockEditorCard(
       blockType: 'H${widget.block.level}',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
-      trailing: SegmentedButton<int>(
-        segments: const [
-          ButtonSegment(value: 1, label: Text('H1')),
-          ButtonSegment(value: 2, label: Text('H2')),
-          ButtonSegment(value: 3, label: Text('H3')),
-        ],
-        selected: {widget.block.level},
-        onSelectionChanged: (set) => widget.onLevelChanged(set.first),
-        style: ButtonStyle(
-          visualDensity: VisualDensity.compact,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-      ),
+      trailing: isMobile
+          ? _HeadingLevelPopup(
+              currentLevel: widget.block.level,
+              onLevelChanged: widget.onLevelChanged,
+            )
+          : SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(value: 1, label: Text('H1')),
+                ButtonSegment(value: 2, label: Text('H2')),
+                ButtonSegment(value: 3, label: Text('H3')),
+              ],
+              selected: {widget.block.level},
+              onSelectionChanged: (set) => widget.onLevelChanged(set.first),
+              style: ButtonStyle(
+                visualDensity: VisualDensity.compact,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return AxiomColors.green.withAlpha(40);
+                  }
+                  return AxiomColors.bg2;
+                }),
+                foregroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return AxiomColors.green;
+                  }
+                  return AxiomColors.grey0;
+                }),
+              ),
+            ),
       child: TextField(
         controller: _controller,
         maxLines: 1,
-        style: theme.textTheme.titleLarge?.copyWith(
-          fontSize: switch (widget.block.level) {
-            1 => 24.0,
-            2 => 20.0,
-            _ => 18.0,
-          },
+        style: headingStyle.copyWith(
+          color: AxiomColors.fg,
           fontWeight: FontWeight.bold,
         ),
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: 'Heading...',
+          hintStyle: headingStyle.copyWith(color: AxiomColors.grey1),
           border: InputBorder.none,
         ),
         onChanged: widget.onContentChanged,
       ),
+    );
+  }
+}
+
+/// Popup menu for heading level selection on mobile
+class _HeadingLevelPopup extends StatelessWidget {
+  const _HeadingLevelPopup({
+    required this.currentLevel,
+    required this.onLevelChanged,
+  });
+
+  final int currentLevel;
+  final ValueChanged<int> onLevelChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<int>(
+      initialValue: currentLevel,
+      onSelected: onLevelChanged,
+      color: AxiomColors.bg2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AxiomRadius.sm),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AxiomSpacing.sm,
+          vertical: 4,
+        ),
+        decoration: BoxDecoration(
+          color: AxiomColors.green.withAlpha(40),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'H$currentLevel',
+              style: AxiomTypography.labelMedium.copyWith(
+                color: AxiomColors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.arrow_drop_down, color: AxiomColors.green, size: 18),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => [
+        for (final level in [1, 2, 3])
+          PopupMenuItem<int>(
+            value: level,
+            child: Row(
+              children: [
+                if (level == currentLevel)
+                  Icon(Icons.check, size: 16, color: AxiomColors.green)
+                else
+                  const SizedBox(width: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'Heading $level',
+                  style: TextStyle(
+                    color: AxiomColors.fg,
+                    fontWeight: level == currentLevel
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
@@ -476,8 +786,7 @@ class _BulletListBlockEditorState extends State<BulletListBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    // Everforest styled bullet list
     return BlockEditorCard(
       blockType: 'List',
       dragIndex: widget.dragIndex,
@@ -486,7 +795,7 @@ class _BulletListBlockEditorState extends State<BulletListBlockEditor> {
         children: [
           ...List.generate(_controllers.length, (index) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: AxiomSpacing.sm),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -495,21 +804,33 @@ class _BulletListBlockEditorState extends State<BulletListBlockEditor> {
                     child: Icon(
                       Icons.circle,
                       size: 8,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: AxiomColors.green,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AxiomSpacing.sm + 2),
                   Expanded(
                     child: TextField(
                       controller: _controllers[index],
+                      style: AxiomTypography.bodyMedium.copyWith(
+                        color: AxiomColors.fg,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'List item...',
+                        hintStyle: AxiomTypography.bodyMedium.copyWith(
+                          color: AxiomColors.grey1,
+                        ),
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: AxiomSpacing.sm,
+                        ),
                         suffixIcon: _controllers.length > 1
                             ? IconButton(
-                                icon: const Icon(Icons.close, size: 16),
+                                icon: Icon(
+                                  Icons.close,
+                                  size: 16,
+                                  color: AxiomColors.red.withAlpha(180),
+                                ),
                                 onPressed: () => _removeItem(index),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
@@ -527,8 +848,11 @@ class _BulletListBlockEditorState extends State<BulletListBlockEditor> {
             alignment: Alignment.centerLeft,
             child: TextButton.icon(
               onPressed: _addItem,
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add item'),
+              icon: Icon(Icons.add, size: 18, color: AxiomColors.green),
+              label: Text(
+                'Add item',
+                style: TextStyle(color: AxiomColors.green),
+              ),
             ),
           ),
         ],
@@ -608,8 +932,7 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    // Everforest styled code editor
     return BlockEditorCard(
       blockType: 'Code',
       dragIndex: widget.dragIndex,
@@ -620,10 +943,17 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
             : '',
         isDense: true,
         underline: const SizedBox.shrink(),
+        dropdownColor: AxiomColors.bg2,
+        style: TextStyle(color: AxiomColors.fg),
         items: _commonLanguages.map((lang) {
           return DropdownMenuItem(
             value: lang,
-            child: Text(lang.isEmpty ? 'Plain' : lang),
+            child: Text(
+              lang.isEmpty ? 'Plain' : lang,
+              style: AxiomTypography.labelMedium.copyWith(
+                color: AxiomColors.fg,
+              ),
+            ),
           );
         }).toList(),
         onChanged: (value) {
@@ -635,50 +965,49 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Language info badge
+          // Language info badge - Everforest blue accent
           if (widget.block.language.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: AxiomSpacing.sm),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AxiomSpacing.sm,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  color: AxiomColors.blue.withAlpha(25),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   widget.block.language.toUpperCase(),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
+                  style: AxiomTypography.labelSmall.copyWith(
+                    color: AxiomColors.blue,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
-          // Code editor with monospace font
+          // Code editor with monospace font - Everforest bg0 surface
           Container(
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: theme.colorScheme.outlineVariant),
+              color: AxiomColors.bg0,
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              border: Border.all(color: AxiomColors.outlineVariant),
             ),
             child: Stack(
               children: [
                 CodeTheme(
                   data: CodeThemeData(
-                    styles: theme.brightness == Brightness.dark
-                        ? monokaiSublimeTheme
-                        : githubTheme,
+                    styles: monokaiSublimeTheme, // Always dark for Everforest
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AxiomSpacing.sm + 2),
                     child: CodeField(
                       controller: _codeController,
                       maxLines: null,
                       minLines: 5,
-                      textStyle: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        color: theme.colorScheme.onSurface,
+                      textStyle: AxiomTypography.code.copyWith(
+                        color: AxiomColors.fg,
                         height: 1.5,
                       ),
                       onChanged: widget.onContentChanged,
@@ -694,14 +1023,11 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
 
                     return IgnorePointer(
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(AxiomSpacing.sm + 2),
                         child: Text(
                           '// Enter code here...',
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: 0.3,
-                            ),
-                            fontFamily: 'monospace',
+                          style: AxiomTypography.code.copyWith(
+                            color: AxiomColors.grey1,
                           ),
                         ),
                       ),
@@ -713,7 +1039,7 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
           ),
           // Code stats
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: AxiomSpacing.sm),
             child: ValueListenableBuilder<TextEditingValue>(
               valueListenable: _codeController,
               builder: (context, value, _) {
@@ -723,19 +1049,15 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
                   children: [
                     Text(
                       '$lineCount lines',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.5,
-                        ),
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: AxiomColors.grey1,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AxiomSpacing.sm + 2),
                     Text(
                       '${text.length} chars',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.5,
-                        ),
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: AxiomColors.grey1,
                       ),
                     ),
                   ],
@@ -819,19 +1141,16 @@ class _QuoteBlockEditorState extends State<QuoteBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    // Everforest styled quote with purple accent
     return BlockEditorCard(
       blockType: 'Quote',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
       child: Container(
         decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(color: theme.colorScheme.primary, width: 4),
-          ),
+          border: Border(left: BorderSide(color: AxiomColors.purple, width: 4)),
         ),
-        padding: const EdgeInsets.only(left: 12),
+        padding: const EdgeInsets.only(left: AxiomSpacing.sm + 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -839,11 +1158,16 @@ class _QuoteBlockEditorState extends State<QuoteBlockEditor> {
               controller: _contentController,
               maxLines: null,
               minLines: 2,
-              style: theme.textTheme.bodyLarge?.copyWith(
+              style: AxiomTypography.bodyLarge.copyWith(
                 fontStyle: FontStyle.italic,
+                color: AxiomColors.fg,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Enter quote...',
+                hintStyle: AxiomTypography.bodyLarge.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: AxiomColors.grey1,
+                ),
                 border: InputBorder.none,
               ),
               onChanged: widget.onContentChanged,
@@ -851,13 +1175,19 @@ class _QuoteBlockEditorState extends State<QuoteBlockEditor> {
             TextField(
               controller: _attributionController,
               maxLines: 1,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              style: AxiomTypography.bodySmall.copyWith(
+                color: AxiomColors.grey0,
               ),
               decoration: InputDecoration(
                 hintText: '— Attribution (optional)',
+                hintStyle: AxiomTypography.bodySmall.copyWith(
+                  color: AxiomColors.grey1,
+                ),
                 border: InputBorder.none,
                 prefixText: _attributionController.text.isEmpty ? null : '— ',
+                prefixStyle: AxiomTypography.bodySmall.copyWith(
+                  color: AxiomColors.grey0,
+                ),
                 isDense: true,
               ),
               onChanged: widget.onAttributionChanged,
