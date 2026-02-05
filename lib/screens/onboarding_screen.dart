@@ -1,4 +1,5 @@
 /// Modern onboarding screen matching axiom_onboarding_screen Stitch design
+/// Updated for Everforest dark theme with Material 3 Expressive styling.
 library;
 
 import 'package:flutter/material.dart';
@@ -25,18 +26,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       description:
           'Centralize your tools, tasks, and timelines into single, focused workspace sessions.',
       iconData: Icons.layers_outlined,
+      accentColor: AxiomColors.green,
     ),
     const OnboardingPage(
       title: 'Infinite\nCreativity',
       description:
           'Draw connections between ideas on an unlimited canvas with powerful thinking tools.',
       iconData: Icons.draw_outlined,
+      accentColor: AxiomColors.aqua,
     ),
     const OnboardingPage(
       title: 'Calculate\nEverything',
       description:
           'Built-in computation engine lets you perform complex calculations right where you think.',
       iconData: Icons.functions,
+      accentColor: AxiomColors.blue,
     ),
   ];
 
@@ -44,7 +48,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   void initState() {
     super.initState();
     _glowController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat(reverse: true);
   }
@@ -74,52 +78,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     }
   }
 
+  Color get _currentAccentColor => _pages[_currentPage].accentColor;
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: AxiomColors.backgroundDark,
+      backgroundColor: AxiomColors.bg0,
       body: Stack(
         children: [
-          // Ambient background glows
+          // Animated ambient background glow - follows current page accent
           Positioned(
-            top: -size.height * 0.1,
-            left: -size.width * 0.2,
+            top: -size.height * 0.15,
+            left: -size.width * 0.3,
             child: AnimatedBuilder(
               animation: _glowController,
               builder: (context, child) {
-                return Container(
-                  width: size.width * 1.4,
-                  height: size.height * 0.6,
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  width: size.width * 1.6,
+                  height: size.height * 0.5,
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
-                        AxiomColors.accentTeal.withValues(
-                          alpha: 0.15 + _glowController.value * 0.05,
-                        ),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Positioned(
-            bottom: -size.height * 0.1,
-            right: -size.width * 0.1,
-            child: AnimatedBuilder(
-              animation: _glowController,
-              builder: (context, child) {
-                return Container(
-                  width: size.width * 0.8,
-                  height: size.height * 0.4,
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      colors: [
-                        AxiomColors.primary.withValues(
-                          alpha: 0.05 + _glowController.value * 0.03,
+                        _currentAccentColor.withAlpha(
+                          (20 + _glowController.value * 15).round(),
                         ),
                         Colors.transparent,
                       ],
@@ -150,7 +134,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
                   const SizedBox(height: 32),
 
-                  // Page indicators
+                  // Page indicators - M3 style pill indicators
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
@@ -158,21 +142,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        height: 6,
-                        width: index == _currentPage ? 32 : 6,
+                        height: 8,
+                        width: index == _currentPage ? 32 : 8,
                         decoration: BoxDecoration(
                           color: index == _currentPage
-                              ? AxiomColors.primary
-                              : Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(3),
+                              ? _currentAccentColor
+                              : AxiomColors.bg4,
+                          borderRadius: BorderRadius.circular(4),
                           boxShadow: index == _currentPage
                               ? [
                                   BoxShadow(
-                                    color: AxiomColors.primary.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                    blurRadius: 8,
-                                    spreadRadius: 1,
+                                    color: _currentAccentColor.withAlpha(80),
+                                    blurRadius: 12,
+                                    spreadRadius: 0,
                                   ),
                                 ]
                               : null,
@@ -183,21 +165,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
                   const SizedBox(height: 48),
 
-                  // Get Started Button
+                  // Get Started Button - M3 filled tonal style
                   SizedBox(
                     width: double.infinity,
                     height: 56,
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: _handleGetStarted,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AxiomColors.primary,
-                        foregroundColor: AxiomColors.backgroundDark,
-                        elevation: 8,
-                        shadowColor: AxiomColors.primary.withValues(alpha: 0.5),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _currentAccentColor,
+                        foregroundColor: AxiomColors.bg0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AxiomRadius.large,
-                          ),
+                          borderRadius: BorderRadius.circular(AxiomRadius.lg),
                         ),
                       ),
                       child: Row(
@@ -207,16 +185,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                             _currentPage < _pages.length - 1
                                 ? 'Next'
                                 : 'Get Started',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                            style: AxiomTypography.labelLarge.copyWith(
+                              color: AxiomColors.bg0,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Icon(
-                            Icons.arrow_forward,
-                            color: AxiomColors.backgroundDark,
+                            Icons.arrow_forward_rounded,
+                            color: AxiomColors.bg0,
                             size: 20,
                           ),
                         ],
@@ -224,7 +202,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  // Skip button
+                  if (_currentPage < _pages.length - 1) ...[
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => context.go('/welcome'),
+                      child: Text(
+                        'Skip',
+                        style: AxiomTypography.labelMedium.copyWith(
+                          color: AxiomColors.grey1,
+                        ),
+                      ),
+                    ),
+                  ] else
+                    const SizedBox(height: 48),
                 ],
               ),
             ),
@@ -240,12 +231,14 @@ class OnboardingPage extends StatelessWidget {
     required this.title,
     required this.description,
     required this.iconData,
+    required this.accentColor,
     super.key,
   });
 
   final String title;
   final String description;
   final IconData iconData;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -253,65 +246,63 @@ class OnboardingPage extends StatelessWidget {
       children: [
         const Spacer(),
 
-        // Icon/Illustration
+        // Icon/Illustration - M3 expressive container
         Container(
-          width: 200,
-          height: 200,
+          width: 180,
+          height: 180,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(
-              colors: [
-                AxiomColors.primary.withValues(alpha: 0.1),
-                Colors.transparent,
-              ],
+              colors: [accentColor.withAlpha(25), Colors.transparent],
             ),
           ),
           child: Center(
             child: Container(
-              width: 120,
-              height: 120,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
-                color: AxiomColors.surfaceDark,
-                borderRadius: BorderRadius.circular(30),
+                color: AxiomColors.bg2,
+                borderRadius: BorderRadius.circular(AxiomRadius.xl),
+                border: Border.all(color: accentColor.withAlpha(60), width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: AxiomColors.primary.withValues(alpha: 0.2),
-                    blurRadius: 30,
-                    spreadRadius: 5,
+                    color: accentColor.withAlpha(40),
+                    blurRadius: 40,
+                    spreadRadius: 0,
                   ),
                 ],
               ),
-              child: Icon(iconData, size: 60, color: AxiomColors.primary),
+              child: Icon(iconData, size: 48, color: accentColor),
             ),
           ),
         ),
 
-        const SizedBox(height: 64),
+        const SizedBox(height: 56),
 
-        // Title
+        // Title - warm cream Everforest foreground
         Text(
           title,
           textAlign: TextAlign.center,
-          style: AxiomTypography.h1.copyWith(
-            fontSize: 40,
+          style: AxiomTypography.display.copyWith(
+            fontSize: 36,
             height: 1.1,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            color: AxiomColors.fg,
           ),
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
-        // Description
+        // Description - muted grey for soft contrast
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
             description,
             textAlign: TextAlign.center,
-            style: AxiomTypography.body1.copyWith(
-              fontSize: 18,
-              height: 1.5,
-              color: AxiomColors.textSecondary,
+            style: AxiomTypography.bodyLarge.copyWith(
+              fontSize: 16,
+              height: 1.6,
+              color: AxiomColors.grey1,
             ),
           ),
         ),

@@ -7,6 +7,7 @@ import '../models/models.dart';
 import '../models/node_template.dart';
 import '../providers/providers.dart';
 import '../services/search_service.dart' as search;
+import '../theme/design_tokens.dart';
 import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
 import '../widgets/dialogs/add_canvas_item_dialog.dart';
@@ -14,6 +15,7 @@ import 'node_editor_screen.dart';
 import 'search_nodes_screen.dart';
 
 /// The main canvas screen - the primary thinking surface.
+/// Everforest themed: bg0 background, glass toolbar, green accent FAB.
 class CanvasScreen extends ConsumerStatefulWidget {
   const CanvasScreen({super.key, this.workspaceId});
 
@@ -39,7 +41,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   // ignore: prefer_final_fields
   List<DoodleStroke> _doodleStrokes = [];
   List<Offset> _currentDoodleStroke = [];
-  Color _doodleColor = Colors.white;
+  Color _doodleColor = AxiomColors.fg;
   double _doodleWidth = 2.0;
 
   @override
@@ -56,6 +58,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: AxiomColors.bg0,
       body: KeyboardListener(
         focusNode: _focusNode,
         autofocus: true,
@@ -64,20 +67,23 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           children: [
             // Canvas
             nodesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: AxiomColors.green),
+              ),
               error: (error, stack) => Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Colors.red,
+                    Icon(Icons.error_outline, size: 48, color: AxiomColors.red),
+                    const SizedBox(height: AxiomSpacing.md),
+                    Text(
+                      'Error: $error',
+                      style: AxiomTypography.bodyMedium.copyWith(
+                        color: AxiomColors.fg,
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    Text('Error: $error'),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
+                    const SizedBox(height: AxiomSpacing.md),
+                    FilledButton(
                       onPressed: () {
                         // Defer reload to next frame to avoid lifecycle races
                         Future.microtask(() {
@@ -188,7 +194,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               ),
             // Node navigator (locate and jump to nodes)
             _buildNodeNavigator(nodesAsync, viewState),
-            // Minimap modal dialog
+            // Minimap modal dialog - Everforest styled
             if (_minimapVisible &&
                 _contentBounds != null &&
                 _viewportRect != null)
@@ -196,16 +202,20 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 child: GestureDetector(
                   onTap: () => setState(() => _minimapVisible = false),
                   child: Container(
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: Colors.black.withAlpha(100),
                     child: Center(
                       child: Material(
                         elevation: 12,
-                        borderRadius: BorderRadius.circular(16),
+                        color: AxiomColors.bg1,
+                        borderRadius: BorderRadius.circular(AxiomRadius.lg),
                         child: Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(AxiomSpacing.md),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(16),
+                            color: AxiomColors.bg1,
+                            borderRadius: BorderRadius.circular(AxiomRadius.lg),
+                            border: Border.all(
+                              color: AxiomColors.outlineVariant,
+                            ),
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -216,18 +226,22 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                                 children: [
                                   Text(
                                     'Canvas Map',
-                                    style: theme.textTheme.titleLarge?.copyWith(
+                                    style: AxiomTypography.heading2.copyWith(
                                       fontWeight: FontWeight.bold,
+                                      color: AxiomColors.fg,
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.close),
+                                    icon: Icon(
+                                      Icons.close,
+                                      color: AxiomColors.grey0,
+                                    ),
                                     onPressed: () =>
                                         setState(() => _minimapVisible = false),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: AxiomSpacing.sm),
                               SizedBox(
                                 width: 400,
                                 height: 300,
@@ -282,12 +296,11 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        // Glass panel effect matching Stitch design
-        color: Colors.black.withValues(alpha: 0.55),
+        // Everforest glass panel - warm dark overlay
+        color: AxiomColors.bg0.withAlpha(220),
         border: Border(
-          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          bottom: BorderSide(color: AxiomColors.bg3.withAlpha(100)),
         ),
-        backgroundBlendMode: BlendMode.multiply,
       ),
       child: SafeArea(
         bottom: false,
@@ -295,7 +308,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           children: [
             // Back button
             IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Icon(Icons.arrow_back, color: AxiomColors.fg),
               onPressed: _onBackPressed,
               tooltip: 'Go back',
               constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -306,9 +319,10 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
               child: Center(
                 child: Text(
                   workspaceLabel.toUpperCase(),
-                  style: theme.textTheme.labelLarge?.copyWith(
+                  style: AxiomTypography.labelLarge.copyWith(
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
+                    color: AxiomColors.fg,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -322,7 +336,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 children: [
                   // Search button
                   IconButton(
-                    icon: const Icon(Icons.search),
+                    icon: Icon(Icons.search, color: AxiomColors.grey0),
                     onPressed: () async {
                       if (!mounted) return;
                       // ignore: use_build_context_synchronously
@@ -368,26 +382,26 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   const SizedBox(width: 4),
                   // Tools dropdown menu
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.tune),
+                    icon: Icon(Icons.tune, color: AxiomColors.grey0),
                     tooltip: 'Tools & Options',
                     constraints: const BoxConstraints(
                       minWidth: 40,
                       minHeight: 40,
                     ),
                     iconSize: 24,
+                    color: AxiomColors.bg1,
                     itemBuilder: (context) => [
                       // Minimap option
                       PopupMenuItem<String>(
                         value: 'minimap',
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.map,
-                              size: 20,
-                              color: theme.colorScheme.onSurface,
-                            ),
+                            Icon(Icons.map, size: 20, color: AxiomColors.grey0),
                             const SizedBox(width: 12),
-                            const Text('Minimap'),
+                            Text(
+                              'Minimap',
+                              style: TextStyle(color: AxiomColors.fg),
+                            ),
                           ],
                         ),
                       ),
@@ -399,11 +413,12 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                             Icon(
                               Icons.draw,
                               size: 20,
-                              color: theme.colorScheme.onSurface,
+                              color: AxiomColors.grey0,
                             ),
                             const SizedBox(width: 12),
                             Text(
                               _sketchMode ? 'Exit Sketch Mode' : 'Sketch Mode',
+                              style: TextStyle(color: AxiomColors.fg),
                             ),
                           ],
                         ),
@@ -431,7 +446,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   const SizedBox(width: 4),
                   // Zoom to fit button
                   IconButton(
-                    icon: const Icon(Icons.fit_screen),
+                    icon: Icon(Icons.fit_screen, color: AxiomColors.grey0),
                     onPressed: () {
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
@@ -490,24 +505,22 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                     iconSize: 24,
                   ),
                   const SizedBox(width: 4),
-                  // Zoom indicator
+                  // Zoom indicator - Everforest styled pill
                   Container(
                     height: 32,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.05),
-                      ),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AxiomColors.bg2.withAlpha(150),
+                      border: Border.all(color: AxiomColors.bg3.withAlpha(100)),
+                      borderRadius: BorderRadius.circular(AxiomRadius.sm),
                     ),
                     child: Center(
                       child: Text(
                         '${(_currentZoom * 100).toStringAsFixed(0)}%',
-                        style: theme.textTheme.labelSmall?.copyWith(
+                        style: AxiomTypography.labelSmall.copyWith(
                           fontFamily: 'monospace',
                           fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
+                          color: AxiomColors.green,
                         ),
                       ),
                     ),
@@ -519,7 +532,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.search),
+                    icon: Icon(Icons.search, color: AxiomColors.grey0),
                     onPressed: () async {
                       if (!mounted) return;
                       // ignore: use_build_context_synchronously
@@ -565,26 +578,26 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   const SizedBox(width: 4),
                   // Tools dropdown menu
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.tune),
+                    icon: Icon(Icons.tune, color: AxiomColors.grey0),
                     tooltip: 'Tools & Options',
                     constraints: const BoxConstraints(
                       minWidth: 40,
                       minHeight: 40,
                     ),
                     iconSize: 24,
+                    color: AxiomColors.bg1,
                     itemBuilder: (context) => [
                       // Minimap option
                       PopupMenuItem<String>(
                         value: 'minimap',
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.map,
-                              size: 20,
-                              color: theme.colorScheme.onSurface,
-                            ),
+                            Icon(Icons.map, size: 20, color: AxiomColors.grey0),
                             const SizedBox(width: 12),
-                            const Text('Minimap'),
+                            Text(
+                              'Minimap',
+                              style: TextStyle(color: AxiomColors.fg),
+                            ),
                           ],
                         ),
                       ),
@@ -596,11 +609,12 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                             Icon(
                               Icons.draw,
                               size: 20,
-                              color: theme.colorScheme.onSurface,
+                              color: AxiomColors.grey0,
                             ),
                             const SizedBox(width: 12),
                             Text(
                               _sketchMode ? 'Exit Sketch Mode' : 'Sketch Mode',
+                              style: TextStyle(color: AxiomColors.fg),
                             ),
                           ],
                         ),
@@ -627,7 +641,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   ),
                   const SizedBox(width: 4),
                   IconButton(
-                    icon: const Icon(Icons.fit_screen),
+                    icon: Icon(Icons.fit_screen, color: AxiomColors.grey0),
                     onPressed: () {
                       final nodes =
                           ref.read(nodesNotifierProvider).valueOrNull ?? [];
@@ -717,6 +731,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 
   Widget _buildFAB(ThemeData theme) {
+    // Everforest green FAB with soft glow
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -726,17 +741,17 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary,
+            color: AxiomColors.green,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                color: AxiomColors.green.withAlpha(100),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Icon(Icons.add, color: Colors.white, size: 28),
+          child: Icon(Icons.add, color: AxiomColors.bg0, size: 28),
         ),
       ),
     );
@@ -899,16 +914,24 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Node?'),
-        content: const Text('This action cannot be undone.'),
+        backgroundColor: AxiomColors.bg1,
+        title: Text(
+          'Delete Node?',
+          style: AxiomTypography.heading2.copyWith(color: AxiomColors.fg),
+        ),
+        content: Text(
+          'This action cannot be undone.',
+          style: AxiomTypography.bodyMedium.copyWith(color: AxiomColors.grey0),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: AxiomColors.grey0)),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            style: FilledButton.styleFrom(backgroundColor: AxiomColors.red),
+            child: const Text('Delete'),
           ),
         ],
       ),

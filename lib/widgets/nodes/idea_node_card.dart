@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
+import '../../theme/design_tokens.dart';
 
 /// Visual card representation of an IdeaNode on the canvas.
+/// Uses Everforest palette: bg1 surface, green accent for selection,
+/// warm cream text (fg), muted grey for metadata.
 class IdeaNodeCard extends ConsumerStatefulWidget {
   const IdeaNodeCard({
     super.key,
@@ -31,14 +34,14 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final highlightActive = widget.isHighlighted;
+
+    // Everforest color scheme for node states
     final borderColor = widget.isSelected
-        ? colorScheme.primary.withValues(alpha: 0.8)
+        ? AxiomColors.green.withAlpha(200)
         : highlightActive
-        ? colorScheme.primary.withValues(alpha: 0.6)
-        : Colors.white.withValues(alpha: 0.05);
+        ? AxiomColors.aqua.withAlpha(150)
+        : AxiomColors.bg3.withAlpha(100);
     final borderWidth = widget.isSelected
         ? 1.5
         : highlightActive
@@ -85,22 +88,28 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
               minHeight: 60,
             ),
             decoration: BoxDecoration(
-              // Match Stitch design: surface-dark color with etched shadow
-              color: const Color(0xFF24272C),
-              borderRadius: BorderRadius.circular(12),
+              // Everforest bg1 - slightly elevated from canvas bg0
+              color: AxiomColors.bg1,
+              borderRadius: BorderRadius.circular(AxiomRadius.md),
               border: Border.all(color: borderColor, width: borderWidth),
               boxShadow: [
-                // Dark shadow on bottom-right
+                // Soft dark shadow (Everforest etched look)
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 4,
-                  offset: const Offset(2, 4),
+                  color: Colors.black.withAlpha(60),
+                  blurRadius: 6,
+                  offset: const Offset(1, 3),
                 ),
                 // Glow effect when selected or highlighted
-                if (widget.isSelected || highlightActive)
+                if (widget.isSelected)
                   BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.25),
-                    blurRadius: 15,
+                    color: AxiomColors.green.withAlpha(50),
+                    blurRadius: 16,
+                    spreadRadius: 1,
+                  )
+                else if (highlightActive)
+                  BoxShadow(
+                    color: AxiomColors.aqua.withAlpha(40),
+                    blurRadius: 14,
                     spreadRadius: 0,
                   ),
               ],
@@ -108,7 +117,7 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
             child: Material(
               color: Colors.transparent,
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AxiomSpacing.sm + 2),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,8 +126,8 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                     if (widget.node.previewText.isNotEmpty)
                       Text(
                         widget.node.previewText,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.white,
+                        style: AxiomTypography.bodySmall.copyWith(
+                          color: AxiomColors.fg,
                           fontWeight: FontWeight.w500,
                           height: 1.4,
                         ),
@@ -128,12 +137,12 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                     else
                       Text(
                         'Empty node',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.4),
+                        style: AxiomTypography.labelSmall.copyWith(
+                          color: AxiomColors.grey1,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AxiomSpacing.xs),
                     // Block count indicator with icon
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -141,13 +150,13 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                         Icon(
                           Icons.layers_outlined,
                           size: 12,
-                          color: Colors.white.withValues(alpha: 0.4),
+                          color: AxiomColors.grey1,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${widget.node.blocks.length} block${widget.node.blocks.length != 1 ? 's' : ''}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.4),
+                          style: AxiomTypography.labelSmall.copyWith(
+                            color: AxiomColors.grey1,
                             fontSize: 10,
                           ),
                         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/spacing.dart';
+import '../../theme/design_tokens.dart';
 import '../../models/node_template.dart';
 
 /// Dialog for creating a new node with a name and template.
@@ -35,14 +36,14 @@ class _CreateNodeDialogState extends State<CreateNodeDialog> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: MaxWidths.dialog),
         child: Padding(
-          padding: const EdgeInsets.all(Spacing.l),
+          padding: const EdgeInsets.all(AxiomSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Title
               Text('Create New Node', style: theme.textTheme.headlineSmall),
-              const SizedBox(height: Spacing.l),
+              const SizedBox(height: AxiomSpacing.lg),
 
               // Name field
               TextField(
@@ -55,11 +56,11 @@ class _CreateNodeDialogState extends State<CreateNodeDialog> {
                 autofocus: true,
                 onSubmitted: (_) => _handleCreate(),
               ),
-              const SizedBox(height: Spacing.l),
+              const SizedBox(height: AxiomSpacing.lg),
 
               // Template selector
               Text('Choose Template', style: theme.textTheme.titleMedium),
-              const SizedBox(height: Spacing.m),
+              const SizedBox(height: AxiomSpacing.md),
 
               // Template grid
               Flexible(
@@ -72,8 +73,8 @@ class _CreateNodeDialogState extends State<CreateNodeDialog> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: Spacing.m,
-                            mainAxisSpacing: Spacing.m,
+                            crossAxisSpacing: AxiomSpacing.md,
+                            mainAxisSpacing: AxiomSpacing.md,
                             childAspectRatio: 1.2,
                           ),
                       itemCount: NodeTemplate.templates.length,
@@ -129,7 +130,7 @@ class _CreateNodeDialogState extends State<CreateNodeDialog> {
                   ),
                 ),
               ),
-              const SizedBox(height: Spacing.l),
+              const SizedBox(height: AxiomSpacing.lg),
 
               // Action buttons
               Row(
@@ -139,7 +140,7 @@ class _CreateNodeDialogState extends State<CreateNodeDialog> {
                     onPressed: () => Navigator.of(context).pop(),
                     child: const Text('Cancel'),
                   ),
-                  const SizedBox(width: Spacing.m),
+                  const SizedBox(width: AxiomSpacing.md),
                   FilledButton(
                     onPressed: _handleCreate,
                     child: const Text('Create'),

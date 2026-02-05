@@ -16,6 +16,7 @@ import 'package:highlight/languages/yaml.dart' as yaml;
 import 'package:flutter_highlight/themes/github.dart';
 import 'package:flutter_highlight/themes/monokai-sublime.dart';
 import '../../models/models.dart';
+import '../../theme/design_tokens.dart';
 
 /// Enum representing the available block types for the add block menu.
 enum BlockType {
@@ -36,15 +37,18 @@ enum BlockType {
 }
 
 /// Dialog to select a block type when adding a new block.
+/// Everforest styled: bg1 background, green icon accent.
 class BlockTypeSelector extends StatelessWidget {
   const BlockTypeSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return AlertDialog(
-      title: const Text('Add Block'),
+      backgroundColor: AxiomColors.bg1,
+      title: Text(
+        'Add Block',
+        style: AxiomTypography.heading2.copyWith(color: AxiomColors.fg),
+      ),
       content: SizedBox(
         width: double.maxFinite,
         child: ListView.builder(
@@ -53,11 +57,13 @@ class BlockTypeSelector extends StatelessWidget {
           itemBuilder: (context, index) {
             final type = BlockType.values[index];
             return ListTile(
-              leading: Icon(type.icon, color: theme.colorScheme.primary),
-              title: Text(type.label),
+              leading: Icon(type.icon, color: AxiomColors.green),
+              title: Text(type.label, style: TextStyle(color: AxiomColors.fg)),
               subtitle: Text(
                 type.description,
-                style: theme.textTheme.bodySmall,
+                style: AxiomTypography.bodySmall.copyWith(
+                  color: AxiomColors.grey0,
+                ),
               ),
               onTap: () => Navigator.of(context).pop(type),
             );
@@ -67,7 +73,7 @@ class BlockTypeSelector extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text('Cancel', style: TextStyle(color: AxiomColors.grey0)),
         ),
       ],
     );
@@ -75,6 +81,7 @@ class BlockTypeSelector extends StatelessWidget {
 }
 
 /// Base card wrapper for block editors.
+/// Everforest styled: bg1 card, bg2 header, green type badge.
 class BlockEditorCard extends StatefulWidget {
   const BlockEditorCard({
     super.key,
@@ -100,21 +107,27 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Block?'),
+        backgroundColor: AxiomColors.bg1,
+        title: Text(
+          'Delete Block?',
+          style: AxiomTypography.heading3.copyWith(color: AxiomColors.fg),
+        ),
         content: Text(
           'Delete this ${widget.blockType.toLowerCase()} block? This action cannot be undone.',
+          style: AxiomTypography.bodyMedium.copyWith(color: AxiomColors.grey0),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: AxiomColors.grey0)),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () {
               Navigator.pop(context);
               widget.onDelete();
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            style: FilledButton.styleFrom(backgroundColor: AxiomColors.red),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -123,21 +136,27 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AxiomSpacing.sm + 2),
       elevation: 1,
+      color: AxiomColors.bg1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AxiomRadius.md),
+        side: BorderSide(color: AxiomColors.bg3.withAlpha(100)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Block header
+          // Block header - Everforest bg2
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AxiomSpacing.sm + 2,
+              vertical: AxiomSpacing.sm,
+            ),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
+              color: AxiomColors.bg2,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
+                top: Radius.circular(AxiomRadius.md - 1),
               ),
             ),
             child: Row(
@@ -148,25 +167,25 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
                   child: Icon(
                     Icons.drag_handle,
                     size: 20,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    color: AxiomColors.grey1,
                   ),
                 ),
-                const SizedBox(width: 8),
-                // Block type badge
+                const SizedBox(width: AxiomSpacing.sm),
+                // Block type badge - Everforest green tint
                 Flexible(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
+                      horizontal: AxiomSpacing.sm,
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      color: AxiomColors.green.withAlpha(25),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       widget.blockType.toUpperCase(),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: AxiomColors.green,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -175,7 +194,7 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
                   ),
                 ),
                 if (widget.trailing != null) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AxiomSpacing.sm),
                   widget.trailing!,
                 ],
                 const Spacer(),
@@ -188,15 +207,18 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
                     onPressed: () => _confirmDelete(context),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    color: theme.colorScheme.error.withValues(alpha: 0.7),
-                    hoverColor: theme.colorScheme.error.withValues(alpha: 0.2),
+                    color: AxiomColors.red.withAlpha(180),
+                    hoverColor: AxiomColors.red.withAlpha(50),
                   ),
                 ),
               ],
             ),
           ),
           // Block content
-          Padding(padding: const EdgeInsets.all(12), child: widget.child),
+          Padding(
+            padding: const EdgeInsets.all(AxiomSpacing.sm + 2),
+            child: widget.child,
+          ),
         ],
       ),
     );
@@ -204,6 +226,7 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
 }
 
 /// Editor for TextBlock.
+/// Everforest styled text input with fg text, grey hints.
 class TextBlockEditor extends StatefulWidget {
   const TextBlockEditor({
     super.key,
@@ -247,8 +270,6 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return BlockEditorCard(
       blockType: 'Text',
       dragIndex: widget.dragIndex,
@@ -256,46 +277,45 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Text field
+          // Text field - Everforest styled
           TextField(
             controller: _controller,
             maxLines: null,
             minLines: 3,
-            style: theme.textTheme.bodyMedium,
+            style: AxiomTypography.bodyMedium.copyWith(color: AxiomColors.fg),
             decoration: InputDecoration(
               hintText: 'Enter text content...',
-              hintStyle: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+              hintStyle: AxiomTypography.bodyMedium.copyWith(
+                color: AxiomColors.grey1,
               ),
+              filled: true,
+              fillColor: AxiomColors.bg0.withAlpha(150),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+                borderRadius: BorderRadius.circular(AxiomRadius.sm),
+                borderSide: BorderSide(color: AxiomColors.outlineVariant),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+                borderRadius: BorderRadius.circular(AxiomRadius.sm),
+                borderSide: BorderSide(color: AxiomColors.outlineVariant),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: theme.colorScheme.primary,
-                  width: 2,
-                ),
+                borderRadius: BorderRadius.circular(AxiomRadius.sm),
+                borderSide: BorderSide(color: AxiomColors.green, width: 2),
               ),
-              contentPadding: const EdgeInsets.all(12),
+              contentPadding: const EdgeInsets.all(AxiomSpacing.sm + 2),
               isDense: true,
             ),
             onChanged: widget.onContentChanged,
           ),
           // Character count
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: AxiomSpacing.sm),
             child: ValueListenableBuilder<TextEditingValue>(
               valueListenable: _controller,
               builder: (context, value, _) => Text(
                 '${value.text.length} characters',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                style: AxiomTypography.labelSmall.copyWith(
+                  color: AxiomColors.grey1,
                 ),
               ),
             ),

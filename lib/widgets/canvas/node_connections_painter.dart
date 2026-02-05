@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
+import '../../theme/design_tokens.dart';
 
 /// Renders connection lines between linked nodes on the canvas.
+/// Uses Everforest palette: aqua for active/selected links, grey1 for inactive.
 class NodeConnectionsPainter extends CustomPainter {
   NodeConnectionsPainter({
     required this.nodes,
@@ -69,13 +71,13 @@ class NodeConnectionsPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = isHovered ? 3.0 : (isRelatedToSelected ? 2.5 : 1.5);
 
-    // Color based on state
+    // Everforest color palette for connections
     if (isHovered) {
-      paint.color = Colors.blue.withValues(alpha: 0.9);
+      paint.color = AxiomColors.aqua.withAlpha(230);
     } else if (isRelatedToSelected) {
-      paint.color = Colors.blue.withValues(alpha: 0.6);
+      paint.color = AxiomColors.blue.withAlpha(150);
     } else {
-      paint.color = Colors.grey.withValues(alpha: 0.3);
+      paint.color = AxiomColors.grey1.withAlpha(60);
     }
 
     // Draw curved connection line using quadratic bezier
@@ -84,12 +86,7 @@ class NodeConnectionsPainter extends CustomPainter {
 
     final path = Path()
       ..moveTo(start.dx, start.dy)
-      ..quadraticBezierTo(
-        controlPoint.dx,
-        controlPoint.dy,
-        end.dx,
-        end.dy,
-      );
+      ..quadraticBezierTo(controlPoint.dx, controlPoint.dy, end.dx, end.dy);
 
     canvas.drawPath(path, paint);
 
@@ -97,7 +94,9 @@ class NodeConnectionsPainter extends CustomPainter {
     _drawArrowhead(canvas, end, start, paint);
 
     // Draw label if present and visible
-    if (label != null && label.isNotEmpty && (isHovered || isRelatedToSelected)) {
+    if (label != null &&
+        label.isNotEmpty &&
+        (isHovered || isRelatedToSelected)) {
       _drawLabel(canvas, start, end, label);
     }
   }
@@ -123,19 +122,16 @@ class NodeConnectionsPainter extends CustomPainter {
   }
 
   void _drawLabel(Canvas canvas, Offset start, Offset end, String label) {
-    final midPoint = Offset(
-      (start.dx + end.dx) / 2,
-      (start.dy + end.dy) / 2,
-    );
+    final midPoint = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
 
+    // Everforest styled label: bg2 background, fg text
     final textPainter = TextPainter(
       text: TextSpan(
         text: label,
-        style: const TextStyle(
-          color: Colors.black87,
+        style: TextStyle(
+          color: AxiomColors.fg,
           fontSize: 11,
           fontWeight: FontWeight.w500,
-          backgroundColor: Colors.white,
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -148,24 +144,29 @@ class NodeConnectionsPainter extends CustomPainter {
       height: textPainter.height + 4,
     );
 
+    // Everforest bg2 pill background
     canvas.drawRRect(
       RRect.fromRectAndRadius(bgRect, const Radius.circular(4)),
       Paint()
-        ..color = Colors.white
+        ..color = AxiomColors.bg2
         ..style = PaintingStyle.fill,
     );
 
+    // Subtle aqua border
     canvas.drawRRect(
       RRect.fromRectAndRadius(bgRect, const Radius.circular(4)),
       Paint()
-        ..color = Colors.blue.withValues(alpha: 0.3)
+        ..color = AxiomColors.aqua.withAlpha(80)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1,
     );
 
     textPainter.paint(
       canvas,
-      Offset(midPoint.dx - textPainter.width / 2, midPoint.dy - textPainter.height / 2),
+      Offset(
+        midPoint.dx - textPainter.width / 2,
+        midPoint.dy - textPainter.height / 2,
+      ),
     );
   }
 

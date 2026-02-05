@@ -1,49 +1,131 @@
 /// Design tokens extracted from Stitch UI designs
 /// These tokens define the visual language of AXIOM
+///
+/// Color system based on Everforest dark palette mapped to Material 3 roles.
+/// Everforest is a warm, nature-inspired theme with soft contrast.
 library;
 
 import 'package:flutter/material.dart';
 
-/// Color palette from Stitch designs
+/// Everforest-inspired color palette mapped to Material 3 color roles.
+///
+/// Design principles:
+/// - Warm, olive/green-tinted dark surfaces (no pure black)
+/// - Muted, natural accent colors (no neon)
+/// - Soft contrast for reduced eye strain
 class AxiomColors {
   AxiomColors._();
 
-  // Primary Colors
-  static const Color primary = Color(0xFF1A4751);
-  static const Color primaryLight = Color(0xFF2A6A78);
-  static const Color primaryCanvas = Color(0xFF247D8F);
-  static const Color onPrimary = Color(0xFFFFFFFF);
+  // ============================================================
+  // EVERFOREST BASE PALETTE
+  // ============================================================
 
-  // Background Colors
-  static const Color backgroundLight = Color(0xFFF2F5F7);
-  static const Color backgroundDark = Color(0xFF0D162B);
-  static const Color backgroundDarkAlt = Color(0xFF181A1B);
+  // Background layers (darkest to lightest)
+  static const Color bg0 = Color(0xFF232A2E); // Deepest background
+  static const Color bg1 = Color(0xFF2D353B); // Primary background
+  static const Color bg2 = Color(0xFF343F44); // Elevated surfaces
+  static const Color bg3 = Color(0xFF3D484D); // Cards, dialogs
+  static const Color bg4 = Color(0xFF475258); // Hover states
+  static const Color bg5 = Color(0xFF4F585E); // Active states
 
-  // Surface Colors
-  static const Color surfaceDark = Color(0xFF1E293B);
-  static const Color surfaceDarkAlt = Color(0xFF1D2425);
-  static const Color surfaceVariant = Color(0xFF252D30);
-  static const Color surfaceCanvas = Color(0xFF24272C);
+  // Foreground / Text
+  static const Color fg = Color(0xFFD3C6AA); // Primary text (warm cream)
+  static const Color grey0 = Color(0xFF7A8478); // Muted text
+  static const Color grey1 = Color(0xFF859289); // Secondary text
+  static const Color grey2 = Color(0xFF9DA9A0); // Tertiary text
 
-  // Border Colors
-  static const Color borderDark = Color(0xFF334155);
-  static const Color outline = Color(0xFF3F494A);
+  // Accent colors (muted, natural)
+  static const Color red = Color(0xFFE67E80); // Errors, destructive
+  static const Color orange = Color(0xFFE69875); // Warnings
+  static const Color yellow = Color(0xFFDBBC7F); // Highlights
+  static const Color green = Color(0xFFA7C080); // Success, primary accent
+  static const Color aqua = Color(0xFF83C092); // Secondary accent
+  static const Color blue = Color(0xFF7FBBB3); // Info, links
+  static const Color purple = Color(0xFFD699B6); // Special, tertiary accent
 
-  // Text Colors
-  static const Color textMuted = Color(0xFFA2B0B3);
-  static const Color textSecondary = Color(0xFF55696D);
+  // ============================================================
+  // MATERIAL 3 SEMANTIC ROLES (mapped from Everforest)
+  // ============================================================
+
+  // Primary (using Everforest green as main brand color)
+  static const Color primary = Color(0xFFA7C080);
+  static const Color onPrimary = Color(0xFF232A2E);
+  static const Color primaryContainer = Color(0xFF3D5A3D);
+  static const Color onPrimaryContainer = Color(0xFFD3E8C0);
+
+  // Secondary (using Everforest aqua)
+  static const Color secondary = Color(0xFF83C092);
+  static const Color onSecondary = Color(0xFF232A2E);
+  static const Color secondaryContainer = Color(0xFF3A5245);
+  static const Color onSecondaryContainer = Color(0xFFC8E6CF);
+
+  // Tertiary (using Everforest blue)
+  static const Color tertiary = Color(0xFF7FBBB3);
+  static const Color onTertiary = Color(0xFF232A2E);
+  static const Color tertiaryContainer = Color(0xFF3A5250);
+  static const Color onTertiaryContainer = Color(0xFFC0E0DC);
+
+  // Surface colors
+  static const Color surface = Color(0xFF2D353B);
+  static const Color onSurface = Color(0xFFD3C6AA);
+  static const Color surfaceVariant = Color(0xFF3D484D);
+  static const Color onSurfaceVariant = Color(0xFF9DA9A0);
+  static const Color surfaceContainerLowest = Color(0xFF232A2E);
+  static const Color surfaceContainerLow = Color(0xFF2D353B);
+  static const Color surfaceContainer = Color(0xFF343F44);
+  static const Color surfaceContainerHigh = Color(0xFF3D484D);
+  static const Color surfaceContainerHighest = Color(0xFF475258);
+
+  // Outline
+  static const Color outline = Color(0xFF5C6A5E);
+  static const Color outlineVariant = Color(0xFF475258);
+
+  // Error
+  static const Color error = Color(0xFFE67E80);
+  static const Color onError = Color(0xFF232A2E);
+  static const Color errorContainer = Color(0xFF5C3A3B);
+  static const Color onErrorContainer = Color(0xFFF5C8C8);
+
+  // Inverse
+  static const Color inverseSurface = Color(0xFFD3C6AA);
+  static const Color inverseOnSurface = Color(0xFF2D353B);
+  static const Color inversePrimary = Color(0xFF5A7052);
+
+  // ============================================================
+  // LEGACY ALIASES (for backward compatibility)
+  // ============================================================
+
+  // Primary Colors (legacy)
+  static const Color primaryLight = aqua;
+  static const Color primaryCanvas = blue;
+
+  // Background Colors (legacy)
+  static const Color backgroundLight = Color(0xFFF2F5F0); // Warm light bg
+  static const Color backgroundDark = bg0;
+  static const Color backgroundDarkAlt = bg1;
+
+  // Surface Colors (legacy)
+  static const Color surfaceDark = bg2;
+  static const Color surfaceDarkAlt = bg3;
+  static const Color surfaceCanvas = bg1;
+
+  // Border Colors (legacy)
+  static const Color borderDark = outlineVariant;
+
+  // Text Colors (legacy)
+  static const Color textMuted = grey1;
+  static const Color textSecondary = grey0;
 
   // Canvas Grid
-  static const Color gridDot = Color(0xFF2D3839);
+  static const Color gridDot = Color(0xFF3D484D);
 
-  // Accent Colors
-  static const Color accentTeal = Color(0xFF334D46);
+  // Accent Colors (legacy)
+  static const Color accentTeal = aqua;
 
-  // Status Colors
-  static const Color success = Color(0xFF10B981);
-  static const Color error = Color(0xFFEF4444);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color info = Color(0xFF3B82F6);
+  // Status Colors (using Everforest accents)
+  static const Color success = green;
+  static const Color warning = orange;
+  static const Color info = blue;
 }
 
 /// Typography tokens from Stitch designs

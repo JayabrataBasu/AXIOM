@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_service.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../theme/design_tokens.dart';
 import '../widgets/widgets.dart';
 
 /// Full-screen editor for an IdeaNode.
+/// Everforest themed: bg0 background, green accents, cream text.
 class NodeEditorScreen extends ConsumerStatefulWidget {
   const NodeEditorScreen({
     super.key,
@@ -90,35 +92,60 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     final theme = Theme.of(context);
 
     return nodesAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: AxiomColors.bg0,
+        body: Center(
+          child: CircularProgressIndicator(color: AxiomColors.green),
+        ),
+      ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: Center(child: Text('Error: $error')),
+        backgroundColor: AxiomColors.bg0,
+        appBar: AppBar(
+          title: Text('Error', style: TextStyle(color: AxiomColors.fg)),
+          backgroundColor: AxiomColors.bg1,
+        ),
+        body: Center(
+          child: Text('Error: $error', style: TextStyle(color: AxiomColors.fg)),
+        ),
       ),
       data: (nodes) {
         final node = _findNode(nodes, widget.nodeId);
         if (node == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Node Not Found')),
-            body: const Center(child: Text('This node no longer exists.')),
+            backgroundColor: AxiomColors.bg0,
+            appBar: AppBar(
+              title: Text(
+                'Node Not Found',
+                style: TextStyle(color: AxiomColors.fg),
+              ),
+              backgroundColor: AxiomColors.bg1,
+            ),
+            body: Center(
+              child: Text(
+                'This node no longer exists.',
+                style: TextStyle(color: AxiomColors.grey0),
+              ),
+            ),
           );
         }
 
         _syncNodeNameController(node);
 
         return Scaffold(
+          backgroundColor: AxiomColors.bg0,
           appBar: AppBar(
-            title: const Text('Edit Node'),
+            backgroundColor: AxiomColors.bg1,
+            title: Text('Edit Node', style: TextStyle(color: AxiomColors.fg)),
             elevation: 0,
+            iconTheme: IconThemeData(color: AxiomColors.fg),
             actions: [
               IconButton(
-                icon: const Icon(Icons.add_link),
+                icon: Icon(Icons.add_link, color: AxiomColors.aqua),
                 tooltip: 'Add link',
                 onPressed: () => _showAddLinkDialog(node),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline),
+                icon: Icon(Icons.delete_outline, color: AxiomColors.red),
                 tooltip: 'Delete node',
                 onPressed: () => _confirmDelete(node),
               ),
@@ -126,14 +153,14 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           ),
           body: Column(
             children: [
-              // Node name editing header
+              // Node name editing header - Everforest styled
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AxiomSpacing.md),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
+                  color: AxiomColors.bg1,
                   border: Border(
-                    bottom: BorderSide(color: theme.colorScheme.outlineVariant),
+                    bottom: BorderSide(color: AxiomColors.outlineVariant),
                   ),
                 ),
                 child: Column(
@@ -147,22 +174,21 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                           _updateNodeNameDebounced(node.id, name),
                       onSubmitted: (name) => _updateNodeName(node.id, name),
                       textInputAction: TextInputAction.done,
+                      style: AxiomTypography.heading2.copyWith(
+                        color: AxiomColors.fg,
+                        fontWeight: FontWeight.bold,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Untitled Node',
-                        hintStyle: TextStyle(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.3,
-                          ),
+                        hintStyle: AxiomTypography.heading2.copyWith(
+                          color: AxiomColors.grey1,
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
                         isDense: true,
                       ),
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AxiomSpacing.sm),
                     // Node metadata (scrollable to handle long content)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -170,29 +196,23 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                         children: [
                           Text(
                             'ID: ${node.id.substring(0, 8)}...',
-                            style: theme.textTheme.labelSmall?.copyWith(
+                            style: AxiomTypography.labelSmall.copyWith(
                               fontFamily: 'monospace',
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.5,
-                              ),
+                              color: AxiomColors.grey1,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: AxiomSpacing.md),
                           Text(
                             'Pos: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.5,
-                              ),
+                            style: AxiomTypography.labelSmall.copyWith(
+                              color: AxiomColors.grey1,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: AxiomSpacing.md),
                           Text(
                             '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.5,
-                              ),
+                            style: AxiomTypography.labelSmall.copyWith(
+                              color: AxiomColors.grey1,
                             ),
                           ),
                         ],
@@ -201,17 +221,15 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                   ],
                 ),
               ),
-              // Links section
+              // Links section - Everforest styled
               if (node.links.isNotEmpty)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AxiomSpacing.md),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerLow,
+                    color: AxiomColors.bg1.withAlpha(150),
                     border: Border(
-                      bottom: BorderSide(
-                        color: theme.colorScheme.outlineVariant,
-                      ),
+                      bottom: BorderSide(color: AxiomColors.outlineVariant),
                     ),
                   ),
                   child: Column(
@@ -219,24 +237,21 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.link,
-                            size: 16,
-                            color: theme.colorScheme.primary,
-                          ),
-                          const SizedBox(width: 8),
+                          Icon(Icons.link, size: 16, color: AxiomColors.aqua),
+                          const SizedBox(width: AxiomSpacing.sm),
                           Text(
                             'Linked to ${node.links.length} node${node.links.length != 1 ? 's' : ''}',
-                            style: theme.textTheme.labelMedium?.copyWith(
+                            style: AxiomTypography.labelMedium.copyWith(
                               fontWeight: FontWeight.w500,
+                              color: AxiomColors.fg,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AxiomSpacing.sm),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: AxiomSpacing.sm,
+                        runSpacing: AxiomSpacing.sm,
                         children: node.links.map((link) {
                           final targetNode = _findNode(
                             nodes,
@@ -250,11 +265,17 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                                     : 'Node ${link.targetNodeId.substring(0, 6)}...');
 
                           return InputChip(
-                            avatar: const Icon(Icons.arrow_forward, size: 16),
+                            backgroundColor: AxiomColors.bg2,
+                            avatar: Icon(
+                              Icons.arrow_forward,
+                              size: 16,
+                              color: AxiomColors.aqua,
+                            ),
                             label: Text(
                               label,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: AxiomColors.fg),
                             ),
                             onPressed: () {
                               // Navigate to linked node
@@ -270,6 +291,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                             },
                             onDeleted: () =>
                                 _removeLink(node.id, link.targetNodeId),
+                            deleteIconColor: AxiomColors.red.withAlpha(180),
                           );
                         }).toList(),
                       ),
@@ -281,7 +303,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                 child: node.blocks.isEmpty
                     ? _buildEmptyState(theme, node)
                     : ReorderableListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(AxiomSpacing.md),
                         itemCount: node.blocks.length,
                         buildDefaultDragHandles: false,
                         onReorder: (oldIndex, newIndex) {
@@ -296,6 +318,8 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
+            backgroundColor: AxiomColors.green,
+            foregroundColor: AxiomColors.bg0,
             onPressed: () => _showAddBlockDialog(node),
             tooltip: 'Add block',
             child: const Icon(Icons.add),
@@ -310,20 +334,14 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.note_add_outlined,
-            size: 48,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
-          const SizedBox(height: 16),
+          Icon(Icons.note_add_outlined, size: 48, color: AxiomColors.grey1),
+          const SizedBox(height: AxiomSpacing.md),
           Text(
             'No blocks yet',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
+            style: AxiomTypography.bodyLarge.copyWith(color: AxiomColors.grey0),
           ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
+          const SizedBox(height: AxiomSpacing.md),
+          FilledButton.icon(
             onPressed: () => _showAddBlockDialog(node),
             icon: const Icon(Icons.add),
             label: const Text('Add Block'),
@@ -428,12 +446,12 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
     };
 
-    // Wrap with highlight decoration if this block is highlighted
+    // Wrap with highlight decoration if this block is highlighted - Everforest yellow
     if (isHighlighted) {
       return DecoratedBox(
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.amber.shade700, width: 3),
-          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: AxiomColors.yellow, width: 3),
+          borderRadius: BorderRadius.circular(AxiomRadius.sm),
         ),
         child: editor,
       );

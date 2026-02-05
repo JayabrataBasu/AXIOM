@@ -1,5 +1,7 @@
 /// Splash screen with animated logo
 /// Based on Stitch design: axiom_splash_screen
+///
+/// Updated for Everforest dark theme with Material 3 Expressive styling.
 library;
 
 import 'package:flutter/material.dart';
@@ -82,30 +84,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AxiomColors.backgroundDark,
+      backgroundColor: AxiomColors.bg0,
       body: Stack(
         children: [
-          // Background effects
+          // Subtle grid background
           Positioned.fill(
             child: CustomPaint(painter: _GridBackgroundPainter()),
           ),
 
-          // Ambient glow
+          // Warm ambient glow from top - Everforest green tint
           Positioned(
-            top: 0,
+            top: -100,
             left: 0,
             right: 0,
-            height: MediaQuery.of(context).size.height / 2,
+            height: MediaQuery.of(context).size.height * 0.6,
             child: Container(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   center: Alignment.topCenter,
-                  radius: 1.0,
+                  radius: 1.2,
                   colors: [
-                    AxiomColors.primary.withAlpha((0.2 * 255).round()),
+                    AxiomColors.green.withAlpha(25),
+                    AxiomColors.aqua.withAlpha(10),
                     Colors.transparent,
                   ],
+                  stops: const [0.0, 0.5, 1.0],
                 ),
               ),
             ),
@@ -121,38 +127,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Logo
-                    _buildLogo(),
+                    _buildLogo(colorScheme),
                     const SizedBox(height: AxiomSpacing.xl),
 
-                    // Brand name
+                    // Brand name - warm cream color from Everforest
                     Text(
                       'AXIOM',
                       style: AxiomTypography.display.copyWith(
                         fontSize: 48,
                         letterSpacing: 8,
-                        color: Colors.white,
+                        color: AxiomColors.fg,
+                        fontWeight: FontWeight.w300,
                       ),
                     ),
                     const SizedBox(height: AxiomSpacing.md),
 
-                    // Status
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.terminal,
-                          size: 14,
-                          color: AxiomColors.primary,
-                        ),
-                        const SizedBox(width: AxiomSpacing.sm),
-                        Text(
-                          'SYSTEM INITIALIZING',
-                          style: AxiomTypography.labelSmall.copyWith(
-                            color: AxiomColors.textMuted,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ],
+                    // Tagline
+                    Text(
+                      'A THINKING SYSTEM',
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: AxiomColors.grey1,
+                        letterSpacing: 4,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -178,18 +175,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                   // Version text
                   Text(
-                    'SECURE CONNECTION ESTABLISHED',
-                    style: AxiomTypography.labelSmall.copyWith(
-                      color: AxiomColors.textSecondary,
-                      letterSpacing: 2,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                  const SizedBox(height: AxiomSpacing.xs),
-                  Text(
                     'v0.1.0',
                     style: AxiomTypography.labelSmall.copyWith(
-                      color: AxiomColors.textSecondary,
+                      color: AxiomColors.grey0,
                       fontFamily: 'monospace',
                     ),
                   ),
@@ -202,7 +190,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(ColorScheme colorScheme) {
     return Container(
       width: 128,
       height: 128,
@@ -210,9 +198,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         borderRadius: BorderRadius.circular(AxiomRadius.xxl),
         boxShadow: [
           BoxShadow(
-            color: AxiomColors.primary.withAlpha((0.4 * 255).round()),
-            blurRadius: 40,
-            spreadRadius: -5,
+            color: AxiomColors.green.withAlpha(60),
+            blurRadius: 50,
+            spreadRadius: -10,
           ),
         ],
       ),
@@ -230,11 +218,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AxiomColors.primary.withAlpha(
-                          ((0.4 * _controller.value * 255)).round(),
+                        AxiomColors.green.withAlpha(
+                          (60 * _controller.value).round(),
                         ),
-                        AxiomColors.primaryLight.withAlpha(
-                          ((0.4 * _controller.value * 255)).round(),
+                        AxiomColors.aqua.withAlpha(
+                          (40 * _controller.value).round(),
                         ),
                       ],
                     ),
@@ -248,48 +236,45 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Container(
             margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: AxiomColors.backgroundDark,
+              color: AxiomColors.bg0,
               borderRadius: BorderRadius.circular(AxiomRadius.xxl),
               border: Border.all(
-                color: Colors.white.withAlpha((0.1 * 255).round()),
+                color: AxiomColors.outline.withAlpha(50),
                 width: 1,
               ),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  AxiomColors.primary.withAlpha((0.8 * 255).round()),
-                  AxiomColors.backgroundDark,
-                ],
+                colors: [AxiomColors.bg2, AxiomColors.bg0],
               ),
             ),
             child: Center(
               child: Transform.rotate(
                 angle: 0.785398, // 45 degrees in radians
                 child: Container(
-                  width: 64,
-                  height: 64,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: Colors.white.withAlpha((0.8 * 255).round()),
+                      color: AxiomColors.fg.withAlpha(200),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(AxiomRadius.md),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.white.withAlpha((0.3 * 255).round()),
-                        blurRadius: 15,
+                        color: AxiomColors.fg.withAlpha(40),
+                        blurRadius: 20,
                         spreadRadius: 0,
                       ),
                     ],
                   ),
                   child: Center(
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
-                        color: Colors.white.withAlpha((0.9 * 255).round()),
-                        borderRadius: BorderRadius.circular(AxiomRadius.sm),
+                        color: AxiomColors.green,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                   ),
@@ -303,15 +288,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
-/// Grid background painter
+/// Grid background painter - subtle warm grid
 class _GridBackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withAlpha((0.03 * 255).round())
+      ..color = AxiomColors.bg3.withAlpha(20)
       ..strokeWidth = 1;
 
-    const gridSize = 40.0;
+    const gridSize = 48.0;
 
     // Vertical lines
     for (double x = 0; x < size.width; x += gridSize) {

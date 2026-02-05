@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/models.dart';
 import '../../providers/providers.dart';
+import '../../theme/design_tokens.dart';
 import '../nodes/idea_node_card.dart';
 import '../canvas_sketch_layer.dart';
 import 'node_connections_painter.dart';
 
 /// The content layer of the canvas that renders positioned IdeaNodes.
+/// Uses Everforest palette for grid and UI overlays.
 class CanvasContent extends ConsumerStatefulWidget {
   const CanvasContent({
     super.key,
@@ -129,42 +131,57 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
     await showModalBottomSheet(
       context: context,
       showDragHandle: true,
+      backgroundColor: AxiomColors.bg1,
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AxiomSpacing.md),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
+              Text(
+                label,
+                style: AxiomTypography.heading3.copyWith(color: AxiomColors.fg),
+              ),
+              const SizedBox(height: AxiomSpacing.sm),
               Text(
                 'From: $previewFrom',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: AxiomTypography.bodyMedium.copyWith(
+                  color: AxiomColors.grey0,
+                ),
               ),
               Text(
                 'To: $previewTo',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: AxiomTypography.bodyMedium.copyWith(
+                  color: AxiomColors.grey0,
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AxiomSpacing.md),
               Row(
                 children: [
-                  ElevatedButton.icon(
+                  FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
                       widget.onNodeDoubleTap(hit.target.id);
                     },
-                    icon: const Icon(Icons.open_in_new),
+                    icon: const Icon(Icons.open_in_new, size: 18),
                     label: const Text('Open target'),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AxiomSpacing.sm),
                   OutlinedButton.icon(
                     onPressed: () {
                       _removeLink(hit);
                       Navigator.pop(context);
                     },
-                    icon: const Icon(Icons.link_off),
-                    label: const Text('Remove link'),
+                    icon: Icon(
+                      Icons.link_off,
+                      size: 18,
+                      color: AxiomColors.red,
+                    ),
+                    label: Text(
+                      'Remove link',
+                      style: TextStyle(color: AxiomColors.red),
+                    ),
                   ),
                 ],
               ),
@@ -203,29 +220,28 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
               onSecondaryTap: _removeContextMenu,
             ),
           ),
-          // Context menu
+          // Context menu - Everforest styled
           Positioned(
             left: globalPosition.dx,
             top: globalPosition.dy,
             child: Material(
               elevation: 8,
-              borderRadius: BorderRadius.circular(8),
+              color: AxiomColors.bg1,
+              borderRadius: BorderRadius.circular(AxiomRadius.md),
               child: InkWell(
                 onTap: () {
                   _removeContextMenu();
                   widget.onCanvasDoubleTap(scenePos);
                 },
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AxiomRadius.md),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                    horizontal: AxiomSpacing.md,
+                    vertical: AxiomSpacing.sm + 2,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
+                    borderRadius: BorderRadius.circular(AxiomRadius.md),
+                    border: Border.all(color: AxiomColors.outlineVariant),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -233,12 +249,14 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
                       Icon(
                         Icons.add_circle_outline,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: AxiomColors.green,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AxiomSpacing.sm),
                       Text(
                         'Create Node Here',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: AxiomTypography.bodyMedium.copyWith(
+                          color: AxiomColors.fg,
+                        ),
                       ),
                     ],
                   ),
@@ -382,13 +400,11 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // Grid background
+              // Grid background - Everforest styled subtle grid
               CustomPaint(
                 size: Size(width, height),
                 painter: _GridPainter(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  color: AxiomColors.bg3.withAlpha(40),
                   gridSize: 50,
                 ),
               ),
@@ -409,7 +425,7 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
                   hoveredLinkId: _hoveredLinkId,
                 ),
               ),
-              // Origin marker
+              // Origin marker - Everforest green accent
               Positioned(
                 left: -minX - 10,
                 top: -minY - 10,
@@ -418,14 +434,8 @@ class _CanvasContentState extends ConsumerState<CanvasContent> {
                   height: 20,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.3),
-                    border: Border.all(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.5),
-                    ),
+                    color: AxiomColors.green.withAlpha(50),
+                    border: Border.all(color: AxiomColors.green.withAlpha(100)),
                   ),
                 ),
               ),

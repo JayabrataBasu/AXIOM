@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../constants/spacing.dart';
+import '../theme/design_tokens.dart';
 import '../models/workspace_session.dart';
 import '../providers/workspace_providers.dart';
 import '../providers/workspace_state_provider.dart';
@@ -192,7 +192,7 @@ class _WorkspaceSessionsScreenState
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: Padding(
-            padding: const EdgeInsets.all(Spacing.m),
+            padding: const EdgeInsets.all(AxiomSpacing.md),
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search workspaces...',
@@ -233,7 +233,7 @@ class _WorkspaceSessionsScreenState
                     size: 64,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   ),
-                  const SizedBox(height: Spacing.m),
+                  const SizedBox(height: AxiomSpacing.md),
                   Text(
                     _searchQuery.isEmpty
                         ? 'No workspace sessions yet'
@@ -248,7 +248,7 @@ class _WorkspaceSessionsScreenState
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(Spacing.m),
+            padding: const EdgeInsets.all(AxiomSpacing.md),
             itemCount: filteredSessions.length,
             itemBuilder: (context, index) {
               final session = filteredSessions[index];
@@ -256,7 +256,7 @@ class _WorkspaceSessionsScreenState
               final theme = Theme.of(context);
 
               return Card(
-                margin: const EdgeInsets.only(bottom: Spacing.m),
+                margin: const EdgeInsets.only(bottom: AxiomSpacing.md),
                 child: InkWell(
                   onTap: () => _openSession(session),
                   child: Padding(
@@ -382,7 +382,7 @@ class _WorkspaceSessionsScreenState
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: Spacing.m),
+              const SizedBox(height: AxiomSpacing.md),
               Text('Error: $error'),
             ],
           ),
