@@ -2,7 +2,7 @@
 ///
 /// DEPRECATED: Use AxiomSpacing from 'package:axiom/theme/design_tokens.dart' instead.
 /// This file is kept for backward compatibility and re-exports AxiomSpacing values.
-library spacing;
+library;
 
 // Re-export AxiomSpacing for backward compatibility
 export 'package:axiom/theme/design_tokens.dart' show AxiomSpacing;
