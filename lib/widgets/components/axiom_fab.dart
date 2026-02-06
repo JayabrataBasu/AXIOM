@@ -1,4 +1,4 @@
-/// Primary FAB matching Stitch designs
+/// FAB variants — uses theme, no hardcoded colors
 library;
 
 import 'package:flutter/material.dart';
@@ -27,29 +27,18 @@ class AxiomFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Let the theme handle colors via FloatingActionButtonThemeData
     if (extended && label != null) {
       return FloatingActionButton.extended(
         onPressed: onPressed,
-        icon: Icon(icon, size: 24),
+        icon: Icon(icon, size: 22),
         label: Text(label!, style: AxiomTypography.labelLarge),
-        backgroundColor: AxiomColors.primary,
-        foregroundColor: AxiomColors.onPrimary,
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AxiomRadius.xxl),
-        ),
       );
     }
 
     return FloatingActionButton(
       onPressed: onPressed,
-      backgroundColor: AxiomColors.primary,
-      foregroundColor: AxiomColors.onPrimary,
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AxiomRadius.xxl),
-      ),
-      child: Icon(icon, size: 28),
+      child: Icon(icon, size: 26),
     );
   }
 }
@@ -66,15 +55,9 @@ class AxiomLargeFAB extends StatelessWidget {
     return SizedBox(
       width: 64,
       height: 64,
-      child: FloatingActionButton(
+      child: FloatingActionButton.large(
         onPressed: onPressed,
-        backgroundColor: AxiomColors.primary,
-        foregroundColor: AxiomColors.onPrimary,
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AxiomRadius.xxl),
-        ),
-        child: Icon(icon, size: 32),
+        child: Icon(icon, size: 30),
       ),
     );
   }

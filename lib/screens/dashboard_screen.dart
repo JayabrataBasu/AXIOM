@@ -1,6 +1,6 @@
 /// Dashboard/Home screen - entry point after onboarding
 /// Based on Stitch design: axiom_home_dashboard
-/// Updated for Everforest dark theme with Material 3 Expressive styling.
+/// Theme-aware Material 3 Expressive styling.
 library;
 
 import 'package:flutter/material.dart';
@@ -24,20 +24,21 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
     final sessionsAsync = ref.watch(workspaceSessionsNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AxiomColors.bg0,
+      backgroundColor: cs.surface,
       appBar: _buildAppBar(context, ref),
       drawer: _buildNavigationDrawer(context, ref),
       body: sessionsAsync.when(
         data: (sessions) => _buildContent(context, ref, sessions),
         loading: () =>
-            Center(child: CircularProgressIndicator(color: AxiomColors.green)),
+            Center(child: CircularProgressIndicator(color: cs.primary)),
         error: (error, stack) => Center(
           child: Text(
             'Error: $error',
-            style: TextStyle(color: AxiomColors.error),
+            style: TextStyle(color: cs.error),
           ),
         ),
       ),
@@ -45,21 +46,22 @@ class DashboardScreen extends ConsumerWidget {
         onPressed: () => context.push('/welcome'),
         icon: const Icon(Icons.add_rounded),
         label: const Text('New Workspace'),
-        backgroundColor: AxiomColors.primaryContainer,
-        foregroundColor: AxiomColors.onPrimaryContainer,
+        backgroundColor: cs.primaryContainer,
+        foregroundColor: cs.onPrimaryContainer,
       ),
     );
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
     return AppBar(
-      backgroundColor: AxiomColors.bg0,
+      backgroundColor: cs.surface,
       elevation: 0,
       scrolledUnderElevation: 1,
-      surfaceTintColor: AxiomColors.green,
+      surfaceTintColor: cs.primary,
       title: Row(
         children: [
-          // Logo - using Everforest green accent
+          // Logo - using primary/secondary accent
           Container(
             width: 32,
             height: 32,
@@ -67,24 +69,24 @@ class DashboardScreen extends ConsumerWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AxiomColors.green, AxiomColors.aqua],
+                colors: [cs.primary, cs.secondary],
               ),
               borderRadius: BorderRadius.circular(AxiomRadius.sm),
               boxShadow: [
                 BoxShadow(
-                  color: AxiomColors.green.withAlpha(50),
+                  color: cs.primary.withAlpha(50),
                   blurRadius: 12,
                   spreadRadius: -2,
                 ),
               ],
             ),
-            child: Icon(Icons.api, color: AxiomColors.bg0, size: 18),
+            child: Icon(Icons.api_rounded, color: cs.surface, size: 18),
           ),
           const SizedBox(width: AxiomSpacing.sm),
           Text(
             'AXIOM',
             style: AxiomTypography.heading2.copyWith(
-              color: AxiomColors.fg,
+              color: cs.onSurface,
               fontWeight: FontWeight.w600,
               letterSpacing: 1,
             ),
@@ -93,7 +95,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.search_rounded, color: AxiomColors.grey1),
+          icon: Icon(Icons.search_rounded, color: cs.onSurfaceVariant.withAlpha(150)),
           onPressed: () {
             _showFeatureHint(context, 'Global search coming soon.');
           },
@@ -104,10 +106,10 @@ class DashboardScreen extends ConsumerWidget {
           padding: const EdgeInsets.only(right: AxiomSpacing.md),
           child: CircleAvatar(
             radius: 18,
-            backgroundColor: AxiomColors.bg3,
+            backgroundColor: cs.surfaceContainerHigh,
             child: Icon(
               Icons.person_rounded,
-              color: AxiomColors.grey1,
+              color: cs.onSurfaceVariant.withAlpha(150),
               size: 20,
             ),
           ),
@@ -117,8 +119,9 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildNavigationDrawer(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
     return Drawer(
-      backgroundColor: AxiomColors.surfaceContainerLow,
+      backgroundColor: cs.surfaceContainerLow,
       child: Column(
         children: [
           // Drawer header with warm gradient
@@ -128,7 +131,7 @@ class DashboardScreen extends ConsumerWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AxiomColors.green.withAlpha(20), Colors.transparent],
+                colors: [cs.primary.withAlpha(20), Colors.transparent],
               ),
             ),
             child: SafeArea(
@@ -140,7 +143,7 @@ class DashboardScreen extends ConsumerWidget {
                   Text(
                     'AXIOM',
                     style: AxiomTypography.displayMedium.copyWith(
-                      color: AxiomColors.fg,
+                      color: cs.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -148,7 +151,7 @@ class DashboardScreen extends ConsumerWidget {
                   Text(
                     'A Thinking System',
                     style: AxiomTypography.bodySmall.copyWith(
-                      color: AxiomColors.grey1,
+                      color: cs.onSurfaceVariant.withAlpha(150),
                     ),
                   ),
                 ],
@@ -175,7 +178,7 @@ class DashboardScreen extends ConsumerWidget {
                     context.push('/workspaces');
                   },
                 ),
-                Divider(color: AxiomColors.outlineVariant, height: 32),
+                Divider(color: cs.outlineVariant, height: 32),
                 _DrawerItem(
                   icon: Icons.settings_rounded,
                   label: 'Settings',
@@ -226,20 +229,21 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildHeroSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Welcome back,',
           style: AxiomTypography.displayMedium.copyWith(
-            color: AxiomColors.fg,
+            color: cs.onSurface,
             height: 1.1,
           ),
         ),
         Text(
           'Commander.',
           style: AxiomTypography.displayMedium.copyWith(
-            color: AxiomColors.green,
+            color: cs.primary,
             height: 1.1,
           ),
         ),
@@ -252,9 +256,9 @@ class DashboardScreen extends ConsumerWidget {
             vertical: AxiomSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: AxiomColors.bg2,
+            color: cs.surfaceContainer,
             borderRadius: BorderRadius.circular(AxiomRadius.full),
-            border: Border.all(color: AxiomColors.outlineVariant, width: 1),
+            border: Border.all(color: cs.outlineVariant, width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -263,11 +267,11 @@ class DashboardScreen extends ConsumerWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: AxiomColors.green,
+                  color: cs.primary,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AxiomColors.green.withAlpha(100),
+                      color: cs.primary.withAlpha(100),
                       blurRadius: 6,
                       spreadRadius: 0,
                     ),
@@ -278,7 +282,7 @@ class DashboardScreen extends ConsumerWidget {
               Text(
                 'All systems operational',
                 style: AxiomTypography.labelSmall.copyWith(
-                  color: AxiomColors.grey1,
+                  color: cs.onSurfaceVariant.withAlpha(150),
                 ),
               ),
             ],
@@ -293,6 +297,7 @@ class DashboardScreen extends ConsumerWidget {
     WidgetRef ref,
     List<WorkspaceSession> sessions,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final recentSessions = sessions.take(6).toList();
 
     return Column(
@@ -303,13 +308,13 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Text(
               'Recent Workspaces',
-              style: AxiomTypography.heading2.copyWith(color: AxiomColors.fg),
+              style: AxiomTypography.heading2.copyWith(color: cs.onSurface),
             ),
             TextButton(
               onPressed: () => context.push('/workspaces'),
               child: Text(
                 'View All',
-                style: TextStyle(color: AxiomColors.aqua),
+                style: TextStyle(color: cs.secondary),
               ),
             ),
           ],
@@ -326,13 +331,13 @@ class DashboardScreen extends ConsumerWidget {
                     Icon(
                       Icons.folder_open_rounded,
                       size: 48,
-                      color: AxiomColors.grey0,
+                      color: cs.onSurfaceVariant,
                     ),
                     const SizedBox(height: AxiomSpacing.md),
                     Text(
                       'No workspaces yet',
                       style: AxiomTypography.bodyMedium.copyWith(
-                        color: AxiomColors.grey1,
+                        color: cs.onSurfaceVariant.withAlpha(150),
                       ),
                     ),
                   ],
@@ -365,6 +370,7 @@ class DashboardScreen extends ConsumerWidget {
     WidgetRef ref,
     WorkspaceSession session,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return AxiomCard(
       elevated: true,
       onTap: () {
@@ -392,12 +398,12 @@ class DashboardScreen extends ConsumerWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AxiomColors.green.withAlpha(25),
+                  color: cs.primary.withAlpha(25),
                   borderRadius: BorderRadius.circular(AxiomRadius.md),
                 ),
                 child: Icon(
                   _getWorkspaceIcon(session.workspaceType),
-                  color: AxiomColors.green,
+                  color: cs.primary,
                   size: 22,
                 ),
               ),
@@ -408,7 +414,7 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               Text(
                 session.label.isNotEmpty ? session.label : 'Untitled Workspace',
-                style: AxiomTypography.heading3.copyWith(color: AxiomColors.fg),
+                style: AxiomTypography.heading3.copyWith(color: cs.onSurface),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -416,7 +422,7 @@ class DashboardScreen extends ConsumerWidget {
               Text(
                 _formatDate(session.updatedAt),
                 style: AxiomTypography.labelSmall.copyWith(
-                  color: AxiomColors.grey0,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],
@@ -430,12 +436,13 @@ class DashboardScreen extends ConsumerWidget {
     BuildContext context,
     List<WorkspaceSession> sessions,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Quick Stats',
-          style: AxiomTypography.heading2.copyWith(color: AxiomColors.fg),
+          style: AxiomTypography.heading2.copyWith(color: cs.onSurface),
         ),
         const SizedBox(height: AxiomSpacing.md),
         Row(
@@ -448,13 +455,13 @@ class DashboardScreen extends ConsumerWidget {
                     Text(
                       '${sessions.length}',
                       style: AxiomTypography.displaySmall.copyWith(
-                        color: AxiomColors.green,
+                        color: cs.primary,
                       ),
                     ),
                     Text(
                       'Workspaces',
                       style: AxiomTypography.labelMedium.copyWith(
-                        color: AxiomColors.grey1,
+                        color: cs.onSurfaceVariant.withAlpha(150),
                       ),
                     ),
                   ],
@@ -470,13 +477,13 @@ class DashboardScreen extends ConsumerWidget {
                     Text(
                       '0',
                       style: AxiomTypography.displaySmall.copyWith(
-                        color: AxiomColors.aqua,
+                        color: cs.secondary,
                       ),
                     ),
                     Text(
                       'Nodes',
                       style: AxiomTypography.labelMedium.copyWith(
-                        color: AxiomColors.grey1,
+                        color: cs.onSurfaceVariant.withAlpha(150),
                       ),
                     ),
                   ],
@@ -531,10 +538,11 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Material(
-        color: selected ? AxiomColors.secondaryContainer : Colors.transparent,
+        color: selected ? cs.secondaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(AxiomRadius.full),
         child: InkWell(
           onTap: onTap,
@@ -550,16 +558,16 @@ class _DrawerItem extends StatelessWidget {
                   icon,
                   size: 22,
                   color: selected
-                      ? AxiomColors.onSecondaryContainer
-                      : AxiomColors.onSurfaceVariant,
+                      ? cs.onSecondaryContainer
+                      : cs.onSurfaceVariant,
                 ),
                 const SizedBox(width: AxiomSpacing.md),
                 Text(
                   label,
                   style: AxiomTypography.labelLarge.copyWith(
                     color: selected
-                        ? AxiomColors.onSecondaryContainer
-                        : AxiomColors.onSurface,
+                        ? cs.onSecondaryContainer
+                        : cs.onSurface,
                   ),
                 ),
               ],

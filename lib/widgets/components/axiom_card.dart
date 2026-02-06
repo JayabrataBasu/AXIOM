@@ -1,4 +1,4 @@
-/// Reusable card component matching Stitch designs
+/// Reusable card component — theme-aware, Everforest styled
 library;
 
 import 'package:flutter/material.dart';
@@ -24,22 +24,43 @@ class AxiomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
+    final cs = Theme.of(context).colorScheme;
+    final radius = borderRadius ?? BorderRadius.circular(AxiomRadius.lg);
+
+    final card = AnimatedContainer(
+      duration: AxiomDurations.fast,
       padding: padding ?? const EdgeInsets.all(AxiomSpacing.md),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AxiomColors.surfaceDark,
-        borderRadius: borderRadius ?? BorderRadius.circular(AxiomRadius.lg),
-        border: Border.all(color: AxiomColors.borderDark, width: 1),
-        boxShadow: elevated ? AxiomElevation.card : null,
+        color: backgroundColor ?? cs.surfaceContainerLow,
+        borderRadius: radius,
+        border: Border.all(
+          color: cs.outlineVariant.withAlpha(100),
+          width: 1,
+        ),
+        boxShadow: elevated
+            ? [
+                BoxShadow(
+                  color: cs.shadow.withAlpha(20),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: child,
     );
 
     if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: borderRadius ?? BorderRadius.circular(AxiomRadius.lg),
-        child: card,
+      return Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          splashColor: cs.primary.withAlpha(15),
+          highlightColor: cs.primary.withAlpha(8),
+          child: card,
+        ),
       );
     }
 
@@ -47,7 +68,7 @@ class AxiomCard extends StatelessWidget {
   }
 }
 
-/// Glass panel effect from Stitch designs
+/// Glass panel — frosted glass effect
 class AxiomGlassPanel extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -62,13 +83,15 @@ class AxiomGlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: padding ?? const EdgeInsets.all(AxiomSpacing.md),
       decoration: BoxDecoration(
-        color: AxiomColors.primary.withAlpha((0.1 * 255).round()),
+        color: cs.surface.withAlpha(220),
         borderRadius: borderRadius ?? BorderRadius.circular(AxiomRadius.lg),
         border: Border.all(
-          color: Colors.white.withAlpha((0.05 * 255).round()),
+          color: cs.outlineVariant.withAlpha(60),
           width: 1,
         ),
       ),

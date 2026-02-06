@@ -8,7 +8,7 @@ import '../theme/design_tokens.dart';
 import '../widgets/widgets.dart';
 
 /// Full-screen editor for an IdeaNode.
-/// Everforest themed: bg0 background, green accents, cream text.
+/// Theme-aware: uses colorScheme for all surfaces/accents.
 class NodeEditorScreen extends ConsumerStatefulWidget {
   const NodeEditorScreen({
     super.key,
@@ -90,40 +90,41 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   Widget build(BuildContext context) {
     final nodesAsync = ref.watch(nodesNotifierProvider);
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return nodesAsync.when(
       loading: () => Scaffold(
-        backgroundColor: AxiomColors.bg0,
+        backgroundColor: cs.surface,
         body: Center(
-          child: CircularProgressIndicator(color: AxiomColors.green),
+          child: CircularProgressIndicator(color: cs.primary),
         ),
       ),
       error: (error, stack) => Scaffold(
-        backgroundColor: AxiomColors.bg0,
+        backgroundColor: cs.surface,
         appBar: AppBar(
-          title: Text('Error', style: TextStyle(color: AxiomColors.fg)),
-          backgroundColor: AxiomColors.bg1,
+          title: Text('Error', style: TextStyle(color: cs.onSurface)),
+          backgroundColor: cs.surface,
         ),
         body: Center(
-          child: Text('Error: $error', style: TextStyle(color: AxiomColors.fg)),
+          child: Text('Error: $error', style: TextStyle(color: cs.onSurface)),
         ),
       ),
       data: (nodes) {
         final node = _findNode(nodes, widget.nodeId);
         if (node == null) {
           return Scaffold(
-            backgroundColor: AxiomColors.bg0,
+            backgroundColor: cs.surface,
             appBar: AppBar(
               title: Text(
                 'Node Not Found',
-                style: TextStyle(color: AxiomColors.fg),
+                style: TextStyle(color: cs.onSurface),
               ),
-              backgroundColor: AxiomColors.bg1,
+              backgroundColor: cs.surface,
             ),
             body: Center(
               child: Text(
                 'This node no longer exists.',
-                style: TextStyle(color: AxiomColors.grey0),
+                style: TextStyle(color: cs.onSurfaceVariant),
               ),
             ),
           );
@@ -132,20 +133,20 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         _syncNodeNameController(node);
 
         return Scaffold(
-          backgroundColor: AxiomColors.bg0,
+          backgroundColor: cs.surface,
           appBar: AppBar(
-            backgroundColor: AxiomColors.bg1,
-            title: Text('Edit Node', style: TextStyle(color: AxiomColors.fg)),
+            backgroundColor: cs.surface,
+            title: Text('Edit Node', style: TextStyle(color: cs.onSurface)),
             elevation: 0,
-            iconTheme: IconThemeData(color: AxiomColors.fg),
+            iconTheme: IconThemeData(color: cs.onSurface),
             actions: [
               IconButton(
-                icon: Icon(Icons.add_link, color: AxiomColors.aqua),
+                icon: Icon(Icons.add_link_rounded, color: cs.secondary),
                 tooltip: 'Add link',
                 onPressed: () => _showAddLinkDialog(node),
               ),
               IconButton(
-                icon: Icon(Icons.delete_outline, color: AxiomColors.red),
+                icon: Icon(Icons.delete_outline_rounded, color: cs.error),
                 tooltip: 'Delete node',
                 onPressed: () => _confirmDelete(node),
               ),
@@ -153,14 +154,14 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           ),
           body: Column(
             children: [
-              // Node name editing header - Everforest styled
+              // Node name editing header
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(AxiomSpacing.md),
                 decoration: BoxDecoration(
-                  color: AxiomColors.bg1,
+                  color: cs.surfaceContainerLow,
                   border: Border(
-                    bottom: BorderSide(color: AxiomColors.outlineVariant),
+                    bottom: BorderSide(color: cs.outlineVariant),
                   ),
                 ),
                 child: Column(
@@ -175,13 +176,13 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                       onSubmitted: (name) => _updateNodeName(node.id, name),
                       textInputAction: TextInputAction.done,
                       style: AxiomTypography.heading2.copyWith(
-                        color: AxiomColors.fg,
+                        color: cs.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
                         hintText: 'Untitled Node',
                         hintStyle: AxiomTypography.heading2.copyWith(
-                          color: AxiomColors.grey1,
+                          color: cs.onSurfaceVariant.withAlpha(150),
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
@@ -198,21 +199,21 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                             'ID: ${node.id.substring(0, 8)}...',
                             style: AxiomTypography.labelSmall.copyWith(
                               fontFamily: 'monospace',
-                              color: AxiomColors.grey1,
+                              color: cs.onSurfaceVariant.withAlpha(150),
                             ),
                           ),
                           const SizedBox(width: AxiomSpacing.md),
                           Text(
                             'Pos: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
                             style: AxiomTypography.labelSmall.copyWith(
-                              color: AxiomColors.grey1,
+                              color: cs.onSurfaceVariant.withAlpha(150),
                             ),
                           ),
                           const SizedBox(width: AxiomSpacing.md),
                           Text(
                             '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
                             style: AxiomTypography.labelSmall.copyWith(
-                              color: AxiomColors.grey1,
+                              color: cs.onSurfaceVariant.withAlpha(150),
                             ),
                           ),
                         ],
@@ -221,15 +222,15 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                   ],
                 ),
               ),
-              // Links section - Everforest styled
+              // Links section
               if (node.links.isNotEmpty)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AxiomSpacing.md),
                   decoration: BoxDecoration(
-                    color: AxiomColors.bg1.withAlpha(150),
+                    color: cs.surfaceContainerLow,
                     border: Border(
-                      bottom: BorderSide(color: AxiomColors.outlineVariant),
+                      bottom: BorderSide(color: cs.outlineVariant),
                     ),
                   ),
                   child: Column(
@@ -237,13 +238,13 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.link, size: 16, color: AxiomColors.aqua),
+                          Icon(Icons.link_rounded, size: 16, color: cs.secondary),
                           const SizedBox(width: AxiomSpacing.sm),
                           Text(
                             'Linked to ${node.links.length} node${node.links.length != 1 ? 's' : ''}',
                             style: AxiomTypography.labelMedium.copyWith(
                               fontWeight: FontWeight.w500,
-                              color: AxiomColors.fg,
+                              color: cs.onSurface,
                             ),
                           ),
                         ],
@@ -265,17 +266,17 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                                     : 'Node ${link.targetNodeId.substring(0, 6)}...');
 
                           return InputChip(
-                            backgroundColor: AxiomColors.bg2,
+                            backgroundColor: cs.surfaceContainer,
                             avatar: Icon(
-                              Icons.arrow_forward,
+                              Icons.arrow_forward_rounded,
                               size: 16,
-                              color: AxiomColors.aqua,
+                              color: cs.secondary,
                             ),
                             label: Text(
                               label,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: AxiomColors.fg),
+                              style: TextStyle(color: cs.onSurface),
                             ),
                             onPressed: () {
                               // Navigate to linked node
@@ -291,7 +292,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                             },
                             onDeleted: () =>
                                 _removeLink(node.id, link.targetNodeId),
-                            deleteIconColor: AxiomColors.red.withAlpha(180),
+                            deleteIconColor: cs.error.withAlpha(180),
                           );
                         }).toList(),
                       ),
@@ -318,11 +319,11 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            backgroundColor: AxiomColors.green,
-            foregroundColor: AxiomColors.bg0,
+            backgroundColor: cs.primary,
+            foregroundColor: cs.surface,
             onPressed: () => _showAddBlockDialog(node),
             tooltip: 'Add block',
-            child: const Icon(Icons.add),
+            child: const Icon(Icons.add_rounded),
           ),
         );
       },
@@ -330,20 +331,21 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   }
 
   Widget _buildEmptyState(ThemeData theme, IdeaNode node) {
+    final cs = theme.colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.note_add_outlined, size: 48, color: AxiomColors.grey1),
+          Icon(Icons.note_add_rounded, size: 48, color: cs.onSurfaceVariant.withAlpha(150)),
           const SizedBox(height: AxiomSpacing.md),
           Text(
             'No blocks yet',
-            style: AxiomTypography.bodyLarge.copyWith(color: AxiomColors.grey0),
+            style: AxiomTypography.bodyLarge.copyWith(color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: AxiomSpacing.md),
           FilledButton.icon(
             onPressed: () => _showAddBlockDialog(node),
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_rounded),
             label: const Text('Add Block'),
           ),
         ],
@@ -446,7 +448,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
     };
 
-    // Wrap with highlight decoration if this block is highlighted - Everforest yellow
+    // Wrap with highlight decoration if this block is highlighted
     if (isHighlighted) {
       return DecoratedBox(
         decoration: BoxDecoration(
@@ -556,7 +558,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                         final session = matrixSessions[index];
                         return ListTile(
                           dense: true,
-                          leading: const Icon(Icons.widgets_outlined),
+                          leading: const Icon(Icons.widgets_rounded),
                           title: Text(
                             session.label.isNotEmpty
                                 ? session.label
@@ -606,7 +608,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                   _WorkspaceSessionChoice('__create__', label),
                 );
               },
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.add_rounded),
               label: const Text('Create'),
             ),
           ],
@@ -777,7 +779,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
             itemBuilder: (context, index) {
               final targetNode = availableNodes[index];
               return ListTile(
-                leading: const Icon(Icons.note_outlined),
+                leading: const Icon(Icons.note_rounded),
                 title: Text(
                   targetNode.previewText.isEmpty
                       ? 'Node ${targetNode.id.substring(0, 8)}...'
