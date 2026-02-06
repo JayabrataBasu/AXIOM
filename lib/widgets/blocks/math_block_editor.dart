@@ -45,6 +45,7 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // Everforest styled math editor
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,39 +55,39 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
           controller: _controller,
           maxLines: 3,
           minLines: 1,
-          style: AxiomTypography.code.copyWith(color: AxiomColors.fg),
+          style: AxiomTypography.code.copyWith(color: cs.onSurface),
           onChanged: (value) {
             widget.onChanged(value);
             _validateLatex(value);
           },
           decoration: InputDecoration(
             hintText: r'Enter LaTeX (e.g., \int_0^1 x^2 dx)',
-            hintStyle: AxiomTypography.code.copyWith(color: AxiomColors.grey1),
+            hintStyle: AxiomTypography.code.copyWith(color: cs.onSurfaceVariant),
             filled: true,
-            fillColor: AxiomColors.bg0,
+            fillColor: cs.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AxiomRadius.sm),
-              borderSide: BorderSide(color: AxiomColors.outlineVariant),
+              borderSide: BorderSide(color: cs.outlineVariant),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AxiomRadius.sm),
-              borderSide: BorderSide(color: AxiomColors.outlineVariant),
+              borderSide: BorderSide(color: cs.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AxiomRadius.sm),
-              borderSide: BorderSide(color: AxiomColors.blue, width: 2),
+              borderSide: BorderSide(color: cs.tertiary, width: 2),
             ),
             suffixIcon: IconButton(
               icon: Icon(
                 _showPreview ? Icons.visibility : Icons.visibility_off,
-                color: AxiomColors.grey0,
+                color: cs.onSurfaceVariant,
               ),
               onPressed: () {
                 setState(() => _showPreview = !_showPreview);
               },
             ),
             errorText: _parseError,
-            errorStyle: TextStyle(color: AxiomColors.red),
+            errorStyle: TextStyle(color: cs.error),
           ),
         ),
         SizedBox(height: AxiomSpacing.sm + 2),
@@ -95,9 +96,9 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
           Container(
             padding: EdgeInsets.all(AxiomSpacing.sm + 2),
             decoration: BoxDecoration(
-              color: AxiomColors.bg2,
+              color: cs.surfaceContainer,
               borderRadius: BorderRadius.circular(AxiomRadius.sm),
-              border: Border.all(color: AxiomColors.outlineVariant),
+              border: Border.all(color: cs.outlineVariant),
             ),
             child: _buildMathPreview(),
           ),
@@ -106,10 +107,11 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
   }
 
   Widget _buildMathPreview() {
+    final cs = Theme.of(context).colorScheme;
     if (_controller.text.isEmpty) {
       return Text(
         'Preview',
-        style: AxiomTypography.bodyMedium.copyWith(color: AxiomColors.grey1),
+        style: AxiomTypography.bodyMedium.copyWith(color: cs.onSurfaceVariant),
       );
     }
 
@@ -119,11 +121,11 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
         child: Math.tex(
           _controller.text,
           mathStyle: MathStyle.display,
-          textStyle: TextStyle(color: AxiomColors.fg, fontSize: 18),
+          textStyle: TextStyle(color: cs.onSurface, fontSize: 18),
           onErrorFallback: (error) {
             return Text(
               'Error: ${error.toString()}',
-              style: AxiomTypography.bodySmall.copyWith(color: AxiomColors.red),
+              style: AxiomTypography.bodySmall.copyWith(color: cs.error),
             );
           },
         ),
@@ -131,7 +133,7 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
     } catch (e) {
       return Text(
         'Render error: ${e.toString()}',
-        style: AxiomTypography.bodySmall.copyWith(color: AxiomColors.red),
+        style: AxiomTypography.bodySmall.copyWith(color: cs.error),
       );
     }
   }

@@ -80,6 +80,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     // Everforest styled audio player
     final duration = _duration == Duration.zero
         ? Duration(milliseconds: widget.durationMs)
@@ -88,9 +89,9 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
     return Container(
       padding: EdgeInsets.all(AxiomSpacing.sm + 2),
       decoration: BoxDecoration(
-        color: AxiomColors.bg2,
+        color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AxiomRadius.sm),
-        border: Border.all(color: AxiomColors.outlineVariant),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,9 +105,9 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
                 label: Text(_isPlaying ? 'Pause' : 'Play'),
                 style: FilledButton.styleFrom(
                   backgroundColor: _loadFailed
-                      ? AxiomColors.grey2
-                      : AxiomColors.aqua,
-                  foregroundColor: AxiomColors.bg0,
+                      ? cs.outlineVariant
+                      : cs.secondary,
+                  foregroundColor: cs.surface,
                 ),
               ),
               SizedBox(width: AxiomSpacing.sm + 2),
@@ -114,7 +115,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
               Text(
                 _formatDuration(duration),
                 style: AxiomTypography.labelMedium.copyWith(
-                  color: AxiomColors.fg,
+                  color: cs.onSurface,
                 ),
               ),
             ],
@@ -139,7 +140,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
                   Text(
                     _statusText,
                     style: AxiomTypography.labelSmall.copyWith(
-                      color: _loadFailed ? AxiomColors.red : AxiomColors.aqua,
+                      color: _loadFailed ? cs.error : cs.secondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -148,9 +149,9 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
                   LinearProgressIndicator(
                     value: progress,
                     minHeight: 4,
-                    backgroundColor: AxiomColors.bg3,
+                    backgroundColor: cs.surfaceContainerHigh,
                     valueColor: AlwaysStoppedAnimation(
-                      _loadFailed ? AxiomColors.red : AxiomColors.aqua,
+                      _loadFailed ? cs.error : cs.secondary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -160,13 +161,13 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
                       Text(
                         _formatDuration(clamped),
                         style: AxiomTypography.labelSmall.copyWith(
-                          color: AxiomColors.grey0,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                       Text(
                         _formatDuration(duration),
                         style: AxiomTypography.labelSmall.copyWith(
-                          color: AxiomColors.grey0,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                     ],

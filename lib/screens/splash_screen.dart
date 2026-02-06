@@ -84,15 +84,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: AxiomColors.bg0,
+      backgroundColor: cs.surface,
       body: Stack(
         children: [
           // Subtle grid background
           Positioned.fill(
-            child: CustomPaint(painter: _GridBackgroundPainter()),
+            child: CustomPaint(painter: _GridBackgroundPainter(gridColor: cs.surfaceContainerHigh)),
           ),
 
           // Warm ambient glow from top - Everforest green tint
@@ -107,8 +107,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   center: Alignment.topCenter,
                   radius: 1.2,
                   colors: [
-                    AxiomColors.green.withAlpha(25),
-                    AxiomColors.aqua.withAlpha(10),
+                    cs.primary.withAlpha(25),
+                    cs.secondary.withAlpha(10),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.5, 1.0],
@@ -127,7 +127,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Logo
-                    _buildLogo(colorScheme),
+                    _buildLogo(cs),
                     const SizedBox(height: AxiomSpacing.xl),
 
                     // Brand name - warm cream color from Everforest
@@ -136,7 +136,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       style: AxiomTypography.display.copyWith(
                         fontSize: 48,
                         letterSpacing: 8,
-                        color: AxiomColors.fg,
+                        color: cs.onSurface,
                         fontWeight: FontWeight.w300,
                       ),
                     ),
@@ -146,7 +146,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     Text(
                       'A THINKING SYSTEM',
                       style: AxiomTypography.labelSmall.copyWith(
-                        color: AxiomColors.grey1,
+                        color: cs.onSurfaceVariant,
                         letterSpacing: 4,
                         fontWeight: FontWeight.w500,
                       ),
@@ -177,7 +177,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   Text(
                     'v0.1.0',
                     style: AxiomTypography.labelSmall.copyWith(
-                      color: AxiomColors.grey0,
+                      color: cs.onSurfaceVariant,
                       fontFamily: 'monospace',
                     ),
                   ),
@@ -198,7 +198,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         borderRadius: BorderRadius.circular(AxiomRadius.xxl),
         boxShadow: [
           BoxShadow(
-            color: AxiomColors.green.withAlpha(60),
+            color: colorScheme.primary.withAlpha(60),
             blurRadius: 50,
             spreadRadius: -10,
           ),
@@ -218,10 +218,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        AxiomColors.green.withAlpha(
+                        colorScheme.primary.withAlpha(
                           (60 * _controller.value).round(),
                         ),
-                        AxiomColors.aqua.withAlpha(
+                        colorScheme.secondary.withAlpha(
                           (40 * _controller.value).round(),
                         ),
                       ],
@@ -236,16 +236,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Container(
             margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: AxiomColors.bg0,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(AxiomRadius.xxl),
               border: Border.all(
-                color: AxiomColors.outline.withAlpha(50),
+                color: colorScheme.outline.withAlpha(50),
                 width: 1,
               ),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [AxiomColors.bg2, AxiomColors.bg0],
+                colors: [colorScheme.surfaceContainer, colorScheme.surface],
               ),
             ),
             child: Center(
@@ -256,13 +256,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   height: 56,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: AxiomColors.fg.withAlpha(200),
+                      color: colorScheme.onSurface.withAlpha(200),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(AxiomRadius.md),
                     boxShadow: [
                       BoxShadow(
-                        color: AxiomColors.fg.withAlpha(40),
+                        color: colorScheme.onSurface.withAlpha(40),
                         blurRadius: 20,
                         spreadRadius: 0,
                       ),
@@ -273,7 +273,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       width: 24,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: AxiomColors.green,
+                        color: colorScheme.primary,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -290,10 +290,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
 /// Grid background painter - subtle warm grid
 class _GridBackgroundPainter extends CustomPainter {
+  _GridBackgroundPainter({required this.gridColor});
+  final Color gridColor;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AxiomColors.bg3.withAlpha(20)
+      ..color = gridColor.withAlpha(20)
       ..strokeWidth = 1;
 
     const gridSize = 48.0;

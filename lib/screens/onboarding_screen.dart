@@ -20,29 +20,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   int _currentPage = 0;
   late AnimationController _glowController;
 
-  final List<OnboardingPage> _pages = [
-    const OnboardingPage(
-      title: 'Master Your\nWorkflow',
-      description:
-          'Centralize your tools, tasks, and timelines into single, focused workspace sessions.',
-      iconData: Icons.layers_outlined,
-      accentColor: AxiomColors.green,
-    ),
-    const OnboardingPage(
-      title: 'Infinite\nCreativity',
-      description:
-          'Draw connections between ideas on an unlimited canvas with powerful thinking tools.',
-      iconData: Icons.draw_outlined,
-      accentColor: AxiomColors.aqua,
-    ),
-    const OnboardingPage(
-      title: 'Calculate\nEverything',
-      description:
-          'Built-in computation engine lets you perform complex calculations right where you think.',
-      iconData: Icons.functions,
-      accentColor: AxiomColors.blue,
-    ),
-  ];
+  static const _pageCount = 3;
 
   @override
   void initState() {
@@ -67,7 +45,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
   }
 
   void _handleGetStarted() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < _pageCount - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -78,14 +56,38 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     }
   }
 
-  Color get _currentAccentColor => _pages[_currentPage].accentColor;
-
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final size = MediaQuery.of(context).size;
 
+    final pages = [
+      OnboardingPage(
+        title: 'Master Your\nWorkflow',
+        description:
+            'Centralize your tools, tasks, and timelines into single, focused workspace sessions.',
+        iconData: Icons.layers_outlined,
+        accentColor: cs.primary,
+      ),
+      OnboardingPage(
+        title: 'Infinite\nCreativity',
+        description:
+            'Draw connections between ideas on an unlimited canvas with powerful thinking tools.',
+        iconData: Icons.draw_outlined,
+        accentColor: cs.secondary,
+      ),
+      OnboardingPage(
+        title: 'Calculate\nEverything',
+        description:
+            'Built-in computation engine lets you perform complex calculations right where you think.',
+        iconData: Icons.functions,
+        accentColor: cs.tertiary,
+      ),
+    ];
+    final currentAccentColor = pages[_currentPage].accentColor;
+
     return Scaffold(
-      backgroundColor: AxiomColors.bg0,
+      backgroundColor: cs.surface,
       body: Stack(
         children: [
           // Animated ambient background glow - follows current page accent
@@ -102,7 +104,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
-                        _currentAccentColor.withAlpha(
+                        currentAccentColor.withAlpha(
                           (20 + _glowController.value * 15).round(),
                         ),
                         Colors.transparent,
@@ -125,9 +127,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     child: PageView.builder(
                       controller: _pageController,
                       onPageChanged: _onPageChanged,
-                      itemCount: _pages.length,
+                      itemCount: pages.length,
                       itemBuilder: (context, index) {
-                        return _pages[index];
+                        return pages[index];
                       },
                     ),
                   ),
@@ -138,7 +140,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _pages.length,
+                      pages.length,
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -146,13 +148,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                         width: index == _currentPage ? 32 : 8,
                         decoration: BoxDecoration(
                           color: index == _currentPage
-                              ? _currentAccentColor
-                              : AxiomColors.bg4,
+                              ? currentAccentColor
+                              : cs.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(4),
                           boxShadow: index == _currentPage
                               ? [
                                   BoxShadow(
-                                    color: _currentAccentColor.withAlpha(80),
+                                    color: currentAccentColor.withAlpha(80),
                                     blurRadius: 12,
                                     spreadRadius: 0,
                                   ),
@@ -172,8 +174,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     child: FilledButton(
                       onPressed: _handleGetStarted,
                       style: FilledButton.styleFrom(
-                        backgroundColor: _currentAccentColor,
-                        foregroundColor: AxiomColors.bg0,
+                        backgroundColor: currentAccentColor,
+                        foregroundColor: cs.surface,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AxiomRadius.lg),
                         ),
@@ -182,11 +184,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            _currentPage < _pages.length - 1
+                            _currentPage < _pageCount - 1
                                 ? 'Next'
                                 : 'Get Started',
                             style: AxiomTypography.labelLarge.copyWith(
-                              color: AxiomColors.bg0,
+                              color: cs.surface,
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                             ),
@@ -194,7 +196,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                           const SizedBox(width: 8),
                           Icon(
                             Icons.arrow_forward_rounded,
-                            color: AxiomColors.bg0,
+                            color: cs.surface,
                             size: 20,
                           ),
                         ],
@@ -203,14 +205,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                   ),
 
                   // Skip button
-                  if (_currentPage < _pages.length - 1) ...[
+                  if (_currentPage < _pageCount - 1) ...[
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () => context.go('/welcome'),
                       child: Text(
                         'Skip',
                         style: AxiomTypography.labelMedium.copyWith(
-                          color: AxiomColors.grey1,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -242,6 +244,7 @@ class OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         const Spacer(),
@@ -261,7 +264,7 @@ class OnboardingPage extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AxiomColors.bg2,
+                color: cs.surfaceContainer,
                 borderRadius: BorderRadius.circular(AxiomRadius.xl),
                 border: Border.all(color: accentColor.withAlpha(60), width: 1),
                 boxShadow: [
@@ -287,7 +290,7 @@ class OnboardingPage extends StatelessWidget {
             fontSize: 36,
             height: 1.1,
             fontWeight: FontWeight.w600,
-            color: AxiomColors.fg,
+            color: cs.onSurface,
           ),
         ),
 
@@ -302,7 +305,7 @@ class OnboardingPage extends StatelessWidget {
             style: AxiomTypography.bodyLarge.copyWith(
               fontSize: 16,
               height: 1.6,
-              color: AxiomColors.grey1,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ),

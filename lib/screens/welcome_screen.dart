@@ -112,8 +112,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AxiomColors.bg0,
+      backgroundColor: cs.surface,
       body: Stack(
         children: [
           // Subtle gradient background - warm Everforest glow
@@ -128,8 +129,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   center: Alignment.topCenter,
                   radius: 1.2,
                   colors: [
-                    AxiomColors.green.withAlpha(20),
-                    AxiomColors.aqua.withAlpha(8),
+                    cs.primary.withAlpha(20),
+                    cs.secondary.withAlpha(8),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.4, 1.0],
@@ -149,16 +150,16 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                       IconButton(
                         icon: Icon(
                           Icons.arrow_back_rounded,
-                          color: AxiomColors.grey1,
+                          color: cs.onSurfaceVariant,
                         ),
                         onPressed: () => context.go('/dashboard'),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Create Workspace',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AxiomColors.fg,
+                            color: cs.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
@@ -189,14 +190,14 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: AxiomColors.green.withAlpha(30),
+                                    color: cs.primary.withAlpha(30),
                                     borderRadius: BorderRadius.circular(
                                       AxiomRadius.md,
                                     ),
                                   ),
                                   child: Icon(
                                     Icons.add_rounded,
-                                    color: AxiomColors.green,
+                                    color: cs.primary,
                                     size: 24,
                                   ),
                                 ),
@@ -209,7 +210,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                                       Text(
                                         'Create From Scratch',
                                         style: TextStyle(
-                                          color: AxiomColors.fg,
+                                          color: cs.onSurface,
                                           fontSize: 17,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -218,7 +219,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                                       Text(
                                         'Start with a blank canvas',
                                         style: TextStyle(
-                                          color: AxiomColors.grey1,
+                                          color: cs.onSurfaceVariant,
                                           fontSize: 14,
                                         ),
                                       ),
@@ -227,7 +228,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                                 ),
                                 Icon(
                                   Icons.chevron_right_rounded,
-                                  color: AxiomColors.grey0,
+                                  color: cs.onSurfaceVariant,
                                 ),
                               ],
                             ),
@@ -240,7 +241,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                         Text(
                           'Templates',
                           style: AxiomTypography.heading3.copyWith(
-                            color: AxiomColors.fg,
+                            color: cs.onSurface,
                           ),
                         ),
 
@@ -269,7 +270,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                           child: Text(
                             'View Existing Workspaces',
                             style: TextStyle(
-                              color: AxiomColors.aqua,
+                              color: cs.secondary,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),
@@ -288,9 +289,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
           // Loading overlay
           if (_isLoading)
             Container(
-              color: AxiomColors.bg0.withAlpha(200),
+              color: cs.surface.withAlpha(200),
               child: Center(
-                child: CircularProgressIndicator(color: AxiomColors.green),
+                child: CircularProgressIndicator(color: cs.primary),
               ),
             ),
         ],
@@ -313,6 +314,7 @@ class _GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -320,18 +322,18 @@ class _GlassCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AxiomRadius.lg),
         child: Container(
           decoration: BoxDecoration(
-            color: AxiomColors.bg2,
+            color: cs.surfaceContainer,
             borderRadius: BorderRadius.circular(AxiomRadius.lg),
             border: Border.all(
               color: isHighlighted
-                  ? AxiomColors.green.withAlpha(40)
-                  : AxiomColors.outlineVariant,
+                  ? cs.primary.withAlpha(40)
+                  : cs.outlineVariant,
               width: 1,
             ),
             boxShadow: isHighlighted
                 ? [
                     BoxShadow(
-                      color: AxiomColors.green.withAlpha(15),
+                      color: cs.primary.withAlpha(15),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -353,6 +355,7 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return _GlassCard(
       onTap: onTap,
       child: Padding(
@@ -363,7 +366,7 @@ class _TemplateCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AxiomColors.bg3,
+                color: cs.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(AxiomRadius.md),
               ),
               child: Center(
@@ -381,7 +384,7 @@ class _TemplateCard extends StatelessWidget {
                   Text(
                     template.name,
                     style: TextStyle(
-                      color: AxiomColors.fg,
+                      color: cs.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                     ),
@@ -389,7 +392,7 @@ class _TemplateCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     template.description,
-                    style: TextStyle(color: AxiomColors.grey1, fontSize: 13),
+                    style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -398,7 +401,7 @@ class _TemplateCard extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: AxiomColors.grey0,
+              color: cs.onSurfaceVariant,
               size: 20,
             ),
           ],
@@ -432,8 +435,9 @@ class _CreateWorkspaceDialogState extends State<_CreateWorkspaceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AlertDialog(
-      backgroundColor: AxiomColors.surfaceContainerHigh,
+      backgroundColor: cs.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AxiomRadius.xxl),
       ),
@@ -441,17 +445,17 @@ class _CreateWorkspaceDialogState extends State<_CreateWorkspaceDialog> {
         widget.templateName != null
             ? 'Name your ${widget.templateName} workspace'
             : 'Name your workspace',
-        style: TextStyle(color: AxiomColors.fg),
+        style: TextStyle(color: cs.onSurface),
       ),
       content: TextField(
         controller: _controller,
         autofocus: true,
-        style: TextStyle(color: AxiomColors.fg),
+        style: TextStyle(color: cs.onSurface),
         decoration: InputDecoration(
           hintText: 'My Workspace',
-          hintStyle: TextStyle(color: AxiomColors.grey0),
+          hintStyle: TextStyle(color: cs.onSurfaceVariant),
           filled: true,
-          fillColor: AxiomColors.surfaceContainerHighest,
+          fillColor: cs.surfaceContainerHighest,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AxiomRadius.md),
             borderSide: BorderSide.none,
@@ -462,7 +466,7 @@ class _CreateWorkspaceDialogState extends State<_CreateWorkspaceDialog> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AxiomRadius.md),
-            borderSide: BorderSide(color: AxiomColors.primary, width: 2),
+            borderSide: BorderSide(color: cs.primary, width: 2),
           ),
         ),
         onSubmitted: (value) {
@@ -475,7 +479,7 @@ class _CreateWorkspaceDialogState extends State<_CreateWorkspaceDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel', style: TextStyle(color: AxiomColors.grey1)),
+          child: Text('Cancel', style: TextStyle(color: cs.onSurfaceVariant)),
         ),
         FilledButton(
           onPressed: () {
@@ -486,8 +490,8 @@ class _CreateWorkspaceDialogState extends State<_CreateWorkspaceDialog> {
             }
           },
           style: FilledButton.styleFrom(
-            backgroundColor: AxiomColors.green,
-            foregroundColor: AxiomColors.bg0,
+            backgroundColor: cs.primary,
+            foregroundColor: cs.surface,
           ),
           child: const Text('Create'),
         ),

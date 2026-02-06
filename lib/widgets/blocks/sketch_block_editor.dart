@@ -84,10 +84,11 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final toolState = ref.watch(sketchToolsProvider);
 
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: AxiomColors.green));
+      return Center(child: CircularProgressIndicator(color: cs.primary));
     }
 
     return Column(
@@ -99,14 +100,14 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             vertical: AxiomSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: AxiomColors.bg2,
+            color: cs.surfaceContainer,
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(AxiomRadius.md),
             ),
           ),
           child: Row(
             children: [
-              Icon(Icons.drag_handle, size: 20, color: AxiomColors.grey1),
+              Icon(Icons.drag_handle, size: 20, color: cs.onSurfaceVariant),
               SizedBox(width: AxiomSpacing.sm),
               Container(
                 padding: EdgeInsets.symmetric(
@@ -152,7 +153,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                     Text(
                       '${toolState.brushSize.toStringAsFixed(1)}px',
                       style: AxiomTypography.labelSmall.copyWith(
-                        color: AxiomColors.fg,
+                        color: cs.onSurface,
                       ),
                     ),
                   ],
@@ -163,7 +164,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                 icon: Icon(
                   Icons.undo,
                   size: 20,
-                  color: _strokes.isEmpty ? AxiomColors.grey2 : AxiomColors.fg,
+                  color: _strokes.isEmpty ? cs.outlineVariant : cs.onSurface,
                 ),
                 onPressed: _strokes.isEmpty ? null : _undo,
                 padding: EdgeInsets.zero,
@@ -174,7 +175,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                 icon: Icon(
                   Icons.delete_outline,
                   size: 20,
-                  color: AxiomColors.red,
+                  color: cs.error,
                 ),
                 onPressed: widget.onDelete,
                 padding: EdgeInsets.zero,
@@ -187,7 +188,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
         // Canvas - Everforest bg5 (lightest) for drawing area
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: AxiomColors.outlineVariant),
+            border: Border.all(color: cs.outlineVariant),
             borderRadius: BorderRadius.vertical(
               bottom: Radius.circular(AxiomRadius.md),
             ),
@@ -283,7 +284,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             vertical: AxiomSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: AxiomColors.bg1,
+            color: cs.surfaceContainerLow,
             borderRadius: BorderRadius.vertical(
               bottom: Radius.circular(AxiomRadius.md),
             ),
@@ -294,7 +295,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               Text(
                 '${_strokes.length} stroke${_strokes.length != 1 ? 's' : ''}',
                 style: AxiomTypography.labelSmall.copyWith(
-                  color: AxiomColors.grey1,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
               TextButton.icon(
@@ -302,14 +303,14 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                 icon: Icon(
                   Icons.clear,
                   size: 18,
-                  color: _strokes.isEmpty ? AxiomColors.grey2 : AxiomColors.red,
+                  color: _strokes.isEmpty ? cs.outlineVariant : cs.error,
                 ),
                 label: Text(
                   'Clear',
                   style: TextStyle(
                     color: _strokes.isEmpty
-                        ? AxiomColors.grey2
-                        : AxiomColors.red,
+                        ? cs.outlineVariant
+                        : cs.error,
                   ),
                 ),
               ),
@@ -359,8 +360,9 @@ class _SketchBlockDisplayState extends State<SketchBlockDisplay> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: AxiomColors.green));
+      return Center(child: CircularProgressIndicator(color: cs.primary));
     }
 
     return GestureDetector(
@@ -368,14 +370,14 @@ class _SketchBlockDisplayState extends State<SketchBlockDisplay> {
       child: Container(
         height: 200,
         decoration: BoxDecoration(
-          border: Border.all(color: AxiomColors.outlineVariant),
+          border: Border.all(color: cs.outlineVariant),
           borderRadius: BorderRadius.circular(AxiomRadius.sm),
         ),
         child: CustomPaint(
           painter: _SketchCanvasPainter(
             strokes: _strokes,
             currentStroke: [],
-            currentColor: AxiomColors.fg,
+            currentColor: cs.onSurface,
             currentWidth: 2.0,
             currentTool: SketchTool.pen,
           ),
