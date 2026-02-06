@@ -83,7 +83,7 @@ class AxiomApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AxiomTheme.lightTheme,
       darkTheme: AxiomTheme.darkTheme,
-      themeMode: ThemeMode.dark, // Default to dark theme as per Stitch designs
+      themeMode: ThemeMode.light, // Everforest Light as primary theme
       routerConfig: router,
     );
   }

@@ -1,270 +1,213 @@
-/// Design tokens extracted from Stitch UI designs
-/// These tokens define the visual language of AXIOM
+/// Design tokens for AXIOM — Everforest Light + Material 3
 ///
-/// Color system based on Everforest dark palette mapped to Material 3 roles.
-/// Everforest is a warm, nature-inspired theme with soft contrast.
+/// A warm, nature-inspired design system with soft contrast,
+/// rounded shapes, and generous spacing for a premium, inviting feel.
+///
+/// Typography: Inter (UI) + JetBrains Mono (code)
+/// Colors: Everforest light palette mapped to M3 roles
 library;
 
 import 'package:flutter/material.dart';
 
-/// Everforest-inspired color palette mapped to Material 3 color roles.
-///
-/// Design principles:
-/// - Warm, olive/green-tinted dark surfaces (no pure black)
-/// - Muted, natural accent colors (no neon)
-/// - Soft contrast for reduced eye strain
+// ════════════════════════════════════════════════════════════════════
+// COLORS
+// ════════════════════════════════════════════════════════════════════
+
+/// Everforest Light color palette — warm, nature-inspired.
 class AxiomColors {
   AxiomColors._();
 
-  // ============================================================
-  // EVERFOREST BASE PALETTE
-  // ============================================================
-
-  // Background layers (darkest to lightest)
-  static const Color bg0 = Color(0xFF232A2E); // Deepest background
-  static const Color bg1 = Color(0xFF2D353B); // Primary background
-  static const Color bg2 = Color(0xFF343F44); // Elevated surfaces
-  static const Color bg3 = Color(0xFF3D484D); // Cards, dialogs
-  static const Color bg4 = Color(0xFF475258); // Hover states
-  static const Color bg5 = Color(0xFF4F585E); // Active states
+  // ── EVERFOREST LIGHT BASE ──
+  static const Color bg0 = Color(0xFFFDF6E3); // Warm parchment — screen bg
+  static const Color bg1 = Color(0xFFF4F0D9); // Slightly deeper — cards
+  static const Color bg2 = Color(0xFFEFEBD4); // Elevated surfaces
+  static const Color bg3 = Color(0xFFE6E2CC); // Input fields, hover
+  static const Color bg4 = Color(0xFFDDD8C0); // Active states, pressed
+  static const Color bg5 = Color(0xFFD3CEB4); // Strong emphasis bg
 
   // Foreground / Text
-  static const Color fg = Color(0xFFD3C6AA); // Primary text (warm cream)
-  static const Color grey0 = Color(0xFF7A8478); // Muted text
-  static const Color grey1 = Color(0xFF859289); // Secondary text
-  static const Color grey2 = Color(0xFF9DA9A0); // Tertiary text
+  static const Color fg = Color(0xFF5C6A72);   // Primary text
+  static const Color grey0 = Color(0xFF829181); // Secondary text
+  static const Color grey1 = Color(0xFF999F93); // Tertiary / muted
+  static const Color grey2 = Color(0xFFB0B6AA); // Placeholder / disabled
 
-  // Accent colors (muted, natural)
-  static const Color red = Color(0xFFE67E80); // Errors, destructive
-  static const Color orange = Color(0xFFE69875); // Warnings
-  static const Color yellow = Color(0xFFDBBC7F); // Highlights
-  static const Color green = Color(0xFFA7C080); // Success, primary accent
-  static const Color aqua = Color(0xFF83C092); // Secondary accent
-  static const Color blue = Color(0xFF7FBBB3); // Info, links
-  static const Color purple = Color(0xFFD699B6); // Special, tertiary accent
+  // Accent colors
+  static const Color red = Color(0xFFE66868);
+  static const Color orange = Color(0xFFE69C50);
+  static const Color yellow = Color(0xFFDDA93F);
+  static const Color green = Color(0xFF8DA101);
+  static const Color aqua = Color(0xFF35A77C);
+  static const Color blue = Color(0xFF3A94C5);
+  static const Color purple = Color(0xFFDF69BA);
 
-  // ============================================================
-  // MATERIAL 3 SEMANTIC ROLES (mapped from Everforest)
-  // ============================================================
+  // ── MATERIAL 3 SEMANTIC ROLES ──
+  static const Color primary = Color(0xFF708238);
+  static const Color onPrimary = Color(0xFFFFFFFF);
+  static const Color primaryContainer = Color(0xFFE8F0C8);
+  static const Color onPrimaryContainer = Color(0xFF3B4A14);
 
-  // Primary (using Everforest green as main brand color)
-  static const Color primary = Color(0xFFA7C080);
-  static const Color onPrimary = Color(0xFF232A2E);
-  static const Color primaryContainer = Color(0xFF3D5A3D);
-  static const Color onPrimaryContainer = Color(0xFFD3E8C0);
+  static const Color secondary = Color(0xFF35A77C);
+  static const Color onSecondary = Color(0xFFFFFFFF);
+  static const Color secondaryContainer = Color(0xFFCCEEDF);
+  static const Color onSecondaryContainer = Color(0xFF1A5A40);
 
-  // Secondary (using Everforest aqua)
-  static const Color secondary = Color(0xFF83C092);
-  static const Color onSecondary = Color(0xFF232A2E);
-  static const Color secondaryContainer = Color(0xFF3A5245);
-  static const Color onSecondaryContainer = Color(0xFFC8E6CF);
+  static const Color tertiary = Color(0xFF3A94C5);
+  static const Color onTertiary = Color(0xFFFFFFFF);
+  static const Color tertiaryContainer = Color(0xFFCCE5F5);
+  static const Color onTertiaryContainer = Color(0xFF1A4A65);
 
-  // Tertiary (using Everforest blue)
-  static const Color tertiary = Color(0xFF7FBBB3);
-  static const Color onTertiary = Color(0xFF232A2E);
-  static const Color tertiaryContainer = Color(0xFF3A5250);
-  static const Color onTertiaryContainer = Color(0xFFC0E0DC);
+  static const Color surface = Color(0xFFFDF6E3);
+  static const Color onSurface = Color(0xFF5C6A72);
+  static const Color surfaceVariant = Color(0xFFEFEBD4);
+  static const Color onSurfaceVariant = Color(0xFF829181);
+  static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
+  static const Color surfaceContainerLow = Color(0xFFFAF4DE);
+  static const Color surfaceContainer = Color(0xFFF4F0D9);
+  static const Color surfaceContainerHigh = Color(0xFFEFEBD4);
+  static const Color surfaceContainerHighest = Color(0xFFE6E2CC);
 
-  // Surface colors
-  static const Color surface = Color(0xFF2D353B);
-  static const Color onSurface = Color(0xFFD3C6AA);
-  static const Color surfaceVariant = Color(0xFF3D484D);
-  static const Color onSurfaceVariant = Color(0xFF9DA9A0);
-  static const Color surfaceContainerLowest = Color(0xFF232A2E);
-  static const Color surfaceContainerLow = Color(0xFF2D353B);
-  static const Color surfaceContainer = Color(0xFF343F44);
-  static const Color surfaceContainerHigh = Color(0xFF3D484D);
-  static const Color surfaceContainerHighest = Color(0xFF475258);
+  static const Color outline = Color(0xFFBFC5B3);
+  static const Color outlineVariant = Color(0xFFD8D5C4);
 
-  // Outline
-  static const Color outline = Color(0xFF5C6A5E);
-  static const Color outlineVariant = Color(0xFF475258);
+  static const Color error = Color(0xFFE66868);
+  static const Color onError = Color(0xFFFFFFFF);
+  static const Color errorContainer = Color(0xFFFCE4E4);
+  static const Color onErrorContainer = Color(0xFF8B2020);
 
-  // Error
-  static const Color error = Color(0xFFE67E80);
-  static const Color onError = Color(0xFF232A2E);
-  static const Color errorContainer = Color(0xFF5C3A3B);
-  static const Color onErrorContainer = Color(0xFFF5C8C8);
+  static const Color inverseSurface = Color(0xFF3D484D);
+  static const Color inverseOnSurface = Color(0xFFF4F0D9);
+  static const Color inversePrimary = Color(0xFFA7C080);
 
-  // Inverse
-  static const Color inverseSurface = Color(0xFFD3C6AA);
-  static const Color inverseOnSurface = Color(0xFF2D353B);
-  static const Color inversePrimary = Color(0xFF5A7052);
+  // ── DARK THEME (Everforest Dark) ──
+  static const Color darkBg0 = Color(0xFF272E33);
+  static const Color darkBg1 = Color(0xFF2E383C);
+  static const Color darkBg2 = Color(0xFF374145);
+  static const Color darkBg3 = Color(0xFF414B50);
+  static const Color darkBg4 = Color(0xFF495156);
+  static const Color darkFg = Color(0xFFD3C6AA);
+  static const Color darkGrey0 = Color(0xFF7A8478);
+  static const Color darkGrey1 = Color(0xFF859289);
+  static const Color darkGreen = Color(0xFFA7C080);
+  static const Color darkAqua = Color(0xFF83C092);
+  static const Color darkBlue = Color(0xFF7FBBB3);
+  static const Color darkRed = Color(0xFFE67E80);
+  static const Color darkOrange = Color(0xFFE69875);
+  static const Color darkYellow = Color(0xFFDBBC7F);
+  static const Color darkPurple = Color(0xFFD699B6);
 
-  // ============================================================
-  // LEGACY ALIASES (for backward compatibility)
-  // ============================================================
-
-  // Primary Colors (legacy)
-  static const Color primaryLight = aqua;
-  static const Color primaryCanvas = blue;
-
-  // Background Colors (legacy)
-  static const Color backgroundLight = Color(0xFFF2F5F0); // Warm light bg
-  static const Color backgroundDark = bg0;
-  static const Color backgroundDarkAlt = bg1;
-
-  // Surface Colors (legacy)
-  static const Color surfaceDark = bg2;
-  static const Color surfaceDarkAlt = bg3;
-  static const Color surfaceCanvas = bg1;
-
-  // Border Colors (legacy)
-  static const Color borderDark = outlineVariant;
-
-  // Text Colors (legacy)
-  static const Color textMuted = grey1;
-  static const Color textSecondary = grey0;
-
-  // Canvas Grid
-  static const Color gridDot = Color(0xFF3D484D);
-
-  // Accent Colors (legacy)
-  static const Color accentTeal = aqua;
-
-  // Status Colors (using Everforest accents)
+  // ── ALIASES ──
   static const Color success = green;
   static const Color warning = orange;
   static const Color info = blue;
+  static const Color gridDot = Color(0xFFD8D5C4);
+  static const Color surfaceDark = bg2;
+  static const Color borderDark = outlineVariant;
+  static const Color textMuted = grey1;
+  static const Color textSecondary = grey0;
+  static const Color accentTeal = aqua;
+  static const Color primaryLight = aqua;
+  static const Color primaryCanvas = blue;
+  static const Color backgroundLight = bg0;
+  static const Color backgroundDark = darkBg0;
+  static const Color backgroundDarkAlt = darkBg1;
+  static const Color surfaceDarkAlt = darkBg3;
+  static const Color surfaceCanvas = bg1;
 }
 
-/// Typography tokens from Stitch designs
+// ════════════════════════════════════════════════════════════════════
+// TYPOGRAPHY
+// ════════════════════════════════════════════════════════════════════
+
 class AxiomTypography {
   AxiomTypography._();
 
-  // Font Families
-  // NOTE: Update these to actual font names once fonts are added to assets
-  // For now using system fonts that fallback gracefully
-  static const String fontDisplay = 'Roboto';
-  static const String fontBody = 'Roboto';
+  static const String fontDisplay = 'Inter';
+  static const String fontBody = 'Inter';
+  static const String fontCode = 'JetBrains Mono';
 
-  // Font Weights
   static const FontWeight light = FontWeight.w300;
   static const FontWeight regular = FontWeight.w400;
   static const FontWeight medium = FontWeight.w500;
   static const FontWeight semiBold = FontWeight.w600;
   static const FontWeight bold = FontWeight.w700;
 
-  // Display Text (Hero sections)
+  // Display
   static const TextStyle display = TextStyle(
-    fontFamily: fontDisplay,
-    fontSize: 48,
-    fontWeight: bold,
-    height: 1.1,
-    letterSpacing: -0.5,
+    fontFamily: fontDisplay, fontSize: 44, fontWeight: bold,
+    height: 1.12, letterSpacing: -0.5,
   );
-
   static const TextStyle displayMedium = TextStyle(
-    fontFamily: fontDisplay,
-    fontSize: 32,
-    fontWeight: bold,
-    height: 1.1,
-    letterSpacing: -0.25,
+    fontFamily: fontDisplay, fontSize: 32, fontWeight: bold,
+    height: 1.15, letterSpacing: -0.25,
   );
-
   static const TextStyle displaySmall = TextStyle(
-    fontFamily: fontDisplay,
-    fontSize: 28,
-    fontWeight: bold,
-    height: 1.2,
-    letterSpacing: -0.25,
+    fontFamily: fontDisplay, fontSize: 26, fontWeight: semiBold,
+    height: 1.2, letterSpacing: -0.15,
   );
 
   // Headings
   static const TextStyle heading1 = TextStyle(
-    fontFamily: fontDisplay,
-    fontSize: 24,
-    fontWeight: semiBold,
-    height: 1.3,
-    letterSpacing: -0.25,
+    fontFamily: fontDisplay, fontSize: 22, fontWeight: semiBold,
+    height: 1.3, letterSpacing: -0.2,
   );
-
   static const TextStyle heading2 = TextStyle(
-    fontFamily: fontDisplay,
-    fontSize: 20,
-    fontWeight: semiBold,
-    height: 1.3,
-    letterSpacing: 0,
+    fontFamily: fontDisplay, fontSize: 18, fontWeight: semiBold,
+    height: 1.35, letterSpacing: -0.1,
   );
-
   static const TextStyle heading3 = TextStyle(
-    fontFamily: fontDisplay,
-    fontSize: 18,
-    fontWeight: semiBold,
-    height: 1.4,
-    letterSpacing: 0,
+    fontFamily: fontDisplay, fontSize: 16, fontWeight: semiBold,
+    height: 1.4, letterSpacing: 0,
   );
 
-  // Alias styles for common use
-  static const TextStyle h1 = display;
-  static const TextStyle h3 = heading3;
-  static const TextStyle button = labelLarge;
-  static const TextStyle body1 = bodyLarge;
-
-  // Body Text
+  // Body
   static const TextStyle bodyLarge = TextStyle(
-    fontFamily: fontBody,
-    fontSize: 17,
-    fontWeight: regular,
-    height: 1.5,
-    letterSpacing: 0,
+    fontFamily: fontBody, fontSize: 16, fontWeight: regular,
+    height: 1.55, letterSpacing: 0.1,
   );
-
   static const TextStyle bodyMedium = TextStyle(
-    fontFamily: fontBody,
-    fontSize: 15,
-    fontWeight: regular,
-    height: 1.5,
-    letterSpacing: 0,
+    fontFamily: fontBody, fontSize: 14, fontWeight: regular,
+    height: 1.5, letterSpacing: 0.15,
   );
-
   static const TextStyle bodySmall = TextStyle(
-    fontFamily: fontBody,
-    fontSize: 14,
-    fontWeight: regular,
-    height: 1.5,
-    letterSpacing: 0,
+    fontFamily: fontBody, fontSize: 12, fontWeight: regular,
+    height: 1.5, letterSpacing: 0.2,
   );
 
   // Labels
   static const TextStyle labelLarge = TextStyle(
-    fontFamily: fontBody,
-    fontSize: 14,
-    fontWeight: medium,
-    height: 1.4,
-    letterSpacing: 0.1,
+    fontFamily: fontBody, fontSize: 14, fontWeight: medium,
+    height: 1.4, letterSpacing: 0.1,
   );
-
   static const TextStyle labelMedium = TextStyle(
-    fontFamily: fontBody,
-    fontSize: 12,
-    fontWeight: medium,
-    height: 1.4,
-    letterSpacing: 0.5,
+    fontFamily: fontBody, fontSize: 12, fontWeight: medium,
+    height: 1.4, letterSpacing: 0.3,
   );
-
   static const TextStyle labelSmall = TextStyle(
-    fontFamily: fontBody,
-    fontSize: 11,
-    fontWeight: medium,
-    height: 1.4,
-    letterSpacing: 0.5,
+    fontFamily: fontBody, fontSize: 11, fontWeight: medium,
+    height: 1.4, letterSpacing: 0.3,
   );
 
-  // Monospace (for code and technical text)
+  // Code
   static const TextStyle code = TextStyle(
-    fontFamily: 'monospace',
-    fontSize: 14,
-    fontWeight: regular,
-    height: 1.5,
-    letterSpacing: 0,
+    fontFamily: fontCode, fontSize: 13, fontWeight: regular,
+    height: 1.6, letterSpacing: 0,
   );
+
+  // Aliases
+  static const TextStyle h1 = display;
+  static const TextStyle h3 = heading3;
+  static const TextStyle button = labelLarge;
+  static const TextStyle body1 = bodyLarge;
 }
 
-/// Spacing tokens from Stitch designs
+// ════════════════════════════════════════════════════════════════════
+// SPACING
+// ════════════════════════════════════════════════════════════════════
+
 class AxiomSpacing {
   AxiomSpacing._();
 
+  static const double xxs = 2.0;
   static const double xs = 4.0;
   static const double sm = 8.0;
   static const double md = 16.0;
@@ -274,120 +217,103 @@ class AxiomSpacing {
   static const double xxxl = 64.0;
 }
 
-/// Border radius tokens from Stitch designs
+// ════════════════════════════════════════════════════════════════════
+// BORDER RADIUS — rounded and friendly
+// ════════════════════════════════════════════════════════════════════
+
 class AxiomRadius {
   AxiomRadius._();
 
-  static const double sm = 8.0;
-  static const double md = 12.0;
-  static const double lg = 16.0;
-  static const double large = 16.0; // Alias for lg
+  static const double xs = 6.0;
+  static const double sm = 10.0;
+  static const double md = 14.0;
+  static const double lg = 18.0;
+  static const double large = 18.0;
   static const double xl = 24.0;
-  static const double xxl = 28.0;
+  static const double xxl = 30.0;
   static const double full = 9999.0;
 }
 
-/// Elevation (shadow) tokens from Stitch designs
+// ════════════════════════════════════════════════════════════════════
+// ELEVATION — soft warm shadows
+// ════════════════════════════════════════════════════════════════════
+
 class AxiomElevation {
   AxiomElevation._();
 
-  // Material Design 3 elevation levels
   static const List<BoxShadow> level1 = [
-    BoxShadow(
-      color: Color(0x26000000), // 15% opacity
-      offset: Offset(0, 1),
-      blurRadius: 3,
-      spreadRadius: 1,
-    ),
-    BoxShadow(
-      color: Color(0x4D000000), // 30% opacity
-      offset: Offset(0, 1),
-      blurRadius: 2,
-      spreadRadius: 0,
-    ),
+    BoxShadow(color: Color(0x0F5C6A72), offset: Offset(0, 1), blurRadius: 3),
+    BoxShadow(color: Color(0x0A5C6A72), offset: Offset(0, 1), blurRadius: 2),
   ];
-
+  static const List<BoxShadow> level2 = [
+    BoxShadow(color: Color(0x145C6A72), offset: Offset(0, 2), blurRadius: 6),
+    BoxShadow(color: Color(0x0A5C6A72), offset: Offset(0, 1), blurRadius: 3),
+  ];
   static const List<BoxShadow> level3 = [
-    BoxShadow(
-      color: Color(0x26000000), // 15% opacity
-      offset: Offset(0, 4),
-      blurRadius: 8,
-      spreadRadius: 3,
-    ),
-    BoxShadow(
-      color: Color(0x4D000000), // 30% opacity
-      offset: Offset(0, 1),
-      blurRadius: 3,
-      spreadRadius: 0,
-    ),
+    BoxShadow(color: Color(0x1A5C6A72), offset: Offset(0, 4), blurRadius: 12),
+    BoxShadow(color: Color(0x0A5C6A72), offset: Offset(0, 2), blurRadius: 4),
   ];
-
-  // Glow effect for primary elements
   static const List<BoxShadow> glow = [
-    BoxShadow(
-      color: Color(0x4D1A4751), // Primary color with 30% opacity
-      offset: Offset(0, 0),
-      blurRadius: 20,
-      spreadRadius: -5,
-    ),
+    BoxShadow(color: Color(0x30708238), blurRadius: 16, spreadRadius: -2),
   ];
-
-  // Card shadow
-  static const List<BoxShadow> card = [
-    BoxShadow(
-      color: Color(0x4D000000), // 30% opacity
-      offset: Offset(0, 4),
-      blurRadius: 6,
-      spreadRadius: -1,
-    ),
-    BoxShadow(
-      color: Color(0x26000000), // 15% opacity
-      offset: Offset(0, 2),
-      blurRadius: 4,
-      spreadRadius: -1,
-    ),
-  ];
+  static const List<BoxShadow> card = level1;
 }
 
-/// Animation duration tokens
+// ════════════════════════════════════════════════════════════════════
+// ANIMATION
+// ════════════════════════════════════════════════════════════════════
+
 class AxiomDurations {
   AxiomDurations._();
 
-  static const Duration fast = Duration(milliseconds: 150);
-  static const Duration normal = Duration(milliseconds: 250);
-  static const Duration slow = Duration(milliseconds: 400);
+  static const Duration fast = Duration(milliseconds: 120);
+  static const Duration normal = Duration(milliseconds: 200);
+  static const Duration slow = Duration(milliseconds: 350);
   static const Duration splash = Duration(milliseconds: 2000);
 }
 
-/// Responsive breakpoints for adaptive layouts
+class AxiomCurves {
+  AxiomCurves._();
+  static const Curve standard = Curves.easeInOutCubic;
+  static const Curve enter = Curves.easeOutCubic;
+  static const Curve exit = Curves.easeInCubic;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// RESPONSIVE BREAKPOINTS
+// ════════════════════════════════════════════════════════════════════
+
 class AxiomBreakpoints {
   AxiomBreakpoints._();
 
-  /// Mobile screens (phones in portrait) - max width
   static const double mobile = 600.0;
-
-  /// Tablet screens - max width
   static const double tablet = 1200.0;
-
-  /// Desktop screens - max width
   static const double desktop = 1800.0;
 
-  /// Check if screen is mobile
   static bool isMobile(BuildContext context) =>
       MediaQuery.sizeOf(context).width < mobile;
 
-  /// Check if screen is tablet
   static bool isTablet(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     return width >= mobile && width < tablet;
   }
 
-  /// Check if screen is desktop
   static bool isDesktop(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= tablet;
+
+  static EdgeInsets screenPadding(BuildContext context) {
+    if (isDesktop(context)) {
+      return const EdgeInsets.symmetric(
+          horizontal: AxiomSpacing.xxl, vertical: AxiomSpacing.lg);
+    }
+    if (isTablet(context)) {
+      return const EdgeInsets.symmetric(
+          horizontal: AxiomSpacing.lg, vertical: AxiomSpacing.md);
+    }
+    return const EdgeInsets.all(AxiomSpacing.md);
+  }
 }
 
-/// Responsive builder widget for adaptive layouts
 class AxiomResponsive extends StatelessWidget {
   const AxiomResponsive({
     super.key,
@@ -396,13 +322,8 @@ class AxiomResponsive extends StatelessWidget {
     this.desktop,
   });
 
-  /// Widget to show on mobile (<600px)
   final Widget mobile;
-
-  /// Widget to show on tablet (600px - 1200px), defaults to mobile
   final Widget? tablet;
-
-  /// Widget to show on desktop (>1200px), defaults to tablet or mobile
   final Widget? desktop;
 
   @override
