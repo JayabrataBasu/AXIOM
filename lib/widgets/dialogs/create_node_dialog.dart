@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../constants/spacing.dart';
-import '../../theme/design_tokens.dart';
 import '../../models/node_template.dart';
 
 /// Dialog for creating a new node with a name and template.

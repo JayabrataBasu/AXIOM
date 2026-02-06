@@ -92,7 +92,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         children: [
           // Subtle grid background
           Positioned.fill(
-            child: CustomPaint(painter: _GridBackgroundPainter(gridColor: cs.surfaceContainerHigh)),
+            child: CustomPaint(
+              painter: _GridBackgroundPainter(
+                gridColor: cs.surfaceContainerHigh,
+              ),
+            ),
           ),
 
           // Warm ambient glow from top - Everforest green tint

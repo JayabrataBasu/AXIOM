@@ -23,7 +23,12 @@ import '../../theme/design_tokens.dart';
 
 /// Enum representing the available block types for the add block menu.
 enum BlockType {
-  text(Icons.text_fields_rounded, 'Text', 'Plain text content', BlockCategory.text),
+  text(
+    Icons.text_fields_rounded,
+    'Text',
+    'Plain text content',
+    BlockCategory.text,
+  ),
   heading(Icons.title_rounded, 'Heading', 'Section header', BlockCategory.text),
   bulletList(
     Icons.format_list_bulleted_rounded,
@@ -31,10 +36,25 @@ enum BlockType {
     'Unordered list',
     BlockCategory.text,
   ),
-  quote(Icons.format_quote_rounded, 'Quote', 'Citation or callout', BlockCategory.text),
+  quote(
+    Icons.format_quote_rounded,
+    'Quote',
+    'Citation or callout',
+    BlockCategory.text,
+  ),
   code(Icons.code_rounded, 'Code', 'Code snippet', BlockCategory.technical),
-  math(Icons.functions_rounded, 'Math', 'LaTeX expression', BlockCategory.technical),
-  sketch(Icons.gesture_rounded, 'Sketch', 'Freehand drawing', BlockCategory.media),
+  math(
+    Icons.functions_rounded,
+    'Math',
+    'LaTeX expression',
+    BlockCategory.technical,
+  ),
+  sketch(
+    Icons.gesture_rounded,
+    'Sketch',
+    'Freehand drawing',
+    BlockCategory.media,
+  ),
   audio(Icons.mic_rounded, 'Audio', 'Voice recording', BlockCategory.media),
   workspaceRef(
     Icons.widgets_rounded,
@@ -94,7 +114,10 @@ class _BlockTypeSelectorSheet extends StatelessWidget {
           // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(
-              AxiomSpacing.lg, AxiomSpacing.md, AxiomSpacing.md, 0,
+              AxiomSpacing.lg,
+              AxiomSpacing.md,
+              AxiomSpacing.md,
+              0,
             ),
             child: Row(
               children: [
@@ -113,9 +136,7 @@ class _BlockTypeSelectorSheet extends StatelessWidget {
                 const SizedBox(width: AxiomSpacing.sm),
                 Text(
                   'Add Block',
-                  style: AxiomTypography.heading2.copyWith(
-                    color: cs.onSurface,
-                  ),
+                  style: AxiomTypography.heading2.copyWith(color: cs.onSurface),
                 ),
                 const Spacer(),
                 IconButton(
@@ -423,7 +444,8 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
                 const Spacer(),
                 // Delete button
                 Tooltip(
-                  message: 'Delete this ${widget.blockType.toLowerCase()} block',
+                  message:
+                      'Delete this ${widget.blockType.toLowerCase()} block',
                   child: IconButton(
                     icon: Icon(
                       Icons.delete_outline_rounded,
@@ -433,7 +455,8 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
                     onPressed: () => _confirmDelete(context),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
-                      minWidth: 32, minHeight: 32,
+                      minWidth: 32,
+                      minHeight: 32,
                     ),
                     style: IconButton.styleFrom(
                       shape: RoundedRectangleBorder(
@@ -865,7 +888,8 @@ class _BulletListBlockEditorState extends State<BulletListBlockEditor> {
                                 onPressed: () => _removeItem(index),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(
-                                  minWidth: 28, minHeight: 28,
+                                  minWidth: 28,
+                                  minHeight: 28,
                                 ),
                               )
                             : null,
@@ -918,22 +942,6 @@ class CodeBlockEditor extends StatefulWidget {
 
 class _CodeBlockEditorState extends State<CodeBlockEditor> {
   late CodeController _codeController;
-
-  static const _commonLanguages = [
-    '',
-    'dart',
-    'python',
-    'javascript',
-    'typescript',
-    'java',
-    'cpp',
-    'rust',
-    'go',
-    'sql',
-    'json',
-    'yaml',
-    'bash',
-  ];
 
   @override
   void initState() {
@@ -1057,7 +1065,11 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
                 final lineCount = text.isEmpty ? 0 : text.split('\n').length;
                 return Row(
                   children: [
-                    Icon(Icons.segment_rounded, size: 12, color: cs.onSurfaceVariant.withAlpha(120)),
+                    Icon(
+                      Icons.segment_rounded,
+                      size: 12,
+                      color: cs.onSurfaceVariant.withAlpha(120),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '$lineCount lines',
@@ -1066,7 +1078,11 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
                       ),
                     ),
                     const SizedBox(width: AxiomSpacing.md),
-                    Icon(Icons.abc_rounded, size: 12, color: cs.onSurfaceVariant.withAlpha(120)),
+                    Icon(
+                      Icons.abc_rounded,
+                      size: 12,
+                      color: cs.onSurfaceVariant.withAlpha(120),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${text.length} chars',
@@ -1114,8 +1130,19 @@ class _LanguageDropdown extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   static const _languages = [
-    '', 'dart', 'python', 'javascript', 'typescript',
-    'java', 'cpp', 'rust', 'go', 'sql', 'json', 'yaml', 'bash',
+    '',
+    'dart',
+    'python',
+    'javascript',
+    'typescript',
+    'java',
+    'cpp',
+    'rust',
+    'go',
+    'sql',
+    'json',
+    'yaml',
+    'bash',
   ];
 
   @override
@@ -1206,9 +1233,7 @@ class _QuoteBlockEditorState extends State<QuoteBlockEditor> {
       onDelete: widget.onDelete,
       child: Container(
         decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(color: cs.secondary, width: 3),
-          ),
+          border: Border(left: BorderSide(color: cs.secondary, width: 3)),
         ),
         padding: const EdgeInsets.only(left: AxiomSpacing.md),
         child: Column(

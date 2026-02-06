@@ -62,7 +62,9 @@ class _MathBlockEditorState extends State<MathBlockEditor> {
           },
           decoration: InputDecoration(
             hintText: r'Enter LaTeX (e.g., \int_0^1 x^2 dx)',
-            hintStyle: AxiomTypography.code.copyWith(color: cs.onSurfaceVariant),
+            hintStyle: AxiomTypography.code.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
             filled: true,
             fillColor: cs.surface,
             border: OutlineInputBorder(

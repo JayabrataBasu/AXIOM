@@ -172,11 +172,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                 tooltip: 'Undo last stroke',
               ),
               IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
-                  size: 20,
-                  color: cs.error,
-                ),
+                icon: Icon(Icons.delete_outline, size: 20, color: cs.error),
                 onPressed: widget.onDelete,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -308,9 +304,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                 label: Text(
                   'Clear',
                   style: TextStyle(
-                    color: _strokes.isEmpty
-                        ? cs.outlineVariant
-                        : cs.error,
+                    color: _strokes.isEmpty ? cs.outlineVariant : cs.error,
                   ),
                 ),
               ),
