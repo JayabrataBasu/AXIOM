@@ -55,7 +55,7 @@ class _MatrixWorkspaceShellState extends ConsumerState<MatrixWorkspaceShell> {
   late WorkspaceSession _session;
   bool _hasBeenModified = false;
   bool _isForking = false;
-  bool _forkOnModifyEnabled = true; // Default: enabled
+  bool _forkOnModifyEnabled = false; // Default: disabled — user must explicitly enable
 
   @override
   void initState() {

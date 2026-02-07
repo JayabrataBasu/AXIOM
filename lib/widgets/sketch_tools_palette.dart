@@ -161,8 +161,9 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                       ],
                     ),
                   ),
-                  // Tools section (expandable)
+                  // All sections below header collapse together
                   if (_isExpanded) ...[
+                    // Tools section
                     const Divider(height: 1),
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -243,7 +244,8 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                     ),
                     const Divider(height: 1),
                   ],
-                  // Color palette
+                  // Color palette — also collapses
+                  if (_isExpanded)
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
