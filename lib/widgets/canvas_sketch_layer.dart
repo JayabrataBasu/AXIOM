@@ -21,6 +21,7 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
   Widget build(BuildContext context) {
     final sketchAsync = ref.watch(canvasSketchNotifierProvider);
     final toolState = ref.watch(sketchToolsProvider);
+    final effectiveColor = toolState.color.withValues(alpha: toolState.opacity);
 
     return sketchAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -74,8 +75,8 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
               // Create stroke with current tool settings
               final stroke = CanvasSketchStroke(
                 points: _currentStroke,
-                color: toolState.color.toARGB32(),
-                width: toolState.brushSize,
+                color: effectiveColor.toARGB32(),
+                width: _effectiveStrokeWidth(toolState),
                 isEraser: false,
               );
               notifier.addStroke(stroke);
@@ -89,14 +90,27 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
               painter: _CanvasSketchLayerPainter(
                 strokes: sketch.strokes,
                 currentStroke: _currentStroke,
-                currentColor: toolState.color,
-                currentWidth: toolState.brushSize,
+                currentColor: effectiveColor,
+                currentWidth: _effectiveStrokeWidth(toolState),
               ),
             ),
           ),
         );
       },
     );
+  }
+
+  double _effectiveStrokeWidth(SketchToolState toolState) {
+    switch (toolState.tool) {
+      case SketchTool.marker:
+        return toolState.brushSize * 1.5;
+      case SketchTool.pencil:
+        return toolState.brushSize * 0.6;
+      case SketchTool.brush:
+        return toolState.brushSize * 1.2;
+      default:
+        return toolState.brushSize;
+    }
   }
 }
 

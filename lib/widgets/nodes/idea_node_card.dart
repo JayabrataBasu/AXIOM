@@ -39,13 +39,13 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
     final borderColor = widget.isSelected
         ? cs.primary.withAlpha(200)
         : highlightActive
-            ? cs.secondary.withAlpha(150)
-            : cs.outlineVariant.withAlpha(80);
+        ? cs.secondary.withAlpha(150)
+        : cs.outlineVariant.withAlpha(80);
     final borderWidth = widget.isSelected
         ? 2.0
         : highlightActive
-            ? 1.5
-            : 1.0;
+        ? 1.5
+        : 1.0;
 
     return Transform.translate(
       offset: _isDragging ? _dragOffset : Offset.zero,
@@ -100,10 +100,7 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                     spreadRadius: 1,
                   )
                 else if (highlightActive)
-                  BoxShadow(
-                    color: cs.secondary.withAlpha(25),
-                    blurRadius: 14,
-                  ),
+                  BoxShadow(color: cs.secondary.withAlpha(25), blurRadius: 14),
               ],
             ),
             child: Material(

@@ -26,6 +26,7 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
   Widget build(BuildContext context) {
     final sketchAsync = ref.watch(canvasSketchNotifierProvider);
     final toolState = ref.watch(sketchToolsProvider);
+    final effectiveColor = toolState.color.withValues(alpha: toolState.opacity);
 
     return sketchAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -87,8 +88,8 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
 
               final stroke = CanvasSketchStroke(
                 points: canvasPoints,
-                color: toolState.color.toARGB32(),
-                width: toolState.brushSize,
+                color: effectiveColor.toARGB32(),
+                width: _effectiveStrokeWidth(toolState),
               );
 
               ref.read(canvasSketchNotifierProvider.notifier).addStroke(stroke);
@@ -102,7 +103,7 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
             painter: _CanvasSketchOverlayPainter(
               strokes: sketch.strokes,
               currentPoints: _currentPoints,
-              currentColor: toolState.color,
+              currentColor: effectiveColor,
               currentWidth: toolState.brushSize,
               currentTool: toolState.tool,
               isDrawing: _isDrawing,
@@ -112,6 +113,19 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
         );
       },
     );
+  }
+
+  double _effectiveStrokeWidth(SketchToolState toolState) {
+    switch (toolState.tool) {
+      case SketchTool.marker:
+        return toolState.brushSize * 1.5;
+      case SketchTool.pencil:
+        return toolState.brushSize * 0.6;
+      case SketchTool.brush:
+        return toolState.brushSize * 1.2;
+      default:
+        return toolState.brushSize;
+    }
   }
 
   void _eraseAt(CanvasSketch sketch, Offset screenPosition) {

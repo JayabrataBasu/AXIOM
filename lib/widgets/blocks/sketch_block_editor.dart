@@ -86,6 +86,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final toolState = ref.watch(sketchToolsProvider);
+    final effectiveColor = toolState.color.withValues(alpha: toolState.opacity);
 
     if (_isLoading) {
       return Center(child: CircularProgressIndicator(color: cs.primary));
@@ -181,6 +182,44 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             ],
           ),
         ),
+        // Opacity control
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AxiomSpacing.sm + 2,
+            vertical: AxiomSpacing.sm,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Opacity',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '${(toolState.opacity * 100).toStringAsFixed(0)}%',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              Slider(
+                value: toolState.opacity,
+                min: 0.0,
+                max: 1.0,
+                divisions: 10,
+                onChanged: (value) =>
+                    ref.read(sketchToolsProvider.notifier).setOpacity(value),
+              ),
+            ],
+          ),
+        ),
         // Canvas - Everforest bg5 (lightest) for drawing area
         Container(
           decoration: BoxDecoration(
@@ -242,8 +281,8 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                   _strokes.add(
                     SketchStroke(
                       points: List.from(_currentStroke),
-                      color: toolState.color,
-                      width: toolState.brushSize,
+                      color: effectiveColor,
+                      width: _effectiveStrokeWidth(toolState),
                     ),
                   );
                   _currentStroke = [];
@@ -261,7 +300,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                       painter: _SketchCanvasPainter(
                         strokes: _strokes,
                         currentStroke: _currentStroke,
-                        currentColor: toolState.color,
+                        currentColor: effectiveColor,
                         currentWidth: toolState.brushSize,
                         currentTool: toolState.tool,
                       ),
@@ -313,6 +352,19 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
         ),
       ],
     );
+  }
+
+  double _effectiveStrokeWidth(SketchToolState toolState) {
+    switch (toolState.tool) {
+      case SketchTool.marker:
+        return toolState.brushSize * 1.5;
+      case SketchTool.pencil:
+        return toolState.brushSize * 0.6;
+      case SketchTool.brush:
+        return toolState.brushSize * 1.2;
+      default:
+        return toolState.brushSize;
+    }
   }
 }
 
