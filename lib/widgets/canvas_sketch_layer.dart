@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/canvas_sketch.dart';
 import '../providers/canvas_sketch_provider.dart';
 import '../providers/sketch_tools_provider.dart';
+import 'canvas/infinite_canvas.dart';
 
 /// Widget that displays and manages canvas-level sketches overlaid on the infinite canvas.
 class CanvasSketchLayer extends ConsumerStatefulWidget {
@@ -22,6 +23,7 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
     final sketchAsync = ref.watch(canvasSketchNotifierProvider);
     final toolState = ref.watch(sketchToolsProvider);
     final effectiveColor = toolState.color.withValues(alpha: toolState.opacity);
+    final canvasScale = _currentCanvasScale(context);
 
     return sketchAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -70,13 +72,16 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
 
             // Handle eraser tool by removing strokes at intersection points
             if (toolState.tool == SketchTool.eraser) {
-              notifier.eraseStrokesAt(_currentStroke, toolState.brushSize);
+              notifier.eraseStrokesAt(
+                _currentStroke,
+                toolState.brushSize / canvasScale,
+              );
             } else {
               // Create stroke with current tool settings
               final stroke = CanvasSketchStroke(
                 points: _currentStroke,
                 color: effectiveColor.toARGB32(),
-                width: _effectiveStrokeWidth(toolState),
+                width: _effectiveStrokeWidth(toolState) / canvasScale,
                 isEraser: false,
               );
               notifier.addStroke(stroke);
@@ -91,13 +96,18 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
                 strokes: sketch.strokes,
                 currentStroke: _currentStroke,
                 currentColor: effectiveColor,
-                currentWidth: _effectiveStrokeWidth(toolState),
+                currentWidth: _effectiveStrokeWidth(toolState) / canvasScale,
               ),
             ),
           ),
         );
       },
     );
+  }
+
+  double _currentCanvasScale(BuildContext context) {
+    final canvasState = context.findAncestorStateOfType<InfiniteCanvasState>();
+    return canvasState?.currentScale ?? 1.0;
   }
 
   double _effectiveStrokeWidth(SketchToolState toolState) {

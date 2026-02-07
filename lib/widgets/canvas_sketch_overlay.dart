@@ -77,6 +77,7 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
             // Convert screen points to canvas points and save
             final canvasState = widget.canvasKey.currentState;
             if (canvasState != null) {
+              final canvasScale = canvasState.currentScale;
               final canvasPoints = _currentPoints.map((p) {
                 final canvasPos = canvasState.screenToCanvas(p);
                 return CanvasSketchPoint(
@@ -89,7 +90,7 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
               final stroke = CanvasSketchStroke(
                 points: canvasPoints,
                 color: effectiveColor.toARGB32(),
-                width: _effectiveStrokeWidth(toolState),
+                width: _effectiveStrokeWidth(toolState) / canvasScale,
               );
 
               ref.read(canvasSketchNotifierProvider.notifier).addStroke(stroke);
@@ -129,9 +130,10 @@ class _CanvasSketchOverlayState extends ConsumerState<CanvasSketchOverlay> {
   }
 
   void _eraseAt(CanvasSketch sketch, Offset screenPosition) {
-    const eraserRadius = 20.0;
     final canvasState = widget.canvasKey.currentState;
     if (canvasState == null) return;
+
+    final eraserRadius = 20.0 / canvasState.currentScale;
 
     final canvasPosition = canvasState.screenToCanvas(screenPosition);
 
