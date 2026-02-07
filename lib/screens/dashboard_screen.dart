@@ -515,8 +515,8 @@ class _StitchStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      height: 128,
-      padding: const EdgeInsets.all(AxiomSpacing.lg),
+      constraints: const BoxConstraints(minHeight: 100),
+      padding: const EdgeInsets.all(AxiomSpacing.md),
       decoration: BoxDecoration(
         color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AxiomRadius.lg),
@@ -531,50 +531,47 @@ class _StitchStatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Top row: icon + arrow
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: iconColor.withAlpha(25),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: iconColor, size: 20),
+                child: Icon(icon, color: iconColor, size: 18),
               ),
               Transform.rotate(
                 angle: -0.785398, // -45 degrees
                 child: Icon(
                   Icons.arrow_forward_rounded,
                   color: cs.onSurfaceVariant.withAlpha(80),
-                  size: 18,
+                  size: 16,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: AxiomSpacing.sm),
           // Bottom: count + label
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                count,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: countColor,
-                  height: 1.1,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: AxiomTypography.labelSmall.copyWith(
-                  color: cs.onSurfaceVariant.withAlpha(150),
-                ),
-              ),
-            ],
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: countColor,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: AxiomTypography.labelSmall.copyWith(
+              color: cs.onSurfaceVariant.withAlpha(150),
+            ),
           ),
         ],
       ),
