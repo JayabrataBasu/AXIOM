@@ -124,8 +124,10 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                         _updateViewportRect();
                       },
                     ),
-                    // Sketch layer renders saved strokes so they persist and transform with canvas
-                    const CanvasSketchLayer(),
+                    // Sketch layer renders saved strokes — positioned so it doesn't drive Stack sizing
+                    const Positioned.fill(
+                      child: IgnorePointer(child: CanvasSketchLayer()),
+                    ),
                   ],
                 ),
               ),

@@ -92,7 +92,6 @@ class _CanvasSketchLayerState extends ConsumerState<CanvasSketchLayer> {
                 currentColor: toolState.color,
                 currentWidth: toolState.brushSize,
               ),
-              size: Size.infinite,
             ),
           ),
         );
