@@ -146,8 +146,8 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
             ),
             // Sketch tools palette (only visible in sketch mode)
             if (_sketchMode) const SketchToolsPalette(),
-            // FAB for creating new nodes
-            Positioned(bottom: 24, right: 24, child: _buildFAB(theme)),
+            // Stitch-style floating bottom toolbar
+            _buildBottomToolbar(theme),
             // Doodle layer (draw on canvas without creating nodes)
             if (_doodleMode)
               Positioned.fill(
@@ -298,7 +298,6 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 
   Widget _buildToolbar(BuildContext context, ThemeData theme) {
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
     final workspaceLabel = _getWorkspaceLabel();
     final cs = theme.colorScheme;
 
@@ -368,371 +367,30 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   ),
                 ),
               ),
-              // Right actions
-              if (!isSmallScreen)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Search button
-                    _ToolbarIconButton(
-                      icon: Icons.search_rounded,
-                      color: cs.onSurfaceVariant,
-                      onPressed: () async {
-                        if (!mounted) return;
-                        final ctx = context;
-                        final nav =
-                            await Navigator.push<search.SearchNavigation?>(
-                              ctx,
-                              MaterialPageRoute(
-                                builder: (_) => const SearchNodesScreen(),
-                              ),
-                            );
-
-                        if (nav == null || !mounted) return;
-
-                        final nodes =
-                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                        final position = _getNodePosition(nodes, nav.nodeId);
-                        _canvasKey.currentState?.centerOn(position);
-                        ref
-                            .read(canvasViewProvider.notifier)
-                            .selectNode(nav.nodeId);
-
-                        if (nav.blockId.isNotEmpty && mounted) {
-                          Navigator.push(
-                            ctx,
-                            MaterialPageRoute(
-                              builder: (_) => NodeEditorScreen(
-                                nodeId: nav.nodeId,
-                                highlightBlockId: nav.blockId,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      tooltip: 'Search nodes',
-                    ),
-                    const SizedBox(width: 4),
-                    // Tools dropdown menu
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.tune_rounded,
-                        color: cs.onSurfaceVariant,
-                        size: 20,
-                      ),
-                      tooltip: 'Tools & Options',
-                      constraints: const BoxConstraints(
-                        minWidth: 36,
-                        minHeight: 36,
-                      ),
-                      iconSize: 20,
-                      color: cs.surfaceContainerHigh,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AxiomRadius.md),
-                      ),
-                      itemBuilder: (context) => [
-                        PopupMenuItem<String>(
-                          value: 'minimap',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.map_rounded,
-                                size: 20,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Minimap',
-                                style: TextStyle(color: cs.onSurface),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'sketch_toggle',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.draw_rounded,
-                                size: 20,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                _sketchMode
-                                    ? 'Exit Sketch Mode'
-                                    : 'Sketch Mode',
-                                style: TextStyle(color: cs.onSurface),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'minimap':
-                            setState(() => _minimapVisible = true);
-                            break;
-                          case 'sketch_toggle':
-                            setState(() {
-                              _sketchMode = !_sketchMode;
-                              if (!_sketchMode) {
-                                ref
-                                    .read(canvasSketchNotifierProvider.notifier)
-                                    .clearCanvas();
-                              }
-                            });
-                            break;
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 4),
-                    // Zoom to fit button
-                    _ToolbarIconButton(
-                      icon: Icons.fit_screen_rounded,
-                      color: cs.onSurfaceVariant,
-                      onPressed: () {
-                        final nodes =
-                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                        if (nodes.isEmpty) return;
-
-                        const padding = 2000.0;
-                        double canvasMinX = -padding;
-                        double canvasMinY = -padding;
-
-                        for (final n in nodes) {
-                          canvasMinX = canvasMinX < n.position.x - padding
-                              ? canvasMinX
-                              : n.position.x - padding;
-                          canvasMinY = canvasMinY < n.position.y - padding
-                              ? canvasMinY
-                              : n.position.y - padding;
-                        }
-
-                        double minX = nodes.first.position.x - canvasMinX;
-                        double minY = nodes.first.position.y - canvasMinY;
-                        double maxX = nodes.first.position.x - canvasMinX;
-                        double maxY = nodes.first.position.y - canvasMinY;
-
-                        for (final node in nodes) {
-                          final renderX = node.position.x - canvasMinX;
-                          final renderY = node.position.y - canvasMinY;
-                          if (renderX < minX) minX = renderX;
-                          if (renderY < minY) minY = renderY;
-                          if (renderX > maxX) maxX = renderX;
-                          if (renderY > maxY) maxY = renderY;
-                        }
-
-                        final bounds = Rect.fromLTRB(
-                          minX,
-                          minY,
-                          maxX + 230,
-                          maxY + 120,
-                        );
-
-                        Future.delayed(const Duration(milliseconds: 1), () {
-                          if (mounted) {
-                            _canvasKey.currentState?.zoomToFit(bounds);
-                          }
-                        });
-                      },
-                      tooltip: 'Fit all nodes',
-                    ),
-                    const SizedBox(width: 6),
-                    // Zoom indicator - Stitch styled pill
-                    Container(
-                      height: 30,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: cs.secondary.withAlpha(20),
-                        borderRadius: BorderRadius.circular(AxiomRadius.full),
-                        border: Border.all(
-                          color: cs.secondary.withAlpha(50),
-                          width: 0.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${(_currentZoom * 100).toStringAsFixed(0)}%',
-                          style: AxiomTypography.labelSmall.copyWith(
-                            fontFamily: 'JetBrains Mono',
-                            fontWeight: FontWeight.bold,
-                            color: cs.secondary,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _ToolbarIconButton(
-                      icon: Icons.search_rounded,
-                      color: cs.onSurfaceVariant,
-                      onPressed: () async {
-                        if (!mounted) return;
-                        final ctx = context;
-                        final nav =
-                            await Navigator.push<search.SearchNavigation?>(
-                              ctx,
-                              MaterialPageRoute(
-                                builder: (_) => const SearchNodesScreen(),
-                              ),
-                            );
-
-                        if (nav == null || !mounted) return;
-
-                        final nodes =
-                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                        final position = _getNodePosition(nodes, nav.nodeId);
-                        _canvasKey.currentState?.centerOn(position);
-                        ref
-                            .read(canvasViewProvider.notifier)
-                            .selectNode(nav.nodeId);
-
-                        if (nav.blockId.isNotEmpty && mounted) {
-                          Navigator.push(
-                            ctx,
-                            MaterialPageRoute(
-                              builder: (_) => NodeEditorScreen(
-                                nodeId: nav.nodeId,
-                                highlightBlockId: nav.blockId,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      tooltip: 'Search nodes',
-                    ),
-                    const SizedBox(width: 4),
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.tune_rounded,
-                        color: cs.onSurfaceVariant,
-                        size: 20,
-                      ),
-                      tooltip: 'Tools & Options',
-                      constraints: const BoxConstraints(
-                        minWidth: 36,
-                        minHeight: 36,
-                      ),
-                      iconSize: 20,
-                      color: cs.surfaceContainerHigh,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AxiomRadius.md),
-                      ),
-                      itemBuilder: (context) => [
-                        PopupMenuItem<String>(
-                          value: 'minimap',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.map_rounded,
-                                size: 20,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                'Minimap',
-                                style: TextStyle(color: cs.onSurface),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'sketch_toggle',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.draw_rounded,
-                                size: 20,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                _sketchMode
-                                    ? 'Exit Sketch Mode'
-                                    : 'Sketch Mode',
-                                style: TextStyle(color: cs.onSurface),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'minimap':
-                            setState(() => _minimapVisible = true);
-                            break;
-                          case 'sketch_toggle':
-                            setState(() {
-                              _sketchMode = !_sketchMode;
-                              if (!_sketchMode) {
-                                ref
-                                    .read(canvasSketchNotifierProvider.notifier)
-                                    .clearCanvas();
-                              }
-                            });
-                            break;
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 4),
-                    _ToolbarIconButton(
-                      icon: Icons.fit_screen_rounded,
-                      color: cs.onSurfaceVariant,
-                      onPressed: () {
-                        final nodes =
-                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                        if (nodes.isEmpty) return;
-
-                        const padding = 2000.0;
-                        double canvasMinX = -padding;
-                        double canvasMinY = -padding;
-
-                        for (final n in nodes) {
-                          canvasMinX = canvasMinX < n.position.x - padding
-                              ? canvasMinX
-                              : n.position.x - padding;
-                          canvasMinY = canvasMinY < n.position.y - padding
-                              ? canvasMinY
-                              : n.position.y - padding;
-                        }
-
-                        double minX = nodes.first.position.x - canvasMinX;
-                        double minY = nodes.first.position.y - canvasMinY;
-                        double maxX = nodes.first.position.x - canvasMinX;
-                        double maxY = nodes.first.position.y - canvasMinY;
-
-                        for (final node in nodes) {
-                          final renderX = node.position.x - canvasMinX;
-                          final renderY = node.position.y - canvasMinY;
-                          if (renderX < minX) minX = renderX;
-                          if (renderY < minY) minY = renderY;
-                          if (renderX > maxX) maxX = renderX;
-                          if (renderY > maxY) maxY = renderY;
-                        }
-
-                        final bounds = Rect.fromLTRB(
-                          minX,
-                          minY,
-                          maxX + 230,
-                          maxY + 120,
-                        );
-
-                        Future.delayed(const Duration(milliseconds: 1), () {
-                          if (mounted) {
-                            _canvasKey.currentState?.zoomToFit(bounds);
-                          }
-                        });
-                      },
-                      tooltip: 'Fit all nodes',
-                    ),
-                  ],
+              // Right — zoom indicator only (actions moved to bottom toolbar)
+              Container(
+                height: 30,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: cs.secondary.withAlpha(20),
+                  borderRadius: BorderRadius.circular(AxiomRadius.full),
+                  border: Border.all(
+                    color: cs.secondary.withAlpha(50),
+                    width: 0.5,
+                  ),
                 ),
+                child: Center(
+                  child: Text(
+                    '${(_currentZoom * 100).toStringAsFixed(0)}%',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      fontFamily: 'JetBrains Mono',
+                      fontWeight: FontWeight.bold,
+                      color: cs.secondary,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -763,38 +421,180 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     );
   }
 
-  Widget _buildFAB(ThemeData theme) {
+  /// Stitch-style floating bottom toolbar — centered pill with key actions.
+  Widget _buildBottomToolbar(ThemeData theme) {
     final cs = theme.colorScheme;
-    // Stitch-inspired emerald FAB with soft glow
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: _createNewNode,
-        borderRadius: BorderRadius.circular(AxiomRadius.full),
+    return Positioned(
+      bottom: 16,
+      left: 0,
+      right: 0,
+      child: Center(
         child: Container(
-          width: 56,
-          height: 56,
+          constraints: const BoxConstraints(maxWidth: 380),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [cs.secondary, cs.secondary.withAlpha(220)],
-            ),
+            color: cs.surface.withAlpha(240),
             borderRadius: BorderRadius.circular(AxiomRadius.full),
+            border: Border.all(
+              color: cs.outlineVariant.withAlpha(40),
+              width: 0.5,
+            ),
             boxShadow: [
               BoxShadow(
-                color: cs.secondary.withAlpha(80),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
+                color: cs.shadow.withAlpha(25),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: cs.secondary.withAlpha(30),
+                color: cs.shadow.withAlpha(8),
                 blurRadius: 40,
                 spreadRadius: 4,
               ),
             ],
           ),
-          child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Sketch toggle
+              _BottomBarButton(
+                icon: Icons.draw_rounded,
+                label: 'Sketch',
+                isActive: _sketchMode,
+                onPressed: () => setState(() => _sketchMode = !_sketchMode),
+              ),
+              // Minimap
+              _BottomBarButton(
+                icon: Icons.map_outlined,
+                label: 'Map',
+                onPressed: () => setState(() => _minimapVisible = true),
+              ),
+              // Create Node — prominent green button
+              const SizedBox(width: 4),
+              Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  onTap: _createNewNode,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [cs.secondary, cs.secondary.withAlpha(210)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.secondary.withAlpha(60),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.add_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Node',
+                          style: AxiomTypography.labelLarge.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              // Zoom fit
+              _BottomBarButton(
+                icon: Icons.center_focus_strong_rounded,
+                label: 'Fit',
+                onPressed: () {
+                  final nodes =
+                      ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                  if (nodes.isEmpty) return;
+
+                  const padding = 2000.0;
+                  double canvasMinX = -padding;
+                  double canvasMinY = -padding;
+                  for (final n in nodes) {
+                    canvasMinX = canvasMinX < n.position.x - padding
+                        ? canvasMinX
+                        : n.position.x - padding;
+                    canvasMinY = canvasMinY < n.position.y - padding
+                        ? canvasMinY
+                        : n.position.y - padding;
+                  }
+                  double minX = nodes.first.position.x - canvasMinX;
+                  double minY = nodes.first.position.y - canvasMinY;
+                  double maxX = nodes.first.position.x - canvasMinX;
+                  double maxY = nodes.first.position.y - canvasMinY;
+                  for (final node in nodes) {
+                    final renderX = node.position.x - canvasMinX;
+                    final renderY = node.position.y - canvasMinY;
+                    if (renderX < minX) minX = renderX;
+                    if (renderY < minY) minY = renderY;
+                    if (renderX > maxX) maxX = renderX;
+                    if (renderY > maxY) maxY = renderY;
+                  }
+                  final bounds = Rect.fromLTRB(
+                    minX,
+                    minY,
+                    maxX + 230,
+                    maxY + 120,
+                  );
+                  Future.delayed(const Duration(milliseconds: 1), () {
+                    if (mounted) {
+                      _canvasKey.currentState?.zoomToFit(bounds);
+                    }
+                  });
+                },
+              ),
+              // Search
+              _BottomBarButton(
+                icon: Icons.search_rounded,
+                label: 'Search',
+                onPressed: () async {
+                  if (!mounted) return;
+                  final ctx = context;
+                  final nav = await Navigator.push<search.SearchNavigation?>(
+                    ctx,
+                    MaterialPageRoute(
+                      builder: (_) => const SearchNodesScreen(),
+                    ),
+                  );
+                  if (nav == null || !mounted) return;
+                  final nodes =
+                      ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                  final position = _getNodePosition(nodes, nav.nodeId);
+                  _canvasKey.currentState?.centerOn(position);
+                  ref.read(canvasViewProvider.notifier).selectNode(nav.nodeId);
+                  if (nav.blockId.isNotEmpty && mounted) {
+                    Navigator.push(
+                      ctx,
+                      MaterialPageRoute(
+                        builder: (_) => NodeEditorScreen(
+                          nodeId: nav.nodeId,
+                          highlightBlockId: nav.blockId,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -847,58 +647,94 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
 
     if (itemType == null || !mounted) return;
 
-    // For now, show a message about the feature
-    if (itemType != CanvasItemType.container) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Standalone ${itemType.name} blocks are coming soon! '
-            'For now, you can add them inside container nodes.',
-          ),
-          duration: const Duration(seconds: 4),
-          action: SnackBarAction(label: 'OK', onPressed: () {}),
-        ),
+    if (itemType == CanvasItemType.container) {
+      // Show the full create-node dialog for containers
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => const CreateNodeDialog(),
       );
-      return;
-    }
 
-    // Continue with regular node creation for containers
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => const CreateNodeDialog(),
-    );
+      if (result == null || !mounted) return;
 
-    if (result == null || !mounted) return;
+      final viewportCenter =
+          _canvasKey.currentState?.viewportCenter ?? Offset.zero;
+      final position = Position(x: viewportCenter.dx, y: viewportCenter.dy);
 
-    // Create node at the center of the current view
-    final viewportCenter =
-        _canvasKey.currentState?.viewportCenter ?? Offset.zero;
-    final position = Position(x: viewportCenter.dx, y: viewportCenter.dy);
+      final node = await ref
+          .read(nodesNotifierProvider.notifier)
+          .createNode(
+            position: position,
+            name: result['name'] as String?,
+            template: result['template'] as NodeTemplate?,
+          );
 
-    final node = await ref
-        .read(nodesNotifierProvider.notifier)
-        .createNode(
-          position: position,
-          name: result['name'] as String?,
-          template: result['template'] as NodeTemplate?,
+      ref.read(canvasViewProvider.notifier).selectNode(node.id);
+      _highlightNewNode(node.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result['name'] != null && (result['name'] as String).isNotEmpty
+                  ? 'Created node: ${result['name']}'
+                  : 'New node created',
+            ),
+            duration: const Duration(seconds: 2),
+          ),
         );
+      }
+    } else {
+      // Create a container node with the chosen block type pre-added
+      final viewportCenter =
+          _canvasKey.currentState?.viewportCenter ?? Offset.zero;
+      final position = Position(x: viewportCenter.dx, y: viewportCenter.dy);
 
-    // Select the new node
-    ref.read(canvasViewProvider.notifier).selectNode(node.id);
-    _highlightNewNode(node.id);
+      final blockLabel = switch (itemType) {
+        CanvasItemType.textBlock => 'Text',
+        CanvasItemType.mathBlock => 'Math',
+        CanvasItemType.codeBlock => 'Code',
+        CanvasItemType.sketchBlock => 'Sketch',
+        CanvasItemType.audioBlock => 'Audio',
+        _ => 'Note',
+      };
 
-    // Show a snackbar
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result['name'] != null && (result['name'] as String).isNotEmpty
-                ? 'Created node: ${result['name']}'
-                : 'New node created',
+      final node = await ref
+          .read(nodesNotifierProvider.notifier)
+          .createNode(position: position, name: '$blockLabel Block');
+
+      // Add the requested block type to the new node
+      final notifier = ref.read(nodesNotifierProvider.notifier);
+      switch (itemType) {
+        case CanvasItemType.textBlock:
+          await notifier.addTextBlock(node.id);
+          break;
+        case CanvasItemType.mathBlock:
+          await notifier.addMathBlock(node.id);
+          break;
+        case CanvasItemType.codeBlock:
+          await notifier.addCodeBlock(node.id);
+          break;
+        case CanvasItemType.sketchBlock:
+          await notifier.addSketchBlock(node.id);
+          break;
+        case CanvasItemType.audioBlock:
+          // Audio needs recording flow — open the editor immediately
+          break;
+        default:
+          break;
+      }
+
+      ref.read(canvasViewProvider.notifier).selectNode(node.id);
+      _highlightNewNode(node.id);
+
+      // Open node editor so user can start working immediately
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => NodeEditorScreen(nodeId: node.id),
           ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -993,28 +829,56 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 }
 
-/// Small circular icon button for the floating toolbar
-class _ToolbarIconButton extends StatelessWidget {
-  const _ToolbarIconButton({
+/// Button for the Stitch-style floating bottom toolbar.
+class _BottomBarButton extends StatelessWidget {
+  const _BottomBarButton({
     required this.icon,
-    required this.color,
+    required this.label,
     required this.onPressed,
-    this.tooltip,
+    this.isActive = false,
   });
 
   final IconData icon;
-  final Color color;
+  final String label;
   final VoidCallback onPressed;
-  final String? tooltip;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(icon, color: color, size: 20),
-      onPressed: onPressed,
-      tooltip: tooltip,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: label,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AxiomRadius.full),
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: isActive ? cs.primary.withAlpha(25) : Colors.transparent,
+            borderRadius: BorderRadius.circular(AxiomRadius.full),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 22,
+                color: isActive ? cs.primary : cs.onSurfaceVariant,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                  color: isActive ? cs.primary : cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

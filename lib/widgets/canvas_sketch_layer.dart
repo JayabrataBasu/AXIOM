@@ -148,47 +148,36 @@ class _CanvasSketchLayerPainter extends CustomPainter {
     if (points.length < 2) {
       if (points.isNotEmpty) {
         final point = points[0];
-        final pressureWidth = (paint.strokeWidth * point.pressure).clamp(
-          0.5,
-          50.0,
-        );
-        final pressureAlpha = (paint.color.a * point.pressure)
-            .clamp(0, 255)
-            .toDouble();
-        final pressurePaint = Paint()
-          ..color = paint.color.withValues(alpha: pressureAlpha)
-          ..strokeCap = paint.strokeCap
-          ..strokeJoin = paint.strokeJoin
-          ..strokeWidth = pressureWidth;
         canvas.drawCircle(
           Offset(point.x, point.y),
-          pressureWidth / 2,
-          pressurePaint,
+          paint.strokeWidth / 2,
+          paint,
         );
       }
       return;
     }
 
-    // Draw strokes with pressure-sensitive width
-    for (int i = 0; i < points.length - 1; i++) {
-      final p0 = points[i];
-      final p1 = points[i + 1];
+    // Use a single Path to avoid visual thickness doubling from
+    // overlapping round caps on individual line segments.
+    final strokePaint = Paint()
+      ..color = paint.color
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = paint.strokeWidth
+      ..style = PaintingStyle.stroke;
 
-      // Use average pressure for this segment
-      final avgPressure = (p0.pressure + p1.pressure) / 2;
-      final pressureWidth = (paint.strokeWidth * avgPressure).clamp(0.5, 50.0);
-
-      final segmentAlpha = (paint.color.a * avgPressure)
-          .clamp(0, 255)
-          .toDouble();
-      final segmentPaint = Paint()
-        ..color = paint.color.withValues(alpha: segmentAlpha)
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..strokeWidth = pressureWidth;
-
-      canvas.drawLine(Offset(p0.x, p0.y), Offset(p1.x, p1.y), segmentPaint);
+    if (paint.blendMode == BlendMode.clear) {
+      strokePaint.blendMode = BlendMode.clear;
     }
+
+    final path = Path();
+    path.moveTo(points.first.x, points.first.y);
+
+    for (int i = 1; i < points.length; i++) {
+      path.lineTo(points[i].x, points[i].y);
+    }
+
+    canvas.drawPath(path, strokePaint);
   }
 
   @override
