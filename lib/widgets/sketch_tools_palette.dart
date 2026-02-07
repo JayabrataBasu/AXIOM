@@ -246,230 +246,214 @@ class _SketchToolsPaletteState extends ConsumerState<SketchToolsPalette> {
                   ],
                   // Color palette — also collapses
                   if (_isExpanded)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Color',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        GridView.count(
-                          crossAxisCount: 6,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 4,
-                          children: _colors.map((color) {
-                            return GestureDetector(
-                              onTap: () {
-                                ref
-                                    .read(sketchToolsProvider.notifier)
-                                    .setColor(color);
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: color,
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(
-                                    color: toolState.color == color
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                    width: toolState.color == color ? 2 : 0,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Color',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          GridView.count(
+                            crossAxisCount: 6,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 4,
+                            crossAxisSpacing: 4,
+                            children: _colors.map((color) {
+                              return GestureDetector(
+                                onTap: () {
+                                  ref
+                                      .read(sketchToolsProvider.notifier)
+                                      .setColor(color);
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: toolState.color == color
+                                          ? Colors.white
+                                          : Colors.transparent,
+                                      width: toolState.color == color ? 2 : 0,
+                                    ),
+                                    boxShadow: toolState.color == color
+                                        ? [
+                                            BoxShadow(
+                                              color: color.withValues(
+                                                alpha: 0.5,
+                                              ),
+                                              blurRadius: 4,
+                                              spreadRadius: 1,
+                                            ),
+                                          ]
+                                        : null,
                                   ),
-                                  boxShadow: toolState.color == color
-                                      ? [
-                                          BoxShadow(
-                                            color: color.withValues(alpha: 0.5),
-                                            blurRadius: 4,
-                                            spreadRadius: 1,
-                                          ),
-                                        ]
+                                  child: toolState.color == color
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 12,
+                                        )
                                       : null,
                                 ),
-                                child: toolState.color == color
-                                    ? const Icon(
-                                        Icons.check,
-                                        color: Colors.white,
-                                        size: 12,
-                                      )
-                                    : null,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-
-                  // Brush size slider
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Brush Size',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${toolState.brushSize.toStringAsFixed(1)}px',
-                                style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Slider(
-                          value: toolState.brushSize,
-                          min: 1.0,
-                          max: 50.0,
-                          divisions: 49,
-                          onChanged: (value) {
-                            ref
-                                .read(sketchToolsProvider.notifier)
-                                .setBrushSize(value);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-
-                  // Opacity slider
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Opacity',
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${(toolState.opacity * 100).toStringAsFixed(0)}%',
-                                style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Slider(
-                          value: toolState.opacity,
-                          min: 0.0,
-                          max: 1.0,
-                          divisions: 10,
-                          onChanged: (value) {
-                            ref
-                                .read(sketchToolsProvider.notifier)
-                                .setOpacity(value);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-
-                  // Footer with collapse hint
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerLow,
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(12),
+                              );
+                            }).toList(),
+                          ),
+                        ],
                       ),
                     ),
-                    child: _isExpanded
-                        ? Text(
-                            'Drag to move palette',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface
-                                      .withValues(alpha: 0.5),
-                                ),
-                            textAlign: TextAlign.center,
-                          )
-                        : Column(
+                  if (_isExpanded) const Divider(height: 1),
+
+                  // Brush size slider — also collapses
+                  if (_isExpanded)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                width: 32,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: toolState.color,
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(
-                                    color: Theme.of(context).colorScheme.outline
-                                        .withValues(alpha: 0.3),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
                               Text(
-                                '${toolState.brushSize.toStringAsFixed(1)}px',
-                                style: Theme.of(context).textTheme.labelSmall,
-                                textAlign: TextAlign.center,
+                                'Brush Size',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '${toolState.brushSize.toStringAsFixed(1)}px',
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
                               ),
                             ],
                           ),
-                  ),
+                          const SizedBox(height: 8),
+                          Slider(
+                            value: toolState.brushSize,
+                            min: 1.0,
+                            max: 50.0,
+                            divisions: 49,
+                            onChanged: (value) {
+                              ref
+                                  .read(sketchToolsProvider.notifier)
+                                  .setBrushSize(value);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (_isExpanded) const Divider(height: 1),
+
+                  // Opacity slider — also collapses
+                  if (_isExpanded)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Opacity',
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '${(toolState.opacity * 100).toStringAsFixed(0)}%',
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Slider(
+                            value: toolState.opacity,
+                            min: 0.0,
+                            max: 1.0,
+                            divisions: 10,
+                            onChanged: (value) {
+                              ref
+                                  .read(sketchToolsProvider.notifier)
+                                  .setOpacity(value);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (_isExpanded) const Divider(height: 1),
+
+                  // Footer — compact when collapsed
+                  if (_isExpanded)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Drag to move palette',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                 ],
               ),
             ),

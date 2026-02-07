@@ -536,70 +536,275 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
 
   Future<void> _showAddMatrixDialog({Matrix? editing}) async {
     final nameController = TextEditingController(text: editing?.name ?? '');
-    final dataController = TextEditingController(
-      text: editing != null ? _matrixToText(editing.data) : '1 0\n0 1',
-    );
+
+    // Default dimensions
+    int rows = editing?.data.length ?? 2;
+    int cols = editing?.data.isNotEmpty == true ? editing!.data[0].length : 2;
+
+    // Build initial cell controllers from existing data or defaults
+    List<List<TextEditingController>> cellControllers = [];
+
+    void initCellControllers(int r, int c, {List<List<double>>? data}) {
+      // Dispose old controllers
+      for (final row in cellControllers) {
+        for (final ctrl in row) {
+          ctrl.dispose();
+        }
+      }
+      cellControllers = List.generate(r, (i) {
+        return List.generate(c, (j) {
+          final value = (data != null && i < data.length && j < data[i].length)
+              ? data[i][j]
+              : 0.0;
+          // Show integers cleanly (1.0 → "1", 3.5 → "3.5")
+          final text = value == value.roundToDouble()
+              ? value.toInt().toString()
+              : value.toString();
+          return TextEditingController(text: text);
+        });
+      });
+    }
+
+    initCellControllers(rows, cols, data: editing?.data);
 
     final result = await showDialog<Matrix>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(editing == null ? 'Add Matrix' : 'Edit Matrix'),
-        content: SingleChildScrollView(
-          child: SizedBox(
-            width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name (optional)',
-                    border: OutlineInputBorder(),
-                  ),
+      builder: (context) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return AlertDialog(
+            title: Text(editing == null ? 'Add Matrix' : 'Edit Matrix'),
+            content: SingleChildScrollView(
+              child: SizedBox(
+                width: 420,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Name field
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Name (optional)',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── Dimension selectors ──
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _DimensionSelector(
+                            label: 'Rows',
+                            value: rows,
+                            onChanged: (v) {
+                              setDialogState(() {
+                                final oldData = _extractCellData(
+                                  cellControllers,
+                                );
+                                rows = v;
+                                initCellControllers(rows, cols, data: oldData);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Icon(
+                          Icons.close,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _DimensionSelector(
+                            label: 'Columns',
+                            value: cols,
+                            onChanged: (v) {
+                              setDialogState(() {
+                                final oldData = _extractCellData(
+                                  cellControllers,
+                                );
+                                cols = v;
+                                initCellControllers(rows, cols, data: oldData);
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── Matrix grid ──
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        children: [
+                          // Column headers
+                          Row(
+                            children: [
+                              const SizedBox(width: 32), // Row label space
+                              ...List.generate(
+                                cols,
+                                (j) => Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      'C${j + 1}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          // Grid rows
+                          ...List.generate(rows, (i) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                children: [
+                                  // Row label
+                                  SizedBox(
+                                    width: 32,
+                                    child: Text(
+                                      'R${i + 1}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  // Cell inputs
+                                  ...List.generate(cols, (j) {
+                                    return Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        child: TextField(
+                                          controller: cellControllers[i][j],
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                decimal: true,
+                                                signed: true,
+                                              ),
+                                          textAlign: TextAlign.center,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                fontFamily: 'monospace',
+                                              ),
+                                          decoration: InputDecoration(
+                                            isDense: true,
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 8,
+                                                ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              borderSide: BorderSide(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .outlineVariant
+                                                    .withAlpha(120),
+                                              ),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              borderSide: BorderSide(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .outlineVariant
+                                                    .withAlpha(80),
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              borderSide: BorderSide(
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                              ),
+                                            ),
+                                            filled: true,
+                                            fillColor: Theme.of(
+                                              context,
+                                            ).colorScheme.surfaceContainerLow,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: dataController,
-                  decoration: const InputDecoration(
-                    labelText: 'Rows (space/comma separated)',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                    helperText: 'Example 2x2:\n1 0\n0 1',
-                  ),
-                  maxLines: 6,
-                  minLines: 4,
-                  keyboardType: TextInputType.multiline,
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              try {
-                final parsed = _parseMatrixText(dataController.text);
-                final matrix = Matrix(
-                  id: editing?.id ?? _uuid.v4(),
-                  data: parsed,
-                  name: nameController.text.trim(),
-                );
-                Navigator.pop(context, matrix);
-              } catch (e) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('Invalid matrix: $e')));
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  try {
+                    final data = _extractCellData(cellControllers);
+                    final matrix = Matrix(
+                      id: editing?.id ?? _uuid.v4(),
+                      data: data,
+                      name: nameController.text.trim(),
+                    );
+                    Navigator.pop(context, matrix);
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Invalid matrix: $e')),
+                    );
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
       ),
     );
+
+    // Dispose cell controllers
+    for (final row in cellControllers) {
+      for (final ctrl in row) {
+        ctrl.dispose();
+      }
+    }
 
     if (result != null) {
       setState(() {
@@ -616,6 +821,21 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
       });
       await _persist();
     }
+  }
+
+  /// Extract cell data from TextEditingControllers into a 2D list.
+  static List<List<double>> _extractCellData(
+    List<List<TextEditingController>> controllers,
+  ) {
+    return controllers.map((row) {
+      return row.map((ctrl) {
+        final text = ctrl.text.trim();
+        if (text.isEmpty) return 0.0;
+        final value = double.tryParse(text);
+        if (value == null) throw 'Invalid number: "$text"';
+        return value;
+      }).toList();
+    }).toList();
   }
 
   void _deleteMatrix(String id) {
@@ -864,36 +1084,6 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
     _persist();
   }
 
-  static List<List<double>> _parseMatrixText(String text) {
-    final lines = text
-        .trim()
-        .split('\n')
-        .where((l) => l.trim().isNotEmpty)
-        .toList();
-    if (lines.isEmpty) {
-      throw 'Matrix cannot be empty';
-    }
-    final matrix = <List<double>>[];
-    int? width;
-    for (final line in lines) {
-      final parts = line
-          .split(RegExp('[ ,]+'))
-          .where((p) => p.trim().isNotEmpty)
-          .map(double.parse)
-          .toList();
-      width ??= parts.length;
-      if (parts.length != width) {
-        throw 'All rows must have the same number of columns';
-      }
-      matrix.add(parts);
-    }
-    return matrix;
-  }
-
-  static String _matrixToText(List<List<double>> data) {
-    return data.map((row) => row.join(' ')).join('\n');
-  }
-
   static List<List<double>> _transposeMatrix(List<List<double>> m) {
     if (m.isEmpty || m[0].isEmpty) return [];
     final rows = m.length;
@@ -976,5 +1166,69 @@ class _MatrixWorkspaceState extends ConsumerState<MatrixWorkspace> {
     // Extract inverse
     final inv = List.generate(n, (r) => List.generate(n, (c) => aug[r][n + c]));
     return inv;
+  }
+}
+
+/// A compact row/column dimension selector with +/- buttons.
+class _DimensionSelector extends StatelessWidget {
+  const _DimensionSelector({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: cs.outlineVariant),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove, size: 18),
+                onPressed: value > 1 ? () => onChanged(value - 1) : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              ),
+              Expanded(
+                child: Text(
+                  '$value',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: cs.primary,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add, size: 18),
+                onPressed: value < 10 ? () => onChanged(value + 1) : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

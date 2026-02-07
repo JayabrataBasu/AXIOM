@@ -505,16 +505,23 @@ class TextBlockEditor extends StatefulWidget {
 
 class _TextBlockEditorState extends State<TextBlockEditor> {
   late TextEditingController _controller;
+  late FocusNode _focusNode;
+  bool _isBold = false;
+  bool _isItalic = false;
+  bool _isUnderline = false;
+  TextAlign _textAlign = TextAlign.left;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.block.content);
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -526,6 +533,11 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
     }
   }
 
+  void _toggleBold() => setState(() => _isBold = !_isBold);
+  void _toggleItalic() => setState(() => _isItalic = !_isItalic);
+  void _toggleUnderline() => setState(() => _isUnderline = !_isUnderline);
+  void _setAlignment(TextAlign align) => setState(() => _textAlign = align);
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -535,45 +547,166 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Text field — clean, borderless, spacious
-          TextField(
-            controller: _controller,
-            maxLines: null,
-            minLines: 3,
-            style: AxiomTypography.bodyMedium.copyWith(
-              color: cs.onSurface,
-              height: 1.6,
+          // ── Formatting toolbar — word-processor style ──
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AxiomSpacing.sm,
+              vertical: AxiomSpacing.xs,
             ),
-            decoration: InputDecoration(
-              hintText: 'Start typing your thoughts...',
-              hintStyle: AxiomTypography.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant.withAlpha(120),
-              ),
-              filled: false,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-              isDense: true,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
             ),
-            onChanged: widget.onContentChanged,
-          ),
-          // Character count — subtle footer
-          Padding(
-            padding: const EdgeInsets.only(top: AxiomSpacing.sm),
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _controller,
-              builder: (context, value, _) => Text(
-                '${value.text.length} characters',
-                style: AxiomTypography.labelSmall.copyWith(
-                  color: cs.onSurfaceVariant.withAlpha(120),
+            child: Row(
+              children: [
+                _FormatButton(
+                  icon: Icons.format_bold_rounded,
+                  isActive: _isBold,
+                  onPressed: _toggleBold,
+                  tooltip: 'Bold',
                 ),
+                _FormatButton(
+                  icon: Icons.format_italic_rounded,
+                  isActive: _isItalic,
+                  onPressed: _toggleItalic,
+                  tooltip: 'Italic',
+                ),
+                _FormatButton(
+                  icon: Icons.format_underlined_rounded,
+                  isActive: _isUnderline,
+                  onPressed: _toggleUnderline,
+                  tooltip: 'Underline',
+                ),
+                Container(
+                  width: 1,
+                  height: 20,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  color: cs.outlineVariant.withAlpha(80),
+                ),
+                _FormatButton(
+                  icon: Icons.format_align_left_rounded,
+                  isActive: _textAlign == TextAlign.left,
+                  onPressed: () => _setAlignment(TextAlign.left),
+                  tooltip: 'Align left',
+                ),
+                _FormatButton(
+                  icon: Icons.format_align_center_rounded,
+                  isActive: _textAlign == TextAlign.center,
+                  onPressed: () => _setAlignment(TextAlign.center),
+                  tooltip: 'Center',
+                ),
+                _FormatButton(
+                  icon: Icons.format_align_right_rounded,
+                  isActive: _textAlign == TextAlign.right,
+                  onPressed: () => _setAlignment(TextAlign.right),
+                  tooltip: 'Align right',
+                ),
+                const Spacer(),
+                // Word + character count
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _controller,
+                  builder: (context, value, _) {
+                    final charCount = value.text.length;
+                    final wordCount = value.text.trim().isEmpty
+                        ? 0
+                        : value.text.trim().split(RegExp(r'\s+')).length;
+                    return Text(
+                      '$wordCount words · $charCount chars',
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                        fontSize: 10,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AxiomSpacing.sm),
+          // ── Document-like writing area ──
+          Container(
+            constraints: const BoxConstraints(minHeight: 180),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AxiomSpacing.lg,
+              vertical: AxiomSpacing.md,
+            ),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              border: Border.all(color: cs.outlineVariant.withAlpha(40)),
+            ),
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              maxLines: null,
+              minLines: 8,
+              textAlign: _textAlign,
+              style: AxiomTypography.bodyMedium.copyWith(
+                color: cs.onSurface,
+                height: 1.8,
+                fontWeight: _isBold ? FontWeight.bold : FontWeight.normal,
+                fontStyle: _isItalic ? FontStyle.italic : FontStyle.normal,
+                decoration: _isUnderline ? TextDecoration.underline : null,
               ),
+              decoration: InputDecoration(
+                hintText: 'Start writing...',
+                hintStyle: AxiomTypography.bodyMedium.copyWith(
+                  color: cs.onSurfaceVariant.withAlpha(100),
+                  height: 1.8,
+                ),
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              onChanged: widget.onContentChanged,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Small toggle button for the text formatting toolbar.
+class _FormatButton extends StatelessWidget {
+  const _FormatButton({
+    required this.icon,
+    required this.isActive,
+    required this.onPressed,
+    required this.tooltip,
+  });
+
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onPressed;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AxiomRadius.xs),
+        onTap: onPressed,
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: isActive ? cs.primary.withAlpha(30) : Colors.transparent,
+            borderRadius: BorderRadius.circular(AxiomRadius.xs),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: isActive ? cs.primary : cs.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }

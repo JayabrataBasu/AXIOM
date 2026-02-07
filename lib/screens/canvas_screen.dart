@@ -105,22 +105,28 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   setState(() => _currentZoom = scale);
                   _updateViewportRect();
                 },
-                child: CanvasContent(
-                  nodes: nodes,
-                  selectedNodeId: viewState.selectedNodeId,
-                  highlightNodeId: _recentlyCreatedNodeId,
-                  onNodeTap: _onNodeTap,
-                  onNodeDoubleTap: _onNodeDoubleTap,
-                  onNodeDragEnd: _onNodeDragEnd,
-                  onCanvasTap: _onCanvasTap,
-                  onCanvasDoubleTap: _onCanvasDoubleTap,
-                  onCanvasInfoChanged: (origin) {
-                    setState(() => _canvasOrigin = origin);
-                  },
-                  onBoundsChanged: (bounds) {
-                    setState(() => _contentBounds = bounds);
-                    _updateViewportRect();
-                  },
+                child: Stack(
+                  children: [
+                    CanvasContent(
+                      nodes: nodes,
+                      selectedNodeId: viewState.selectedNodeId,
+                      highlightNodeId: _recentlyCreatedNodeId,
+                      onNodeTap: _onNodeTap,
+                      onNodeDoubleTap: _onNodeDoubleTap,
+                      onNodeDragEnd: _onNodeDragEnd,
+                      onCanvasTap: _onCanvasTap,
+                      onCanvasDoubleTap: _onCanvasDoubleTap,
+                      onCanvasInfoChanged: (origin) {
+                        setState(() => _canvasOrigin = origin);
+                      },
+                      onBoundsChanged: (bounds) {
+                        setState(() => _contentBounds = bounds);
+                        _updateViewportRect();
+                      },
+                    ),
+                    // Sketch layer renders saved strokes so they persist and transform with canvas
+                    const CanvasSketchLayer(),
+                  ],
                 ),
               ),
             ),
