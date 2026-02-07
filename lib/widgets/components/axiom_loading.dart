@@ -12,6 +12,7 @@ class AxiomLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -21,7 +22,7 @@ class AxiomLoadingIndicator extends StatelessWidget {
             height: size,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(AxiomColors.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(cs.secondary),
             ),
           ),
           if (message != null) ...[
@@ -29,7 +30,7 @@ class AxiomLoadingIndicator extends StatelessWidget {
             Text(
               message!,
               style: AxiomTypography.bodyMedium.copyWith(
-                color: AxiomColors.textMuted,
+                color: cs.onSurfaceVariant.withAlpha(150),
               ),
               textAlign: TextAlign.center,
             ),
@@ -49,10 +50,11 @@ class AxiomProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: AxiomColors.surfaceVariant,
+        color: cs.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(AxiomRadius.full),
       ),
       child: FractionallySizedBox(
@@ -60,13 +62,11 @@ class AxiomProgressBar extends StatelessWidget {
         widthFactor: value.clamp(0.0, 1.0),
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AxiomColors.primary, AxiomColors.primaryLight],
-            ),
+            gradient: LinearGradient(colors: [cs.secondary, cs.primary]),
             borderRadius: BorderRadius.circular(AxiomRadius.full),
             boxShadow: [
               BoxShadow(
-                color: AxiomColors.primary.withAlpha((0.5 * 255).round()),
+                color: cs.secondary.withAlpha(80),
                 blurRadius: 10,
                 spreadRadius: 0,
               ),

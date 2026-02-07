@@ -31,21 +31,24 @@ class AxiomCard extends StatelessWidget {
       duration: AxiomDurations.fast,
       padding: padding ?? const EdgeInsets.all(AxiomSpacing.md),
       decoration: BoxDecoration(
-        color: backgroundColor ?? cs.surfaceContainerLow,
+        color: backgroundColor ?? cs.surfaceContainerLowest,
         borderRadius: radius,
-        border: Border.all(
-          color: cs.outlineVariant.withAlpha(100),
-          width: 1,
-        ),
+        border: Border.all(color: cs.outlineVariant.withAlpha(40), width: 0.5),
         boxShadow: elevated
             ? [
                 BoxShadow(
-                  color: cs.shadow.withAlpha(20),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: cs.shadow.withAlpha(10),
+                  blurRadius: 16,
+                  offset: const Offset(0, 3),
                 ),
               ]
-            : null,
+            : [
+                BoxShadow(
+                  color: cs.shadow.withAlpha(5),
+                  blurRadius: 8,
+                  offset: const Offset(0, 1),
+                ),
+              ],
       ),
       child: child,
     );
@@ -57,8 +60,8 @@ class AxiomCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: radius,
-          splashColor: cs.primary.withAlpha(15),
-          highlightColor: cs.primary.withAlpha(8),
+          splashColor: cs.secondary.withAlpha(15),
+          highlightColor: cs.secondary.withAlpha(8),
           child: card,
         ),
       );
@@ -90,10 +93,7 @@ class AxiomGlassPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface.withAlpha(220),
         borderRadius: borderRadius ?? BorderRadius.circular(AxiomRadius.lg),
-        border: Border.all(
-          color: cs.outlineVariant.withAlpha(60),
-          width: 1,
-        ),
+        border: Border.all(color: cs.outlineVariant.withAlpha(60), width: 1),
       ),
       child: child,
     );

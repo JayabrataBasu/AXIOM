@@ -167,39 +167,53 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
                   const SizedBox(height: 48),
 
-                  // Get Started Button - M3 filled tonal style
+                  // Get Started Button - Stitch emerald pill style
                   SizedBox(
                     width: double.infinity,
                     height: 56,
-                    child: FilledButton(
-                      onPressed: _handleGetStarted,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: currentAccentColor,
-                        foregroundColor: cs.surface,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AxiomRadius.lg),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            _currentPage < _pageCount - 1
-                                ? 'Next'
-                                : 'Get Started',
-                            style: AxiomTypography.labelLarge.copyWith(
-                              color: cs.surface,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            color: cs.surface,
-                            size: 20,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AxiomRadius.full),
+                        boxShadow: [
+                          BoxShadow(
+                            color: currentAccentColor.withAlpha(50),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
                           ),
                         ],
+                      ),
+                      child: FilledButton(
+                        onPressed: _handleGetStarted,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: currentAccentColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AxiomRadius.full,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _currentPage < _pageCount - 1
+                                  ? 'Next'
+                                  : 'Get Started',
+                              style: AxiomTypography.labelLarge.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -249,29 +263,38 @@ class OnboardingPage extends StatelessWidget {
       children: [
         const Spacer(),
 
-        // Icon/Illustration - M3 expressive container
+        // Icon/Illustration - Stitch-style expressive container
         Container(
-          width: 180,
-          height: 180,
+          width: 200,
+          height: 200,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(
-              colors: [accentColor.withAlpha(25), Colors.transparent],
+              colors: [accentColor.withAlpha(20), Colors.transparent],
+              stops: const [0.4, 1.0],
             ),
           ),
           child: Center(
             child: Container(
-              width: 100,
-              height: 100,
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
-                color: cs.surfaceContainer,
-                borderRadius: BorderRadius.circular(AxiomRadius.xl),
-                border: Border.all(color: accentColor.withAlpha(60), width: 1),
+                color: cs.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(AxiomRadius.xxl),
+                border: Border.all(
+                  color: accentColor.withAlpha(40),
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: accentColor.withAlpha(40),
+                    color: accentColor.withAlpha(30),
                     blurRadius: 40,
                     spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: accentColor.withAlpha(15),
+                    blurRadius: 80,
+                    spreadRadius: 10,
                   ),
                 ],
               ),

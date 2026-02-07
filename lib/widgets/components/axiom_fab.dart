@@ -27,18 +27,55 @@ class AxiomFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Let the theme handle colors via FloatingActionButtonThemeData
+    final cs = Theme.of(context).colorScheme;
     if (extended && label != null) {
-      return FloatingActionButton.extended(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 22),
-        label: Text(label!, style: AxiomTypography.labelLarge),
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AxiomRadius.full),
+          boxShadow: [
+            BoxShadow(
+              color: cs.secondary.withAlpha(50),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: onPressed,
+          backgroundColor: cs.secondary,
+          foregroundColor: Colors.white,
+          icon: Icon(icon, size: 22),
+          label: Text(
+            label!,
+            style: AxiomTypography.labelLarge.copyWith(color: Colors.white),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AxiomRadius.full),
+          ),
+        ),
       );
     }
 
-    return FloatingActionButton(
-      onPressed: onPressed,
-      child: Icon(icon, size: 26),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AxiomRadius.full),
+        boxShadow: [
+          BoxShadow(
+            color: cs.secondary.withAlpha(60),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: onPressed,
+        backgroundColor: cs.secondary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AxiomRadius.full),
+        ),
+        child: Icon(icon, size: 26),
+      ),
     );
   }
 }

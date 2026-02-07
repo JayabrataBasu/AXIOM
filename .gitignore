@@ -154,15 +154,10 @@ target/
 # Ignore all markdown documentation files by default — keep repository README(s) tracked
 *.md
 *.sh
-SKETCH_MODE_UPDATE.md
-STAGE_5_IMPLEMENTATION.md
-STAGE_6_FINALIZATION.md
+
 !README.md
 !**/README.md
-CANVAS_BLOCKS_FEATURE.md
 axiom-canvas
-STITCH_iNTEGRATION_PHASE1.md
-PHASE_2_ACTION_PLAN
 stitch/
 # -----------------------------
 # Final notes

@@ -183,212 +183,396 @@ class _WorkspaceSessionsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
     final sessionsAsync = ref.watch(workspaceSessionsNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Workspace Sessions'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(64),
-          child: Padding(
-            padding: const EdgeInsets.all(AxiomSpacing.md),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search workspaces...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                filled: true,
-                fillColor: theme.colorScheme.surface,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
-            ),
-          ),
-        ),
-      ),
-      body: sessionsAsync.when(
-        data: (sessions) {
-          final filteredSessions = _searchQuery.isEmpty
-              ? sessions
-              : sessions.where((s) {
-                  final labelLower = s.label.toLowerCase();
-                  final typeLower = s.workspaceType.toString().toLowerCase();
-                  return labelLower.contains(_searchQuery) ||
-                      typeLower.contains(_searchQuery);
-                }).toList();
+      backgroundColor: cs.surface,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Spacer for status bar
+            const SizedBox(height: AxiomSpacing.md),
 
-          if (filteredSessions.isEmpty) {
-            return Center(
+            // Header section with title + search + chips
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AxiomSpacing.lg),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    _searchQuery.isEmpty ? Icons.workspaces : Icons.search_off,
-                    size: 64,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                  ),
-                  const SizedBox(height: AxiomSpacing.md),
+                  // Title
                   Text(
-                    _searchQuery.isEmpty
-                        ? 'No workspace sessions yet'
-                        : 'No workspaces match your search',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    'My Workspaces',
+                    style: AxiomTypography.display.copyWith(
+                      color: cs.onSurface,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ],
-              ),
-            );
-          }
+                  const SizedBox(height: AxiomSpacing.lg),
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(AxiomSpacing.md),
-            itemCount: filteredSessions.length,
-            itemBuilder: (context, index) {
-              final session = filteredSessions[index];
-              final icon = _getWorkspaceIcon(session.workspaceType);
-              final theme = Theme.of(context);
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: AxiomSpacing.md),
-                child: InkWell(
-                  onTap: () => _openSession(session),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Stack(
-                      children: [
-                        // Main content
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(icon, size: 32),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        session.label.isNotEmpty
-                                            ? session.label
-                                            : 'Untitled',
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        session.workspaceType,
-                                        style: theme.textTheme.bodySmall,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                  // Search bar (rounded, full-width)
+                  Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(AxiomRadius.full),
+                      border: Border.all(
+                        color: cs.outlineVariant.withAlpha(60),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.shadow.withAlpha(6),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
                         ),
-                        // Top-right buttons
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Delete button (red)
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline),
-                                color: theme.colorScheme.error,
-                                tooltip: 'Delete',
-                                onPressed: () => _deleteSession(session),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16),
+                          child: Icon(
+                            Icons.search_rounded,
+                            color: cs.onSurfaceVariant.withAlpha(120),
+                            size: 24,
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search workspaces...',
+                              hintStyle: TextStyle(
+                                color: cs.onSurfaceVariant.withAlpha(100),
+                                fontWeight: FontWeight.w400,
                               ),
-                              // 3-dot menu
-                              PopupMenuButton(
-                                icon: const Icon(Icons.more_vert),
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'open',
-                                    child: ListTile(
-                                      leading: Icon(Icons.open_in_new),
-                                      title: Text('Open'),
-                                      contentPadding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'fork',
-                                    child: ListTile(
-                                      leading: Icon(Icons.call_split),
-                                      title: Text('Fork'),
-                                      contentPadding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'rename',
-                                    child: ListTile(
-                                      leading: Icon(Icons.edit),
-                                      title: Text('Rename'),
-                                      contentPadding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'clone',
-                                    child: ListTile(
-                                      leading: Icon(Icons.content_copy),
-                                      title: Text('Clone'),
-                                      contentPadding: EdgeInsets.zero,
-                                    ),
-                                  ),
-                                ],
-                                onSelected: (value) {
-                                  switch (value) {
-                                    case 'open':
-                                      _openSession(session);
-                                      break;
-                                    case 'fork':
-                                      _forkSession(session);
-                                      break;
-                                    case 'rename':
-                                      _renameSession(session);
-                                      break;
-                                    case 'clone':
-                                      _cloneSession(session);
-                                      break;
-                                  }
-                                },
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
                               ),
-                            ],
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value.toLowerCase();
+                              });
+                            },
                           ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: AxiomSpacing.md),
+
+                  // Filter chips (horizontal scroll)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _FilterChip(
+                          label: 'All',
+                          isSelected: true,
+                          onTap: () {},
+                        ),
+                        const SizedBox(width: AxiomSpacing.sm),
+                        _FilterChip(
+                          label: 'Recent',
+                          isSelected: false,
+                          onTap: () {},
+                        ),
+                        const SizedBox(width: AxiomSpacing.sm),
+                        _FilterChip(
+                          label: 'Pinned',
+                          isSelected: false,
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AxiomSpacing.md),
+
+            // Workspace list
+            Expanded(
+              child: sessionsAsync.when(
+                data: (sessions) {
+                  final filteredSessions = _searchQuery.isEmpty
+                      ? sessions
+                      : sessions.where((s) {
+                          final labelLower = s.label.toLowerCase();
+                          final typeLower = s.workspaceType
+                              .toString()
+                              .toLowerCase();
+                          return labelLower.contains(_searchQuery) ||
+                              typeLower.contains(_searchQuery);
+                        }).toList();
+
+                  if (filteredSessions.isEmpty) {
+                    return _buildEmptyState(context);
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AxiomSpacing.lg,
+                    ),
+                    itemCount: filteredSessions.length,
+                    itemBuilder: (context, index) {
+                      final session = filteredSessions[index];
+                      return _buildWorkspaceCard(context, session);
+                    },
+                  );
+                },
+                loading: () =>
+                    Center(child: CircularProgressIndicator(color: cs.primary)),
+                error: (error, stack) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 48, color: cs.error),
+                      const SizedBox(height: AxiomSpacing.md),
+                      Text('Error: $error', style: TextStyle(color: cs.error)),
+                    ],
+                  ),
                 ),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: AxiomSpacing.md),
-              Text('Error: $error'),
-            ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      // FAB
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/welcome'),
+        backgroundColor: cs.secondary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AxiomRadius.lg),
+        ),
+        elevation: 6,
+        child: const Icon(Icons.add_rounded, size: 28),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            _searchQuery.isEmpty
+                ? Icons.folder_open_rounded
+                : Icons.search_off_rounded,
+            size: 56,
+            color: cs.onSurfaceVariant.withAlpha(80),
+          ),
+          const SizedBox(height: AxiomSpacing.md),
+          Text(
+            _searchQuery.isEmpty
+                ? 'No workspaces yet'
+                : 'No workspaces match your search',
+            style: AxiomTypography.heading3.copyWith(
+              color: cs.onSurfaceVariant.withAlpha(150),
+            ),
+          ),
+          const SizedBox(height: AxiomSpacing.sm),
+          Text(
+            'Create your first workspace to start thinking',
+            style: AxiomTypography.bodySmall.copyWith(
+              color: cs.onSurfaceVariant.withAlpha(100),
+            ),
+          ),
+          const SizedBox(height: AxiomSpacing.xl),
+          FilledButton.icon(
+            onPressed: () => context.push('/welcome'),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Create Workspace'),
+            style: FilledButton.styleFrom(
+              backgroundColor: cs.secondary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AxiomSpacing.xl,
+                vertical: AxiomSpacing.md,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AxiomRadius.full),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorkspaceCard(BuildContext context, WorkspaceSession session) {
+    final cs = Theme.of(context).colorScheme;
+    final icon = _getWorkspaceIcon(session.workspaceType);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AxiomSpacing.md),
+      child: Material(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AxiomRadius.lg),
+        elevation: 1,
+        shadowColor: cs.shadow.withAlpha(20),
+        child: InkWell(
+          onTap: () => _openSession(session),
+          borderRadius: BorderRadius.circular(AxiomRadius.lg),
+          splashColor: cs.primary.withAlpha(15),
+          child: Padding(
+            padding: const EdgeInsets.all(AxiomSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top row: icon + more button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: cs.primary.withAlpha(20),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(icon, color: cs.primary, size: 20),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        color: cs.onSurfaceVariant.withAlpha(100),
+                        size: 20,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AxiomRadius.md),
+                      ),
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'open',
+                          child: Row(
+                            children: [
+                              Icon(Icons.open_in_new_rounded, size: 20),
+                              SizedBox(width: 12),
+                              Text('Open'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'rename',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit_rounded, size: 20),
+                              SizedBox(width: 12),
+                              Text('Rename'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'fork',
+                          child: Row(
+                            children: [
+                              Icon(Icons.call_split_rounded, size: 20),
+                              SizedBox(width: 12),
+                              Text('Fork'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'clone',
+                          child: Row(
+                            children: [
+                              Icon(Icons.content_copy_rounded, size: 20),
+                              SizedBox(width: 12),
+                              Text('Clone'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_outline_rounded,
+                                size: 20,
+                                color: cs.error,
+                              ),
+                              const SizedBox(width: 12),
+                              Text('Delete', style: TextStyle(color: cs.error)),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'open':
+                            _openSession(session);
+                          case 'fork':
+                            _forkSession(session);
+                          case 'rename':
+                            _renameSession(session);
+                          case 'clone':
+                            _cloneSession(session);
+                          case 'delete':
+                            _deleteSession(session);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AxiomSpacing.xxl),
+
+                // Title
+                Text(
+                  session.label.isNotEmpty ? session.label : 'Untitled',
+                  style: AxiomTypography.heading3.copyWith(
+                    color: cs.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+
+                // Timestamp
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 14,
+                      color: cs.onSurfaceVariant.withAlpha(120),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Last opened ${_formatDate(session.updatedAt)}',
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    if (difference.inMinutes < 5) return 'just now';
+    if (difference.inMinutes < 60) return '${difference.inMinutes} mins ago';
+    if (difference.inHours < 24) return '${difference.inHours}h ago';
+    if (difference.inDays == 1) return 'Yesterday';
+    if (difference.inDays < 7) return '${difference.inDays} days ago';
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   IconData _getWorkspaceIcon(String type) {
@@ -402,7 +586,55 @@ class _WorkspaceSessionsScreenState
       case 'code_editor':
         return Icons.code;
       default:
-        return Icons.workspaces;
+        return Icons.science_rounded;
     }
+  }
+}
+
+/// Filter chip matching Stitch design (rounded, active state)
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? cs.secondary : cs.surfaceContainer,
+          borderRadius: BorderRadius.circular(AxiomRadius.sm),
+          border: isSelected
+              ? null
+              : Border.all(color: cs.outlineVariant.withAlpha(80), width: 1),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: cs.secondary.withAlpha(40),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: AxiomTypography.labelLarge.copyWith(
+            color: isSelected ? Colors.white : cs.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
   }
 }

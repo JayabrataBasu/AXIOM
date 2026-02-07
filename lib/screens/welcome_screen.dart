@@ -117,23 +117,36 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
       backgroundColor: cs.surface,
       body: Stack(
         children: [
-          // Subtle gradient background - warm Everforest glow
+          // Warm gradient background - Stitch-style organic glow
           Positioned(
-            top: -100,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.6,
+            top: -120,
+            left: -50,
             child: Container(
+              width: 300,
+              height: 300,
               decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  center: Alignment.topCenter,
-                  radius: 1.2,
                   colors: [
-                    cs.primary.withAlpha(20),
-                    cs.secondary.withAlpha(8),
+                    cs.secondary.withAlpha(18),
+                    cs.secondary.withAlpha(5),
                     Colors.transparent,
                   ],
-                  stops: const [0.0, 0.4, 1.0],
+                  stops: const [0.0, 0.5, 1.0],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 100,
+            right: -80,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [cs.primary.withAlpha(12), Colors.transparent],
                 ),
               ),
             ),
@@ -142,30 +155,43 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
           SafeArea(
             child: Column(
               children: [
-                // Top bar - M3 style
+                // Stitch-style floating top bar
                 Padding(
                   padding: const EdgeInsets.all(AxiomSpacing.md),
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_rounded,
-                          color: cs.onSurfaceVariant,
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerHigh.withAlpha(120),
+                          borderRadius: BorderRadius.circular(AxiomRadius.full),
                         ),
-                        onPressed: () => context.go('/dashboard'),
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.arrow_back_rounded,
+                            color: cs.onSurface,
+                            size: 20,
+                          ),
+                          onPressed: () => context.go('/dashboard'),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 36,
+                            minHeight: 36,
+                          ),
+                        ),
                       ),
                       Expanded(
                         child: Text(
                           'Create Workspace',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: AxiomTypography.labelLarge.copyWith(
                             color: cs.onSurface,
-                            fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 48), // Balance the back button
+                      const SizedBox(width: 36), // Balance the back button
                     ],
                   ),
                 ),
@@ -179,25 +205,39 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                       children: [
                         const SizedBox(height: AxiomSpacing.lg),
 
-                        // Create from scratch card - prominent action
+                        // Create from scratch card - Stitch-style prominent action
                         _GlassCard(
                           onTap: _isLoading ? null : _handleCreateFromScratch,
                           isHighlighted: true,
                           child: Padding(
-                            padding: const EdgeInsets.all(AxiomSpacing.lg),
+                            padding: const EdgeInsets.all(AxiomSpacing.xl),
                             child: Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    color: cs.primary.withAlpha(30),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        cs.secondary,
+                                        cs.secondary.withAlpha(200),
+                                      ],
+                                    ),
                                     borderRadius: BorderRadius.circular(
                                       AxiomRadius.md,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: cs.secondary.withAlpha(40),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.add_rounded,
-                                    color: cs.primary,
+                                    color: Colors.white,
                                     size: 24,
                                   ),
                                 ),
@@ -264,16 +304,33 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
                         const SizedBox(height: AxiomSpacing.xl),
 
-                        // View existing workspaces button
-                        TextButton(
+                        // View existing workspaces button - Stitch outline style
+                        OutlinedButton.icon(
                           onPressed: _isLoading ? null : _handleViewExisting,
-                          child: Text(
+                          icon: Icon(
+                            Icons.folder_open_rounded,
+                            color: cs.secondary,
+                            size: 18,
+                          ),
+                          label: Text(
                             'View Existing Workspaces',
                             style: TextStyle(
                               color: cs.secondary,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AxiomRadius.full,
+                              ),
+                            ),
+                            side: BorderSide(color: cs.secondary.withAlpha(80)),
                           ),
                         ),
 
@@ -300,7 +357,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   }
 }
 
-/// Glass-morphism style card for Everforest theme
+/// Stitch-inspired glass card with warm surface and soft shadow
 class _GlassCard extends StatelessWidget {
   const _GlassCard({
     required this.child,
@@ -320,25 +377,26 @@ class _GlassCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AxiomRadius.lg),
+        splashColor: cs.secondary.withAlpha(15),
         child: Container(
           decoration: BoxDecoration(
-            color: cs.surfaceContainer,
+            color: cs.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(AxiomRadius.lg),
             border: Border.all(
               color: isHighlighted
-                  ? cs.primary.withAlpha(40)
-                  : cs.outlineVariant,
+                  ? cs.secondary.withAlpha(40)
+                  : cs.outlineVariant.withAlpha(40),
               width: 1,
             ),
-            boxShadow: isHighlighted
-                ? [
-                    BoxShadow(
-                      color: cs.primary.withAlpha(15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
+            boxShadow: [
+              BoxShadow(
+                color: isHighlighted
+                    ? cs.secondary.withAlpha(12)
+                    : cs.shadow.withAlpha(8),
+                blurRadius: isHighlighted ? 20 : 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: child,
         ),
@@ -366,7 +424,7 @@ class _TemplateCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh,
+                color: cs.secondary.withAlpha(20),
                 borderRadius: BorderRadius.circular(AxiomRadius.md),
               ),
               child: Center(
@@ -383,16 +441,17 @@ class _TemplateCard extends StatelessWidget {
                 children: [
                   Text(
                     template.name,
-                    style: TextStyle(
+                    style: AxiomTypography.bodyLarge.copyWith(
                       color: cs.onSurface,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     template.description,
-                    style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
+                    style: AxiomTypography.bodySmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -401,7 +460,7 @@ class _TemplateCard extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: cs.onSurfaceVariant,
+              color: cs.onSurfaceVariant.withAlpha(120),
               size: 20,
             ),
           ],

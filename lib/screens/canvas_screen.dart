@@ -58,7 +58,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AxiomColors.bg0,
+      backgroundColor: theme.colorScheme.surface,
       body: KeyboardListener(
         focusNode: _focusNode,
         autofocus: true,
@@ -292,416 +292,441 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   Widget _buildToolbar(BuildContext context, ThemeData theme) {
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
     final workspaceLabel = _getWorkspaceLabel();
+    final cs = theme.colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        // Everforest glass panel - warm dark overlay
-        color: AxiomColors.bg0.withAlpha(220),
-        border: Border(
-          bottom: BorderSide(color: AxiomColors.bg3.withAlpha(100)),
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AxiomSpacing.md,
+          vertical: AxiomSpacing.sm,
         ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            // Back button
-            IconButton(
-              icon: Icon(Icons.arrow_back, color: AxiomColors.fg),
-              onPressed: _onBackPressed,
-              tooltip: 'Go back',
-              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-              iconSize: 24,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            // Floating glass panel
+            color: cs.surface.withAlpha(230),
+            borderRadius: BorderRadius.circular(AxiomRadius.full),
+            border: Border.all(
+              color: cs.outlineVariant.withAlpha(40),
+              width: 0.5,
             ),
-            // Title - centered
-            Expanded(
-              child: Center(
-                child: Text(
-                  workspaceLabel.toUpperCase(),
-                  style: AxiomTypography.labelLarge.copyWith(
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                    color: AxiomColors.fg,
+            boxShadow: [
+              BoxShadow(
+                color: cs.shadow.withAlpha(12),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Back button
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHigh.withAlpha(120),
+                  borderRadius: BorderRadius.circular(AxiomRadius.full),
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_rounded,
+                    color: cs.onSurface,
+                    size: 20,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  onPressed: _onBackPressed,
+                  tooltip: 'Go back',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                 ),
               ),
-            ),
-            // Right actions
-            if (!isSmallScreen)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Search button
-                  IconButton(
-                    icon: Icon(Icons.search, color: AxiomColors.grey0),
-                    onPressed: () async {
-                      if (!mounted) return;
-                      // ignore: use_build_context_synchronously
-                      final ctx = context; // Capture context before async gap
-                      final nav =
-                          await Navigator.push<search.SearchNavigation?>(
-                            ctx,
-                            MaterialPageRoute(
-                              builder: (_) => const SearchNodesScreen(),
-                            ),
-                          );
-
-                      if (nav == null || !mounted) return;
-
-                      final nodes =
-                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                      final position = _getNodePosition(nodes, nav.nodeId);
-                      _canvasKey.currentState?.centerOn(position);
-                      ref
-                          .read(canvasViewProvider.notifier)
-                          .selectNode(nav.nodeId);
-
-                      if (nav.blockId.isNotEmpty && mounted) {
-                        // ignore: use_build_context_synchronously
-                        Navigator.push(
-                          ctx,
-                          MaterialPageRoute(
-                            builder: (_) => NodeEditorScreen(
-                              nodeId: nav.nodeId,
-                              highlightBlockId: nav.blockId,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    tooltip: 'Search nodes',
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
+              const SizedBox(width: AxiomSpacing.sm),
+              // Title - centered
+              Expanded(
+                child: Center(
+                  child: Text(
+                    workspaceLabel,
+                    style: AxiomTypography.labelLarge.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                      color: cs.onSurface,
                     ),
-                    iconSize: 24,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 4),
-                  // Tools dropdown menu
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.tune, color: AxiomColors.grey0),
-                    tooltip: 'Tools & Options',
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
-                    ),
-                    iconSize: 24,
-                    color: AxiomColors.bg1,
-                    itemBuilder: (context) => [
-                      // Minimap option
-                      PopupMenuItem<String>(
-                        value: 'minimap',
-                        child: Row(
-                          children: [
-                            Icon(Icons.map, size: 20, color: AxiomColors.grey0),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Minimap',
-                              style: TextStyle(color: AxiomColors.fg),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Sketch tools submenu
-                      PopupMenuItem<String>(
-                        value: 'sketch_toggle',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.draw,
-                              size: 20,
-                              color: AxiomColors.grey0,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              _sketchMode ? 'Exit Sketch Mode' : 'Sketch Mode',
-                              style: TextStyle(color: AxiomColors.fg),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'minimap':
-                          setState(() => _minimapVisible = true);
-                          break;
-                        case 'sketch_toggle':
-                          setState(() {
-                            _sketchMode = !_sketchMode;
-                            if (!_sketchMode) {
-                              // Clear sketch when exiting
-                              ref
-                                  .read(canvasSketchNotifierProvider.notifier)
-                                  .clearCanvas();
-                            }
-                          });
-                          break;
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 4),
-                  // Zoom to fit button
-                  IconButton(
-                    icon: Icon(Icons.fit_screen, color: AxiomColors.grey0),
-                    onPressed: () {
-                      final nodes =
-                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                      if (nodes.isEmpty) return;
-
-                      // Calculate canvas bounds the same way CanvasContent does
-                      const padding = 2000.0; // CanvasContent.padding
-                      double canvasMinX = -padding;
-                      double canvasMinY = -padding;
-
-                      for (final n in nodes) {
-                        canvasMinX = canvasMinX < n.position.x - padding
-                            ? canvasMinX
-                            : n.position.x - padding;
-                        canvasMinY = canvasMinY < n.position.y - padding
-                            ? canvasMinY
-                            : n.position.y - padding;
-                      }
-
-                      // Calculate bounds in rendering coordinates
-                      double minX = nodes.first.position.x - canvasMinX;
-                      double minY = nodes.first.position.y - canvasMinY;
-                      double maxX = nodes.first.position.x - canvasMinX;
-                      double maxY = nodes.first.position.y - canvasMinY;
-
-                      for (final node in nodes) {
-                        final renderX = node.position.x - canvasMinX;
-                        final renderY = node.position.y - canvasMinY;
-                        if (renderX < minX) minX = renderX;
-                        if (renderY < minY) minY = renderY;
-                        if (renderX > maxX) maxX = renderX;
-                        if (renderY > maxY) maxY = renderY;
-                      }
-
-                      // Add approximate node dimensions (230x120)
-                      final bounds = Rect.fromLTRB(
-                        minX,
-                        minY,
-                        maxX + 230,
-                        maxY + 120,
-                      );
-
-                      // Defer zoom to next frame to avoid lifecycle races
-                      // if provider notifications are in-flight
-                      Future.delayed(const Duration(milliseconds: 1), () {
-                        if (mounted) {
-                          _canvasKey.currentState?.zoomToFit(bounds);
-                        }
-                      });
-                    },
-                    tooltip: 'Fit all nodes',
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
-                    ),
-                    iconSize: 24,
-                  ),
-                  const SizedBox(width: 4),
-                  // Zoom indicator - Everforest styled pill
-                  Container(
-                    height: 32,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: AxiomColors.bg2.withAlpha(150),
-                      border: Border.all(color: AxiomColors.bg3.withAlpha(100)),
-                      borderRadius: BorderRadius.circular(AxiomRadius.sm),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '${(_currentZoom * 100).toStringAsFixed(0)}%',
-                        style: AxiomTypography.labelSmall.copyWith(
-                          fontFamily: 'monospace',
-                          fontWeight: FontWeight.bold,
-                          color: AxiomColors.green,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            else
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.search, color: AxiomColors.grey0),
-                    onPressed: () async {
-                      if (!mounted) return;
-                      // ignore: use_build_context_synchronously
-                      final ctx = context; // Capture context before async gap
-                      final nav =
-                          await Navigator.push<search.SearchNavigation?>(
-                            ctx,
-                            MaterialPageRoute(
-                              builder: (_) => const SearchNodesScreen(),
-                            ),
-                          );
-
-                      if (nav == null || !mounted) return;
-
-                      final nodes =
-                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                      final position = _getNodePosition(nodes, nav.nodeId);
-                      _canvasKey.currentState?.centerOn(position);
-                      ref
-                          .read(canvasViewProvider.notifier)
-                          .selectNode(nav.nodeId);
-
-                      if (nav.blockId.isNotEmpty && mounted) {
-                        // ignore: use_build_context_synchronously
-                        Navigator.push(
-                          ctx,
-                          MaterialPageRoute(
-                            builder: (_) => NodeEditorScreen(
-                              nodeId: nav.nodeId,
-                              highlightBlockId: nav.blockId,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    tooltip: 'Search nodes',
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
-                    ),
-                    iconSize: 24,
-                  ),
-                  const SizedBox(width: 4),
-                  // Tools dropdown menu
-                  PopupMenuButton<String>(
-                    icon: Icon(Icons.tune, color: AxiomColors.grey0),
-                    tooltip: 'Tools & Options',
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
-                    ),
-                    iconSize: 24,
-                    color: AxiomColors.bg1,
-                    itemBuilder: (context) => [
-                      // Minimap option
-                      PopupMenuItem<String>(
-                        value: 'minimap',
-                        child: Row(
-                          children: [
-                            Icon(Icons.map, size: 20, color: AxiomColors.grey0),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Minimap',
-                              style: TextStyle(color: AxiomColors.fg),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Sketch tools submenu
-                      PopupMenuItem<String>(
-                        value: 'sketch_toggle',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.draw,
-                              size: 20,
-                              color: AxiomColors.grey0,
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              _sketchMode ? 'Exit Sketch Mode' : 'Sketch Mode',
-                              style: TextStyle(color: AxiomColors.fg),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'minimap':
-                          setState(() => _minimapVisible = true);
-                          break;
-                        case 'sketch_toggle':
-                          setState(() {
-                            _sketchMode = !_sketchMode;
-                            if (!_sketchMode) {
-                              // Clear sketch when exiting
-                              ref
-                                  .read(canvasSketchNotifierProvider.notifier)
-                                  .clearCanvas();
-                            }
-                          });
-                          break;
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: Icon(Icons.fit_screen, color: AxiomColors.grey0),
-                    onPressed: () {
-                      final nodes =
-                          ref.read(nodesNotifierProvider).valueOrNull ?? [];
-                      if (nodes.isEmpty) return;
-
-                      // Calculate canvas bounds the same way CanvasContent does
-                      const padding = 2000.0; // CanvasContent.padding
-                      double canvasMinX = -padding;
-                      double canvasMinY = -padding;
-
-                      for (final n in nodes) {
-                        canvasMinX = canvasMinX < n.position.x - padding
-                            ? canvasMinX
-                            : n.position.x - padding;
-                        canvasMinY = canvasMinY < n.position.y - padding
-                            ? canvasMinY
-                            : n.position.y - padding;
-                      }
-
-                      // Calculate bounds in rendering coordinates
-                      double minX = nodes.first.position.x - canvasMinX;
-                      double minY = nodes.first.position.y - canvasMinY;
-                      double maxX = nodes.first.position.x - canvasMinX;
-                      double maxY = nodes.first.position.y - canvasMinY;
-
-                      for (final node in nodes) {
-                        final renderX = node.position.x - canvasMinX;
-                        final renderY = node.position.y - canvasMinY;
-                        if (renderX < minX) minX = renderX;
-                        if (renderY < minY) minY = renderY;
-                        if (renderX > maxX) maxX = renderX;
-                        if (renderY > maxY) maxY = renderY;
-                      }
-
-                      // Add approximate node dimensions (230x120)
-                      final bounds = Rect.fromLTRB(
-                        minX,
-                        minY,
-                        maxX + 230,
-                        maxY + 120,
-                      );
-
-                      // Defer zoom to next frame to avoid lifecycle races
-                      // if provider notifications are in-flight
-                      Future.delayed(const Duration(milliseconds: 1), () {
-                        if (mounted) {
-                          _canvasKey.currentState?.zoomToFit(bounds);
-                        }
-                      });
-                    },
-                    tooltip: 'Fit all nodes',
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
-                    ),
-                    iconSize: 24,
-                  ),
-                ],
+                ),
               ),
-          ],
+              // Right actions
+              if (!isSmallScreen)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Search button
+                    _ToolbarIconButton(
+                      icon: Icons.search_rounded,
+                      color: cs.onSurfaceVariant,
+                      onPressed: () async {
+                        if (!mounted) return;
+                        final ctx = context;
+                        final nav =
+                            await Navigator.push<search.SearchNavigation?>(
+                              ctx,
+                              MaterialPageRoute(
+                                builder: (_) => const SearchNodesScreen(),
+                              ),
+                            );
+
+                        if (nav == null || !mounted) return;
+
+                        final nodes =
+                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                        final position = _getNodePosition(nodes, nav.nodeId);
+                        _canvasKey.currentState?.centerOn(position);
+                        ref
+                            .read(canvasViewProvider.notifier)
+                            .selectNode(nav.nodeId);
+
+                        if (nav.blockId.isNotEmpty && mounted) {
+                          Navigator.push(
+                            ctx,
+                            MaterialPageRoute(
+                              builder: (_) => NodeEditorScreen(
+                                nodeId: nav.nodeId,
+                                highlightBlockId: nav.blockId,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      tooltip: 'Search nodes',
+                    ),
+                    const SizedBox(width: 4),
+                    // Tools dropdown menu
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.tune_rounded,
+                        color: cs.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      tooltip: 'Tools & Options',
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
+                      iconSize: 20,
+                      color: cs.surfaceContainerHigh,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AxiomRadius.md),
+                      ),
+                      itemBuilder: (context) => [
+                        PopupMenuItem<String>(
+                          value: 'minimap',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.map_rounded,
+                                size: 20,
+                                color: cs.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Minimap',
+                                style: TextStyle(color: cs.onSurface),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<String>(
+                          value: 'sketch_toggle',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.draw_rounded,
+                                size: 20,
+                                color: cs.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                _sketchMode
+                                    ? 'Exit Sketch Mode'
+                                    : 'Sketch Mode',
+                                style: TextStyle(color: cs.onSurface),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'minimap':
+                            setState(() => _minimapVisible = true);
+                            break;
+                          case 'sketch_toggle':
+                            setState(() {
+                              _sketchMode = !_sketchMode;
+                              if (!_sketchMode) {
+                                ref
+                                    .read(canvasSketchNotifierProvider.notifier)
+                                    .clearCanvas();
+                              }
+                            });
+                            break;
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    // Zoom to fit button
+                    _ToolbarIconButton(
+                      icon: Icons.fit_screen_rounded,
+                      color: cs.onSurfaceVariant,
+                      onPressed: () {
+                        final nodes =
+                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                        if (nodes.isEmpty) return;
+
+                        const padding = 2000.0;
+                        double canvasMinX = -padding;
+                        double canvasMinY = -padding;
+
+                        for (final n in nodes) {
+                          canvasMinX = canvasMinX < n.position.x - padding
+                              ? canvasMinX
+                              : n.position.x - padding;
+                          canvasMinY = canvasMinY < n.position.y - padding
+                              ? canvasMinY
+                              : n.position.y - padding;
+                        }
+
+                        double minX = nodes.first.position.x - canvasMinX;
+                        double minY = nodes.first.position.y - canvasMinY;
+                        double maxX = nodes.first.position.x - canvasMinX;
+                        double maxY = nodes.first.position.y - canvasMinY;
+
+                        for (final node in nodes) {
+                          final renderX = node.position.x - canvasMinX;
+                          final renderY = node.position.y - canvasMinY;
+                          if (renderX < minX) minX = renderX;
+                          if (renderY < minY) minY = renderY;
+                          if (renderX > maxX) maxX = renderX;
+                          if (renderY > maxY) maxY = renderY;
+                        }
+
+                        final bounds = Rect.fromLTRB(
+                          minX,
+                          minY,
+                          maxX + 230,
+                          maxY + 120,
+                        );
+
+                        Future.delayed(const Duration(milliseconds: 1), () {
+                          if (mounted) {
+                            _canvasKey.currentState?.zoomToFit(bounds);
+                          }
+                        });
+                      },
+                      tooltip: 'Fit all nodes',
+                    ),
+                    const SizedBox(width: 6),
+                    // Zoom indicator - Stitch styled pill
+                    Container(
+                      height: 30,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: cs.secondary.withAlpha(20),
+                        borderRadius: BorderRadius.circular(AxiomRadius.full),
+                        border: Border.all(
+                          color: cs.secondary.withAlpha(50),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${(_currentZoom * 100).toStringAsFixed(0)}%',
+                          style: AxiomTypography.labelSmall.copyWith(
+                            fontFamily: 'JetBrains Mono',
+                            fontWeight: FontWeight.bold,
+                            color: cs.secondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ToolbarIconButton(
+                      icon: Icons.search_rounded,
+                      color: cs.onSurfaceVariant,
+                      onPressed: () async {
+                        if (!mounted) return;
+                        final ctx = context;
+                        final nav =
+                            await Navigator.push<search.SearchNavigation?>(
+                              ctx,
+                              MaterialPageRoute(
+                                builder: (_) => const SearchNodesScreen(),
+                              ),
+                            );
+
+                        if (nav == null || !mounted) return;
+
+                        final nodes =
+                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                        final position = _getNodePosition(nodes, nav.nodeId);
+                        _canvasKey.currentState?.centerOn(position);
+                        ref
+                            .read(canvasViewProvider.notifier)
+                            .selectNode(nav.nodeId);
+
+                        if (nav.blockId.isNotEmpty && mounted) {
+                          Navigator.push(
+                            ctx,
+                            MaterialPageRoute(
+                              builder: (_) => NodeEditorScreen(
+                                nodeId: nav.nodeId,
+                                highlightBlockId: nav.blockId,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      tooltip: 'Search nodes',
+                    ),
+                    const SizedBox(width: 4),
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.tune_rounded,
+                        color: cs.onSurfaceVariant,
+                        size: 20,
+                      ),
+                      tooltip: 'Tools & Options',
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
+                      iconSize: 20,
+                      color: cs.surfaceContainerHigh,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AxiomRadius.md),
+                      ),
+                      itemBuilder: (context) => [
+                        PopupMenuItem<String>(
+                          value: 'minimap',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.map_rounded,
+                                size: 20,
+                                color: cs.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Minimap',
+                                style: TextStyle(color: cs.onSurface),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<String>(
+                          value: 'sketch_toggle',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.draw_rounded,
+                                size: 20,
+                                color: cs.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                _sketchMode
+                                    ? 'Exit Sketch Mode'
+                                    : 'Sketch Mode',
+                                style: TextStyle(color: cs.onSurface),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'minimap':
+                            setState(() => _minimapVisible = true);
+                            break;
+                          case 'sketch_toggle':
+                            setState(() {
+                              _sketchMode = !_sketchMode;
+                              if (!_sketchMode) {
+                                ref
+                                    .read(canvasSketchNotifierProvider.notifier)
+                                    .clearCanvas();
+                              }
+                            });
+                            break;
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    _ToolbarIconButton(
+                      icon: Icons.fit_screen_rounded,
+                      color: cs.onSurfaceVariant,
+                      onPressed: () {
+                        final nodes =
+                            ref.read(nodesNotifierProvider).valueOrNull ?? [];
+                        if (nodes.isEmpty) return;
+
+                        const padding = 2000.0;
+                        double canvasMinX = -padding;
+                        double canvasMinY = -padding;
+
+                        for (final n in nodes) {
+                          canvasMinX = canvasMinX < n.position.x - padding
+                              ? canvasMinX
+                              : n.position.x - padding;
+                          canvasMinY = canvasMinY < n.position.y - padding
+                              ? canvasMinY
+                              : n.position.y - padding;
+                        }
+
+                        double minX = nodes.first.position.x - canvasMinX;
+                        double minY = nodes.first.position.y - canvasMinY;
+                        double maxX = nodes.first.position.x - canvasMinX;
+                        double maxY = nodes.first.position.y - canvasMinY;
+
+                        for (final node in nodes) {
+                          final renderX = node.position.x - canvasMinX;
+                          final renderY = node.position.y - canvasMinY;
+                          if (renderX < minX) minX = renderX;
+                          if (renderY < minY) minY = renderY;
+                          if (renderX > maxX) maxX = renderX;
+                          if (renderY > maxY) maxY = renderY;
+                        }
+
+                        final bounds = Rect.fromLTRB(
+                          minX,
+                          minY,
+                          maxX + 230,
+                          maxY + 120,
+                        );
+
+                        Future.delayed(const Duration(milliseconds: 1), () {
+                          if (mounted) {
+                            _canvasKey.currentState?.zoomToFit(bounds);
+                          }
+                        });
+                      },
+                      tooltip: 'Fit all nodes',
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -731,27 +756,37 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 
   Widget _buildFAB(ThemeData theme) {
-    // Everforest green FAB with soft glow
+    final cs = theme.colorScheme;
+    // Stitch-inspired emerald FAB with soft glow
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: _createNewNode,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AxiomRadius.full),
         child: Container(
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: AxiomColors.green,
-            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [cs.secondary, cs.secondary.withAlpha(220)],
+            ),
+            borderRadius: BorderRadius.circular(AxiomRadius.full),
             boxShadow: [
               BoxShadow(
-                color: AxiomColors.green.withAlpha(100),
+                color: cs.secondary.withAlpha(80),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
+              BoxShadow(
+                color: cs.secondary.withAlpha(30),
+                blurRadius: 40,
+                spreadRadius: 4,
+              ),
             ],
           ),
-          child: Icon(Icons.add, color: AxiomColors.bg0, size: 28),
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
         ),
       ),
     );
@@ -911,26 +946,32 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
   }
 
   Future<void> _confirmDeleteNode(String nodeId) async {
+    final cs = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AxiomColors.bg1,
+        backgroundColor: cs.surfaceContainerHigh,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AxiomRadius.xxl),
+        ),
         title: Text(
           'Delete Node?',
-          style: AxiomTypography.heading2.copyWith(color: AxiomColors.fg),
+          style: AxiomTypography.heading2.copyWith(color: cs.onSurface),
         ),
         content: Text(
           'This action cannot be undone.',
-          style: AxiomTypography.bodyMedium.copyWith(color: AxiomColors.grey0),
+          style: AxiomTypography.bodyMedium.copyWith(
+            color: cs.onSurfaceVariant,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: AxiomColors.grey0)),
+            child: Text('Cancel', style: TextStyle(color: cs.onSurfaceVariant)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AxiomColors.red),
+            style: FilledButton.styleFrom(backgroundColor: cs.error),
             child: const Text('Delete'),
           ),
         ],
@@ -941,5 +982,31 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       ref.read(canvasViewProvider.notifier).clearSelection();
       await ref.read(nodesNotifierProvider.notifier).deleteNode(nodeId);
     }
+  }
+}
+
+/// Small circular icon button for the floating toolbar
+class _ToolbarIconButton extends StatelessWidget {
+  const _ToolbarIconButton({
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    this.tooltip,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onPressed;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(icon, color: color, size: 20),
+      onPressed: onPressed,
+      tooltip: tooltip,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+    );
   }
 }

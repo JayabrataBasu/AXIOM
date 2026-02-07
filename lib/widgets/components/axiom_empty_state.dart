@@ -22,36 +22,32 @@ class AxiomEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AxiomSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icon with gradient background
+            // Icon with soft themed background
             Container(
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AxiomColors.primary.withAlpha((0.2 * 255).round()),
-                    AxiomColors.primaryLight.withAlpha((0.1 * 255).round()),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(AxiomRadius.xl),
-                border: Border.all(color: AxiomColors.borderDark, width: 1),
+                color: cs.secondary.withAlpha(20),
+                borderRadius: BorderRadius.circular(AxiomRadius.full),
               ),
-              child: Icon(icon, size: 40, color: AxiomColors.textMuted),
+              child: Icon(icon, size: 40, color: cs.secondary),
             ),
-            const SizedBox(height: AxiomSpacing.lg),
+            const SizedBox(height: AxiomSpacing.xl),
 
             // Title
             Text(
               title,
-              style: AxiomTypography.heading2.copyWith(color: Colors.white),
+              style: AxiomTypography.heading2.copyWith(
+                color: cs.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AxiomSpacing.sm),
@@ -60,7 +56,7 @@ class AxiomEmptyState extends StatelessWidget {
             Text(
               message,
               style: AxiomTypography.bodyMedium.copyWith(
-                color: AxiomColors.textMuted,
+                color: cs.onSurfaceVariant.withAlpha(150),
               ),
               textAlign: TextAlign.center,
             ),
@@ -68,7 +64,21 @@ class AxiomEmptyState extends StatelessWidget {
             // Optional action button
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: AxiomSpacing.xl),
-              ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
+              FilledButton(
+                onPressed: onAction,
+                style: FilledButton.styleFrom(
+                  backgroundColor: cs.secondary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AxiomRadius.full),
+                  ),
+                ),
+                child: Text(actionLabel!),
+              ),
             ],
           ],
         ),

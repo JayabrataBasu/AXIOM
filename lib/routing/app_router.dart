@@ -74,6 +74,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WorkspaceSessionsScreen(),
       ),
 
+      // Settings Screen
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+
       // Root - redirects to appropriate screen
       GoRoute(
         path: '/',
@@ -98,35 +105,46 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
 
     // Error handling
-    errorBuilder: (context, state) => Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              'Navigation Error',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                state.error?.toString() ?? 'Unknown navigation error',
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
+    errorBuilder: (context, state) {
+      final cs = Theme.of(context).colorScheme;
+      return Scaffold(
+        backgroundColor: cs.surface,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline_rounded, size: 64, color: cs.error),
+              const SizedBox(height: 16),
+              Text(
+                'Navigation Error',
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineMedium?.copyWith(color: cs.onSurface),
               ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              child: const Text('Go Home'),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  state.error?.toString() ?? 'Unknown navigation error',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: () => context.go('/'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: cs.secondary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Go Home'),
+              ),
+            ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 });

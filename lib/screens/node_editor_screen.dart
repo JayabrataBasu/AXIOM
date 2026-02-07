@@ -95,9 +95,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     return nodesAsync.when(
       loading: () => Scaffold(
         backgroundColor: cs.surface,
-        body: Center(
-          child: CircularProgressIndicator(color: cs.primary),
-        ),
+        body: Center(child: CircularProgressIndicator(color: cs.primary)),
       ),
       error: (error, stack) => Scaffold(
         backgroundColor: cs.surface,
@@ -134,40 +132,123 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
 
         return Scaffold(
           backgroundColor: cs.surface,
-          appBar: AppBar(
-            backgroundColor: cs.surface,
-            title: Text('Edit Node', style: TextStyle(color: cs.onSurface)),
-            elevation: 0,
-            iconTheme: IconThemeData(color: cs.onSurface),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.add_link_rounded, color: cs.secondary),
-                tooltip: 'Add link',
-                onPressed: () => _showAddLinkDialog(node),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete_outline_rounded, color: cs.error),
-                tooltip: 'Delete node',
-                onPressed: () => _confirmDelete(node),
-              ),
-            ],
-          ),
           body: Column(
             children: [
+              // Stitch-style floating header
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AxiomSpacing.md,
+                    vertical: AxiomSpacing.sm,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: cs.surface.withAlpha(230),
+                      borderRadius: BorderRadius.circular(AxiomRadius.full),
+                      border: Border.all(
+                        color: cs.outlineVariant.withAlpha(40),
+                        width: 0.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.shadow.withAlpha(10),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        // Back button
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: cs.surfaceContainerHigh.withAlpha(120),
+                            borderRadius: BorderRadius.circular(
+                              AxiomRadius.full,
+                            ),
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: cs.onSurface,
+                              size: 20,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 36,
+                              minHeight: 36,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AxiomSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            'Edit Node',
+                            style: AxiomTypography.labelLarge.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.add_link_rounded,
+                            color: cs.secondary,
+                            size: 20,
+                          ),
+                          tooltip: 'Add link',
+                          onPressed: () => _showAddLinkDialog(node),
+                          constraints: const BoxConstraints(
+                            minWidth: 36,
+                            minHeight: 36,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            color: cs.error.withAlpha(180),
+                            size: 20,
+                          ),
+                          tooltip: 'Delete node',
+                          onPressed: () => _confirmDelete(node),
+                          constraints: const BoxConstraints(
+                            minWidth: 36,
+                            minHeight: 36,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               // Node name editing header
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(AxiomSpacing.md),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AxiomSpacing.xl,
+                  vertical: AxiomSpacing.md,
+                ),
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerLow,
+                  color: cs.surfaceContainerLowest,
                   border: Border(
-                    bottom: BorderSide(color: cs.outlineVariant),
+                    bottom: BorderSide(
+                      color: cs.outlineVariant.withAlpha(30),
+                      width: 0.5,
+                    ),
                   ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Node name (editable)
+                    // Node name (editable) - Stitch-style large title
                     TextField(
                       controller: _nodeNameController,
                       focusNode: _nodeNameFocusNode,
@@ -175,14 +256,17 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                           _updateNodeNameDebounced(node.id, name),
                       onSubmitted: (name) => _updateNodeName(node.id, name),
                       textInputAction: TextInputAction.done,
-                      style: AxiomTypography.heading2.copyWith(
+                      style: AxiomTypography.heading1.copyWith(
                         color: cs.onSurface,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 26,
                       ),
                       decoration: InputDecoration(
                         hintText: 'Untitled Node',
-                        hintStyle: AxiomTypography.heading2.copyWith(
-                          color: cs.onSurfaceVariant.withAlpha(150),
+                        hintStyle: AxiomTypography.heading1.copyWith(
+                          color: cs.onSurfaceVariant.withAlpha(100),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 26,
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
@@ -190,31 +274,27 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                       ),
                     ),
                     const SizedBox(height: AxiomSpacing.sm),
-                    // Node metadata (scrollable to handle long content)
+                    // Node metadata - styled as subtle badges
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          Text(
-                            'ID: ${node.id.substring(0, 8)}...',
-                            style: AxiomTypography.labelSmall.copyWith(
-                              fontFamily: 'monospace',
-                              color: cs.onSurfaceVariant.withAlpha(150),
-                            ),
+                          _buildMetaBadge(
+                            Icons.fingerprint_rounded,
+                            node.id.substring(0, 8),
+                            cs,
                           ),
-                          const SizedBox(width: AxiomSpacing.md),
-                          Text(
-                            'Pos: (${node.position.x.toInt()}, ${node.position.y.toInt()})',
-                            style: AxiomTypography.labelSmall.copyWith(
-                              color: cs.onSurfaceVariant.withAlpha(150),
-                            ),
+                          const SizedBox(width: AxiomSpacing.sm),
+                          _buildMetaBadge(
+                            Icons.grid_4x4_rounded,
+                            '(${node.position.x.toInt()}, ${node.position.y.toInt()})',
+                            cs,
                           ),
-                          const SizedBox(width: AxiomSpacing.md),
-                          Text(
+                          const SizedBox(width: AxiomSpacing.sm),
+                          _buildMetaBadge(
+                            Icons.widgets_rounded,
                             '${node.blocks.length} block${node.blocks.length != 1 ? 's' : ''}',
-                            style: AxiomTypography.labelSmall.copyWith(
-                              color: cs.onSurfaceVariant.withAlpha(150),
-                            ),
+                            cs,
                           ),
                         ],
                       ),
@@ -238,7 +318,11 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.link_rounded, size: 16, color: cs.secondary),
+                          Icon(
+                            Icons.link_rounded,
+                            size: 16,
+                            color: cs.secondary,
+                          ),
                           const SizedBox(width: AxiomSpacing.sm),
                           Text(
                             'Linked to ${node.links.length} node${node.links.length != 1 ? 's' : ''}',
@@ -318,12 +402,27 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: cs.primary,
-            foregroundColor: cs.surface,
-            onPressed: () => _showAddBlockDialog(node),
-            tooltip: 'Add block',
-            child: const Icon(Icons.add_rounded),
+          floatingActionButton: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AxiomRadius.full),
+              boxShadow: [
+                BoxShadow(
+                  color: cs.secondary.withAlpha(60),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: FloatingActionButton(
+              backgroundColor: cs.secondary,
+              foregroundColor: Colors.white,
+              onPressed: () => _showAddBlockDialog(node),
+              tooltip: 'Add block',
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AxiomRadius.full),
+              ),
+              child: const Icon(Icons.add_rounded),
+            ),
           ),
         );
       },
@@ -336,17 +435,43 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.note_add_rounded, size: 48, color: cs.onSurfaceVariant.withAlpha(150)),
-          const SizedBox(height: AxiomSpacing.md),
-          Text(
-            'No blocks yet',
-            style: AxiomTypography.bodyLarge.copyWith(color: cs.onSurfaceVariant),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: cs.secondary.withAlpha(20),
+              borderRadius: BorderRadius.circular(AxiomRadius.full),
+            ),
+            child: Icon(Icons.note_add_rounded, size: 36, color: cs.secondary),
           ),
-          const SizedBox(height: AxiomSpacing.md),
+          const SizedBox(height: AxiomSpacing.xl),
+          Text(
+            'Start building your idea',
+            style: AxiomTypography.heading3.copyWith(
+              color: cs.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AxiomSpacing.sm),
+          Text(
+            'Add text, code, sketches, math, and more',
+            style: AxiomTypography.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant.withAlpha(150),
+            ),
+          ),
+          const SizedBox(height: AxiomSpacing.xl),
           FilledButton.icon(
             onPressed: () => _showAddBlockDialog(node),
             icon: const Icon(Icons.add_rounded),
             label: const Text('Add Block'),
+            style: FilledButton.styleFrom(
+              backgroundColor: cs.secondary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AxiomRadius.full),
+              ),
+            ),
           ),
         ],
       ),
@@ -888,6 +1013,30 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       if (node.id == id) return node;
     }
     return null;
+  }
+
+  Widget _buildMetaBadge(IconData icon, String label, ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHigh.withAlpha(100),
+        borderRadius: BorderRadius.circular(AxiomRadius.full),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: cs.onSurfaceVariant.withAlpha(150)),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AxiomTypography.labelSmall.copyWith(
+              color: cs.onSurfaceVariant.withAlpha(150),
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

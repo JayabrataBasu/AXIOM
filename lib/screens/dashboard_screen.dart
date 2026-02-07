@@ -36,18 +36,18 @@ class DashboardScreen extends ConsumerWidget {
         loading: () =>
             Center(child: CircularProgressIndicator(color: cs.primary)),
         error: (error, stack) => Center(
-          child: Text(
-            'Error: $error',
-            style: TextStyle(color: cs.error),
-          ),
+          child: Text('Error: $error', style: TextStyle(color: cs.error)),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/welcome'),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('New Workspace'),
-        backgroundColor: cs.primaryContainer,
-        foregroundColor: cs.onPrimaryContainer,
+        backgroundColor: cs.secondary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AxiomRadius.lg),
+        ),
+        elevation: 6,
+        child: const Icon(Icons.add_rounded, size: 28),
       ),
     );
   }
@@ -95,7 +95,10 @@ class DashboardScreen extends ConsumerWidget {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.search_rounded, color: cs.onSurfaceVariant.withAlpha(150)),
+          icon: Icon(
+            Icons.search_rounded,
+            color: cs.onSurfaceVariant.withAlpha(150),
+          ),
           onPressed: () {
             _showFeatureHint(context, 'Global search coming soon.');
           },
@@ -230,65 +233,40 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildHeroSection(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Welcome back,',
-          style: AxiomTypography.displayMedium.copyWith(
-            color: cs.onSurface,
-            height: 1.1,
-          ),
-        ),
-        Text(
-          'Commander.',
-          style: AxiomTypography.displayMedium.copyWith(
-            color: cs.primary,
-            height: 1.1,
-          ),
-        ),
-        const SizedBox(height: AxiomSpacing.lg),
+    final hour = DateTime.now().hour;
+    final greeting = hour < 12
+        ? 'Good Morning'
+        : hour < 17
+        ? 'Good Afternoon'
+        : 'Good Evening';
 
-        // Status indicator - M3 chip style
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AxiomSpacing.md,
-            vertical: AxiomSpacing.sm,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date / greeting label
+          Text(
+            greeting.toUpperCase(),
+            style: AxiomTypography.labelSmall.copyWith(
+              color: cs.onSurfaceVariant.withAlpha(180),
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainer,
-            borderRadius: BorderRadius.circular(AxiomRadius.full),
-            border: Border.all(color: cs.outlineVariant, width: 1),
+          const SizedBox(height: 6),
+          // Main heading
+          Text(
+            'Ready to explore\nnew ideas?',
+            style: AxiomTypography.displayMedium.copyWith(
+              color: cs.onSurface,
+              height: 1.15,
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: cs.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: cs.primary.withAlpha(100),
-                      blurRadius: 6,
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AxiomSpacing.sm),
-              Text(
-                'All systems operational',
-                style: AxiomTypography.labelSmall.copyWith(
-                  color: cs.onSurfaceVariant.withAlpha(150),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -312,10 +290,7 @@ class DashboardScreen extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () => context.push('/workspaces'),
-              child: Text(
-                'View All',
-                style: TextStyle(color: cs.secondary),
-              ),
+              child: Text('View All', style: TextStyle(color: cs.secondary)),
             ),
           ],
         ),
@@ -392,38 +367,59 @@ class DashboardScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Top row: icon + 3-dot menu (Stitch design)
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: cs.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(AxiomRadius.md),
+                  color: cs.primary.withAlpha(20),
+                  shape: BoxShape.circle,
                 ),
                 child: Icon(
                   _getWorkspaceIcon(session.workspaceType),
                   color: cs.primary,
-                  size: 22,
+                  size: 20,
                 ),
+              ),
+              Icon(
+                Icons.more_vert_rounded,
+                color: cs.onSurfaceVariant.withAlpha(100),
+                size: 20,
               ),
             ],
           ),
+          // Bottom: title + timestamp (Stitch design)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 session.label.isNotEmpty ? session.label : 'Untitled Workspace',
-                style: AxiomTypography.heading3.copyWith(color: cs.onSurface),
+                style: AxiomTypography.heading3.copyWith(
+                  color: cs.onSurface,
+                  fontSize: 16,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: AxiomSpacing.xs),
-              Text(
-                _formatDate(session.updatedAt),
-                style: AxiomTypography.labelSmall.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.schedule_rounded,
+                    size: 14,
+                    color: cs.onSurfaceVariant.withAlpha(120),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Last opened ${_formatDate(session.updatedAt)}',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant.withAlpha(120),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -445,49 +441,26 @@ class DashboardScreen extends ConsumerWidget {
           style: AxiomTypography.heading2.copyWith(color: cs.onSurface),
         ),
         const SizedBox(height: AxiomSpacing.md),
+        // 2-column stat cards matching Stitch design
         Row(
           children: [
             Expanded(
-              child: AxiomCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${sessions.length}',
-                      style: AxiomTypography.displaySmall.copyWith(
-                        color: cs.primary,
-                      ),
-                    ),
-                    Text(
-                      'Workspaces',
-                      style: AxiomTypography.labelMedium.copyWith(
-                        color: cs.onSurfaceVariant.withAlpha(150),
-                      ),
-                    ),
-                  ],
-                ),
+              child: _StitchStatCard(
+                icon: Icons.lightbulb_outlined,
+                iconColor: cs.primary,
+                count: '0',
+                label: 'Ideas Created',
+                countColor: cs.primary,
               ),
             ),
             const SizedBox(width: AxiomSpacing.md),
             Expanded(
-              child: AxiomCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '0',
-                      style: AxiomTypography.displaySmall.copyWith(
-                        color: cs.secondary,
-                      ),
-                    ),
-                    Text(
-                      'Nodes',
-                      style: AxiomTypography.labelMedium.copyWith(
-                        color: cs.onSurfaceVariant.withAlpha(150),
-                      ),
-                    ),
-                  ],
-                ),
+              child: _StitchStatCard(
+                icon: Icons.grid_view_rounded,
+                iconColor: cs.secondary,
+                count: '${sessions.length}',
+                label: 'Workspaces',
+                countColor: cs.secondary,
               ),
             ),
           ],
@@ -519,6 +492,93 @@ class DashboardScreen extends ConsumerWidget {
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
+  }
+}
+
+/// Stitch-design stat card — icon + count + label with elevated container
+class _StitchStatCard extends StatelessWidget {
+  const _StitchStatCard({
+    required this.icon,
+    required this.iconColor,
+    required this.count,
+    required this.label,
+    required this.countColor,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String count;
+  final String label;
+  final Color countColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      height: 128,
+      padding: const EdgeInsets.all(AxiomSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
+        borderRadius: BorderRadius.circular(AxiomRadius.lg),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withAlpha(10),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Top row: icon + arrow
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: iconColor.withAlpha(25),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              Transform.rotate(
+                angle: -0.785398, // -45 degrees
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: cs.onSurfaceVariant.withAlpha(80),
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
+          // Bottom: count + label
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                count,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: countColor,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: AxiomTypography.labelSmall.copyWith(
+                  color: cs.onSurfaceVariant.withAlpha(150),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -565,9 +625,7 @@ class _DrawerItem extends StatelessWidget {
                 Text(
                   label,
                   style: AxiomTypography.labelLarge.copyWith(
-                    color: selected
-                        ? cs.onSecondaryContainer
-                        : cs.onSurface,
+                    color: selected ? cs.onSecondaryContainer : cs.onSurface,
                   ),
                 ),
               ],

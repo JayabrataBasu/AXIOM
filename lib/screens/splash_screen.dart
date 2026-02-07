@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/design_tokens.dart';
-import '../widgets/components/axiom_loading.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -90,38 +89,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       backgroundColor: cs.surface,
       body: Stack(
         children: [
-          // Subtle grid background
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _GridBackgroundPainter(
-                gridColor: cs.surfaceContainerHigh,
-              ),
-            ),
-          ),
+          // Warm parchment/dark background (no grid)
+          Positioned.fill(child: Container(color: cs.surface)),
 
-          // Warm ambient glow from top - Everforest green tint
+          // Decorative glow circles (soft, organic)
           Positioned(
-            top: -100,
-            left: 0,
-            right: 0,
-            height: MediaQuery.of(context).size.height * 0.6,
+            top: -150,
+            right: -100,
             child: Container(
+              width: 400,
+              height: 400,
               decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  center: Alignment.topCenter,
-                  radius: 1.2,
-                  colors: [
-                    cs.primary.withAlpha(25),
-                    cs.secondary.withAlpha(10),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
+                  colors: [cs.primary.withAlpha(15), Colors.transparent],
                 ),
               ),
             ),
           ),
 
-          // Main content
+          // Main centered content
           Center(
             child: FadeTransition(
               opacity: _fadeAnimation,
@@ -130,30 +117,42 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo
+                    // Logo with subtle pulsing glow
                     _buildLogo(cs),
-                    const SizedBox(height: AxiomSpacing.xl),
+                    const SizedBox(height: 24),
 
-                    // Brand name - warm cream color from Everforest
-                    Text(
-                      'AXIOM',
-                      style: AxiomTypography.display.copyWith(
-                        fontSize: 48,
-                        letterSpacing: 8,
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w300,
-                      ),
+                    // Progress indicator
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 60),
+                      child: _buildProgressBar(cs),
                     ),
-                    const SizedBox(height: AxiomSpacing.md),
+                    const SizedBox(height: 12),
 
-                    // Tagline
-                    Text(
-                      'A THINKING SYSTEM',
-                      style: AxiomTypography.labelSmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                        letterSpacing: 4,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    // Status text
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 60),
+                          child: Text(
+                            'Initializing...',
+                            style: AxiomTypography.labelSmall.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 60),
+                          child: Text(
+                            '${(_progress * 100).toStringAsFixed(0)}%',
+                            style: AxiomTypography.labelSmall.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -161,7 +160,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             ),
           ),
 
-          // Bottom section with progress bar
+          // Bottom tagline
           Positioned(
             bottom: 48,
             left: 0,
@@ -170,22 +169,53 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               opacity: _fadeAnimation,
               child: Column(
                 children: [
-                  // Progress bar
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 80),
-                    child: AxiomProgressBar(value: _progress),
-                  ),
-                  const SizedBox(height: AxiomSpacing.lg),
-
-                  // Version text
                   Text(
-                    'v0.1.0',
-                    style: AxiomTypography.labelSmall.copyWith(
+                    'Your private thinking space',
+                    style: AxiomTypography.bodySmall.copyWith(
                       color: cs.onSurfaceVariant,
-                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: cs.primary.withAlpha(50),
+                      borderRadius: BorderRadius.circular(1),
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressBar(ColorScheme colorScheme) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: Stack(
+        children: [
+          // Background track
+          Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withAlpha(30),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          // Animated progress fill
+          FractionallySizedBox(
+            widthFactor: _progress,
+            child: Container(
+              height: 6,
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
           ),
@@ -290,32 +320,4 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
   }
-}
-
-/// Grid background painter - subtle warm grid
-class _GridBackgroundPainter extends CustomPainter {
-  _GridBackgroundPainter({required this.gridColor});
-  final Color gridColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = gridColor.withAlpha(20)
-      ..strokeWidth = 1;
-
-    const gridSize = 48.0;
-
-    // Vertical lines
-    for (double x = 0; x < size.width; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-
-    // Horizontal lines
-    for (double y = 0; y < size.height; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
