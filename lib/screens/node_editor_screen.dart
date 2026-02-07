@@ -588,10 +588,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   }
 
   Future<void> _showAddBlockDialog(IdeaNode node) async {
-    final blockType = await showDialog<BlockType>(
-      context: context,
-      builder: (context) => const BlockTypeSelector(),
-    );
+    final blockType = await showBlockTypeSelector(context);
 
     if (blockType == null) return;
 

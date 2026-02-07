@@ -463,26 +463,23 @@ class _SketchCanvasPainter extends CustomPainter {
       return;
     }
 
-    // Draw strokes with pressure-sensitive width
-    for (int i = 0; i < points.length - 1; i++) {
-      final p0 = points[i];
-      final p1 = points[i + 1];
+    // Use a single Path to avoid visual thickness doubling from
+    // overlapping round caps on individual line segments.
+    final strokePaint = Paint()
+      ..color = paint.color
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = paint.strokeWidth
+      ..style = PaintingStyle.stroke;
 
-      // Use average pressure for this segment
-      final avgPressure = (p0.pressure + p1.pressure) / 2;
-      final pressureWidth = (paint.strokeWidth * avgPressure).clamp(0.5, 50.0);
+    final path = Path();
+    path.moveTo(points.first.toOffset().dx, points.first.toOffset().dy);
 
-      final segmentAlpha = (paint.color.a * avgPressure)
-          .clamp(0, 255)
-          .toDouble();
-      final segmentPaint = Paint()
-        ..color = paint.color.withValues(alpha: segmentAlpha)
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..strokeWidth = pressureWidth;
-
-      canvas.drawLine(p0.toOffset(), p1.toOffset(), segmentPaint);
+    for (int i = 1; i < points.length; i++) {
+      path.lineTo(points[i].toOffset().dx, points[i].toOffset().dy);
     }
+
+    canvas.drawPath(path, strokePaint);
   }
 
   @override

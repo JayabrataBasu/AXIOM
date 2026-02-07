@@ -114,19 +114,32 @@ class _IdeaNodeCardState extends ConsumerState<IdeaNodeCard> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Node name/title
+                    if (widget.node.name.isNotEmpty)
+                      Text(
+                        widget.node.name,
+                        style: AxiomTypography.labelSmall.copyWith(
+                          color: cs.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     // Node preview content
-                    if (widget.node.previewText.isNotEmpty)
+                    if (widget.node.previewText.isNotEmpty) ...[
+                      if (widget.node.name.isNotEmpty)
+                        const SizedBox(height: AxiomSpacing.xs),
                       Text(
                         widget.node.previewText,
                         style: AxiomTypography.bodySmall.copyWith(
                           color: cs.onSurface,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w400,
                           height: 1.5,
                         ),
-                        maxLines: 4,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
-                      )
-                    else
+                      ),
+                    ] else if (widget.node.name.isEmpty)
                       Text(
                         'Empty node',
                         style: AxiomTypography.labelSmall.copyWith(
