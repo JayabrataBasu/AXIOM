@@ -7,12 +7,14 @@ import '../models/models.dart';
 import '../models/node_template.dart';
 import '../providers/providers.dart';
 import '../services/search_service.dart' as search;
+import '../services/mind_map_service.dart';
 import '../theme/design_tokens.dart';
 import '../widgets/widgets.dart';
 import '../widgets/canvas_sketch_overlay.dart';
 import '../widgets/dialogs/add_canvas_item_dialog.dart';
 import 'node_editor_screen.dart';
 import 'search_nodes_screen.dart';
+import 'mind_map_screen.dart';
 
 /// The main canvas screen - the primary thinking surface.
 /// Everforest themed: bg0 background, glass toolbar, green accent FAB.
@@ -683,6 +685,67 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
           ),
         );
       }
+    } else if (itemType == CanvasItemType.mindMapRef) {
+      // Create a new mind map and navigate to it
+      if (!mounted) return;
+
+      // Prompt for mind map name
+      final nameController = TextEditingController(text: 'New Mind Map');
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Create Mind Map'),
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'Mind Map Name',
+              hintText: 'e.g., Project Ideas, Research Notes...',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Create'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true || !mounted) {
+        nameController.dispose();
+        return;
+      }
+
+      final workspaceId = widget.workspaceId;
+      if (workspaceId == null) {
+        nameController.dispose();
+        return;
+      }
+
+      // Create the mind map
+      final mindMap = await MindMapService.instance.createMindMap(
+        workspaceId: workspaceId,
+        name: nameController.text.trim().isEmpty
+            ? 'New Mind Map'
+            : nameController.text.trim(),
+      );
+
+      nameController.dispose();
+
+      if (!mounted) return;
+
+      // Navigate to the mind map screen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              MindMapScreen(workspaceId: workspaceId, mapId: mindMap.id),
+        ),
+      );
     } else {
       // Create a container node with the chosen block type pre-added
       final viewportCenter =

@@ -7,3 +7,4 @@ export 'canvas_sketch.dart';
 export 'workspace_session.dart';
 export 'matrix_models.dart';
 export 'canvas_element.dart';
+export 'mind_map.dart';

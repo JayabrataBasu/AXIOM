@@ -7,6 +7,7 @@ enum CanvasItemType {
   codeBlock,
   sketchBlock,
   audioBlock,
+  mindMapRef,
 }
 
 /// Dialog to choose what type of item to add to the canvas
@@ -65,6 +66,15 @@ class AddCanvasItemDialog extends StatelessWidget {
                       color: Colors.blue,
                       onTap: () =>
                           Navigator.pop(context, CanvasItemType.container),
+                    ),
+                    const SizedBox(height: 8),
+                    _ItemCard(
+                      icon: Icons.account_tree,
+                      title: 'Mind Map',
+                      description: 'Visual brainstorming workspace',
+                      color: Colors.indigo,
+                      onTap: () =>
+                          Navigator.pop(context, CanvasItemType.mindMapRef),
                     ),
                     const Divider(height: 24),
                     Text(

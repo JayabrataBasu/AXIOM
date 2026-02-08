@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import '../models/mind_map.dart';
+import '../models/position.dart';
 import 'file_service.dart';
 
 /// Service for managing mind map persistence.
@@ -13,7 +14,9 @@ class MindMapService {
 
   /// Get the directory for mind maps in a workspace
   Future<Directory> _getMindMapsDir(String workspaceId) async {
-    final workspaceDir = await _fileService.getWorkspaceDirectory(workspaceId);
+    final workspaceDir = await _fileService.getSubdirectory(
+      'workspaces/$workspaceId',
+    );
     final mindMapsDir = Directory(path.join(workspaceDir.path, 'mindmaps'));
     if (!mindMapsDir.existsSync()) {
       mindMapsDir.createSync(recursive: true);
@@ -22,10 +25,7 @@ class MindMapService {
   }
 
   /// Get file path for a specific mind map
-  Future<String> _getMindMapFilePath(
-    String workspaceId,
-    String mapId,
-  ) async {
+  Future<String> _getMindMapFilePath(String workspaceId, String mapId) async {
     final dir = await _getMindMapsDir(workspaceId);
     return path.join(dir.path, '$mapId.json');
   }
@@ -34,15 +34,27 @@ class MindMapService {
   Future<MindMapGraph?> loadMindMap(String workspaceId, String mapId) async {
     try {
       final filePath = await _getMindMapFilePath(workspaceId, mapId);
+      print('Loading mind map from: $filePath');
       final file = File(filePath);
 
-      if (!file.existsSync()) return null;
+      if (!file.existsSync()) {
+        print('Mind map file does not exist: $filePath');
+        return null;
+      }
 
       final jsonString = await file.readAsString();
+      print(
+        'Mind map JSON: ${jsonString.substring(0, jsonString.length > 100 ? 100 : jsonString.length)}...',
+      );
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
-      return MindMapGraph.fromJson(json);
-    } catch (e) {
+      final map = MindMapGraph.fromJson(json);
+      print(
+        'Successfully loaded mind map: ${map.name} with ${map.nodes.length} nodes',
+      );
+      return map;
+    } catch (e, st) {
       print('Error loading mind map $mapId: $e');
+      print('Stack trace: $st');
       return null;
     }
   }
@@ -111,14 +123,16 @@ class MindMapService {
     required String workspaceId,
     required String name,
   }) async {
+    print('Creating mind map: $name in workspace: $workspaceId');
     final now = DateTime.now();
     final mapId = DateTime.now().millisecondsSinceEpoch.toString();
     final rootNodeId = '${mapId}_root';
 
+    // Position root node at center of viewport (roughly)
     final rootNode = MindMapNode(
       id: rootNodeId,
       text: name,
-      position: const Position(x: 0, y: 0),
+      position: const Position(x: 500, y: 400),
       createdAt: now,
       updatedAt: now,
     );
@@ -134,6 +148,7 @@ class MindMapService {
     );
 
     await saveMindMap(map);
+    print('Created mind map with ID: $mapId');
     return map;
   }
 }

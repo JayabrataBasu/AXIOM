@@ -1,19 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/mind_map.dart';
+import '../models/position.dart';
 import '../services/mind_map_service.dart';
 
 const _uuid = Uuid();
 
 /// Provider for a specific mind map
-final mindMapProvider = FutureProvider.family<MindMapGraph?, String>(
-  (ref, mapId) async {
-    final workspaceId = ref.watch(activeMindMapWorkspaceProvider);
-    if (workspaceId == null) return null;
+final mindMapProvider = FutureProvider.family<MindMapGraph?, String>((
+  ref,
+  mapId,
+) async {
+  final workspaceId = ref.watch(activeMindMapWorkspaceProvider);
+  if (workspaceId == null) return null;
 
-    return await MindMapService.instance.loadMindMap(workspaceId, mapId);
-  },
-);
+  return await MindMapService.instance.loadMindMap(workspaceId, mapId);
+});
 
 /// Provider for the active workspace ID for mind maps
 final activeMindMapWorkspaceProvider = StateProvider<String?>((ref) => null);
@@ -21,7 +23,7 @@ final activeMindMapWorkspaceProvider = StateProvider<String?>((ref) => null);
 /// State notifier for managing mind map operations
 class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
   MindMapNotifier(this.workspaceId, this.mapId)
-      : super(const AsyncValue.loading()) {
+    : super(const AsyncValue.loading()) {
     _loadMap();
   }
 
@@ -30,14 +32,20 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
   final MindMapService _service = MindMapService.instance;
 
   Future<void> _loadMap() async {
+    print('MindMapNotifier: Loading map $mapId from workspace $workspaceId');
     try {
       final map = await _service.loadMindMap(workspaceId, mapId);
       if (map != null) {
+        print(
+          'MindMapNotifier: Successfully loaded map with ${map.nodes.length} nodes',
+        );
         state = AsyncValue.data(map);
       } else {
+        print('MindMapNotifier: Map not found');
         state = AsyncValue.error('Mind map not found', StackTrace.current);
       }
     } catch (e, st) {
+      print('MindMapNotifier: Error loading map: $e');
       state = AsyncValue.error(e, st);
     }
   }
@@ -52,40 +60,38 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
     String text, {
     Position? position,
   }) async {
-    return state.whenOrNull(data: (map) async {
-      final parent = map.nodes[parentId];
-      if (parent == null) return null;
+    final currentMap = state.valueOrNull;
+    if (currentMap == null) return null;
 
-      final now = DateTime.now();
-      final nodeId = _uuid.v4();
+    final parent = currentMap.nodes[parentId];
+    if (parent == null) return null;
 
-      final newNode = MindMapNode(
-        id: nodeId,
-        parentId: parentId,
-        text: text,
-        position: position ?? const Position(x: 100, y: 100),
-        createdAt: now,
-        updatedAt: now,
-      );
+    final now = DateTime.now();
+    final nodeId = _uuid.v4();
 
-      final updatedParent = parent.copyWith(
-        childIds: [...parent.childIds, nodeId],
-        updatedAt: now,
-      );
+    final newNode = MindMapNode(
+      id: nodeId,
+      parentId: parentId,
+      text: text,
+      position: position ?? const Position(x: 100, y: 100),
+      createdAt: now,
+      updatedAt: now,
+    );
 
-      final updatedNodes = Map<String, MindMapNode>.from(map.nodes);
-      updatedNodes[nodeId] = newNode;
-      updatedNodes[parentId] = updatedParent;
+    final updatedParent = parent.copyWith(
+      childIds: [...parent.childIds, nodeId],
+      updatedAt: now,
+    );
 
-      final updatedMap = map.copyWith(
-        nodes: updatedNodes,
-        updatedAt: now,
-      );
+    final updatedNodes = Map<String, MindMapNode>.from(currentMap.nodes);
+    updatedNodes[nodeId] = newNode;
+    updatedNodes[parentId] = updatedParent;
 
-      state = AsyncValue.data(updatedMap);
-      await _saveMap(updatedMap);
-      return newNode;
-    });
+    final updatedMap = currentMap.copyWith(nodes: updatedNodes, updatedAt: now);
+
+    state = AsyncValue.data(updatedMap);
+    await _saveMap(updatedMap);
+    return newNode;
   }
 
   /// Update a node's text
@@ -100,10 +106,7 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
       final updatedNodes = Map<String, MindMapNode>.from(map.nodes);
       updatedNodes[nodeId] = updatedNode;
 
-      final updatedMap = map.copyWith(
-        nodes: updatedNodes,
-        updatedAt: now,
-      );
+      final updatedMap = map.copyWith(nodes: updatedNodes, updatedAt: now);
 
       state = AsyncValue.data(updatedMap);
       await _saveMap(updatedMap);
@@ -122,10 +125,7 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
       final updatedNodes = Map<String, MindMapNode>.from(map.nodes);
       updatedNodes[nodeId] = updatedNode;
 
-      final updatedMap = map.copyWith(
-        nodes: updatedNodes,
-        updatedAt: now,
-      );
+      final updatedMap = map.copyWith(nodes: updatedNodes, updatedAt: now);
 
       state = AsyncValue.data(updatedMap);
       await _saveMap(updatedMap);
@@ -147,10 +147,7 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
       final updatedNodes = Map<String, MindMapNode>.from(map.nodes);
       updatedNodes[nodeId] = updatedNode;
 
-      final updatedMap = map.copyWith(
-        nodes: updatedNodes,
-        updatedAt: now,
-      );
+      final updatedMap = map.copyWith(nodes: updatedNodes, updatedAt: now);
 
       state = AsyncValue.data(updatedMap);
       await _saveMap(updatedMap);
@@ -188,10 +185,7 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
 
       deleteNodeAndChildren(nodeId);
 
-      final updatedMap = map.copyWith(
-        nodes: updatedNodes,
-        updatedAt: now,
-      );
+      final updatedMap = map.copyWith(nodes: updatedNodes, updatedAt: now);
 
       state = AsyncValue.data(updatedMap);
       await _saveMap(updatedMap);
@@ -205,11 +199,11 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
 }
 
 /// Provider for mind map notifier
-final mindMapNotifierProvider = StateNotifierProvider.family<
-    MindMapNotifier,
-    AsyncValue<MindMapGraph>,
-    ({String workspaceId, String mapId})>(
-  (ref, params) {
-    return MindMapNotifier(params.workspaceId, params.mapId);
-  },
-);
+final mindMapNotifierProvider =
+    StateNotifierProvider.family<
+      MindMapNotifier,
+      AsyncValue<MindMapGraph>,
+      ({String workspaceId, String mapId})
+    >((ref, params) {
+      return MindMapNotifier(params.workspaceId, params.mapId);
+    });
