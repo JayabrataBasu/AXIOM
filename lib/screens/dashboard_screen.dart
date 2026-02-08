@@ -413,10 +413,14 @@ class DashboardScreen extends ConsumerWidget {
                     color: cs.onSurfaceVariant.withAlpha(120),
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    'Last opened ${_formatDate(session.updatedAt)}',
-                    style: AxiomTypography.labelSmall.copyWith(
-                      color: cs.onSurfaceVariant.withAlpha(120),
+                  Expanded(
+                    child: Text(
+                      'Last opened ${_formatDate(session.updatedAt)}',
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
