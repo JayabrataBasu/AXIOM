@@ -128,11 +128,11 @@ class MindMapService {
     final mapId = DateTime.now().millisecondsSinceEpoch.toString();
     final rootNodeId = '${mapId}_root';
 
-    // Position root node at center of viewport (roughly)
+    // Position root node at center of the 4000x4000 canvas
     final rootNode = MindMapNode(
       id: rootNodeId,
       text: name,
-      position: const Position(x: 500, y: 400),
+      position: const Position(x: 2000, y: 2000),
       createdAt: now,
       updatedAt: now,
     );

@@ -728,14 +728,19 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
       }
 
       // Create the mind map
+      final mapName = nameController.text.trim().isEmpty
+          ? 'New Mind Map'
+          : nameController.text.trim();
+
+      // Defer dispose to avoid disposing while dialog animation is running
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        nameController.dispose();
+      });
+
       final mindMap = await MindMapService.instance.createMindMap(
         workspaceId: workspaceId,
-        name: nameController.text.trim().isEmpty
-            ? 'New Mind Map'
-            : nameController.text.trim(),
+        name: mapName,
       );
-
-      nameController.dispose();
 
       if (!mounted) return;
 

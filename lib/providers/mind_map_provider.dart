@@ -192,6 +192,95 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
     });
   }
 
+  /// Update node style properties (background, border, text color)
+  Future<void> updateNodeStyle(
+    String nodeId,
+    String type,
+    int colorValue,
+  ) async {
+    final currentMap = state.valueOrNull;
+    if (currentMap == null) return;
+
+    final node = currentMap.nodes[nodeId];
+    if (node == null) return;
+
+    final now = DateTime.now();
+    final updatedStyle = switch (type) {
+      'background' => node.style.copyWith(backgroundColor: colorValue),
+      'border' => node.style.copyWith(borderColor: colorValue),
+      'text' => node.style.copyWith(textColor: colorValue),
+      _ => node.style,
+    };
+
+    final updatedNode = node.copyWith(style: updatedStyle, updatedAt: now);
+    final updatedNodes = Map<String, MindMapNode>.from(currentMap.nodes);
+    updatedNodes[nodeId] = updatedNode;
+
+    final updatedMap = currentMap.copyWith(nodes: updatedNodes, updatedAt: now);
+
+    state = AsyncValue.data(updatedMap);
+    await _saveMap(updatedMap);
+  }
+
+  /// Update node shape
+  Future<void> updateNodeShape(String nodeId, String shape) async {
+    final currentMap = state.valueOrNull;
+    if (currentMap == null) return;
+
+    final node = currentMap.nodes[nodeId];
+    if (node == null) return;
+
+    final now = DateTime.now();
+    final updatedStyle = node.style.copyWith(shape: shape);
+    final updatedNode = node.copyWith(style: updatedStyle, updatedAt: now);
+    final updatedNodes = Map<String, MindMapNode>.from(currentMap.nodes);
+    updatedNodes[nodeId] = updatedNode;
+
+    final updatedMap = currentMap.copyWith(nodes: updatedNodes, updatedAt: now);
+
+    state = AsyncValue.data(updatedMap);
+    await _saveMap(updatedMap);
+  }
+
+  /// Update node emoji
+  Future<void> updateNodeEmoji(String nodeId, String emoji) async {
+    final currentMap = state.valueOrNull;
+    if (currentMap == null) return;
+
+    final node = currentMap.nodes[nodeId];
+    if (node == null) return;
+
+    final now = DateTime.now();
+    final updatedStyle = node.style.copyWith(emoji: emoji);
+    final updatedNode = node.copyWith(style: updatedStyle, updatedAt: now);
+    final updatedNodes = Map<String, MindMapNode>.from(currentMap.nodes);
+    updatedNodes[nodeId] = updatedNode;
+
+    final updatedMap = currentMap.copyWith(nodes: updatedNodes, updatedAt: now);
+
+    state = AsyncValue.data(updatedMap);
+    await _saveMap(updatedMap);
+  }
+
+  /// Update node priority
+  Future<void> updateNodePriority(String nodeId, String priority) async {
+    final currentMap = state.valueOrNull;
+    if (currentMap == null) return;
+
+    final node = currentMap.nodes[nodeId];
+    if (node == null) return;
+
+    final now = DateTime.now();
+    final updatedNode = node.copyWith(priority: priority, updatedAt: now);
+    final updatedNodes = Map<String, MindMapNode>.from(currentMap.nodes);
+    updatedNodes[nodeId] = updatedNode;
+
+    final updatedMap = currentMap.copyWith(nodes: updatedNodes, updatedAt: now);
+
+    state = AsyncValue.data(updatedMap);
+    await _saveMap(updatedMap);
+  }
+
   /// Reload the map from disk
   Future<void> reload() async {
     await _loadMap();

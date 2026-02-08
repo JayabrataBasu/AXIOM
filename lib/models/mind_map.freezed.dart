@@ -42,6 +42,9 @@ mixin _$MindMapNode {
   /// Whether this node is collapsed (children hidden)
   bool get collapsed => throw _privateConstructorUsedError;
 
+  /// Priority level: 'none', 'low', 'high', 'urgent'
+  String get priority => throw _privateConstructorUsedError;
+
   /// Timestamp when created
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -73,6 +76,7 @@ abstract class $MindMapNodeCopyWith<$Res> {
     MindMapNodeStyle style,
     List<String> childIds,
     bool collapsed,
+    String priority,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -103,6 +107,7 @@ class _$MindMapNodeCopyWithImpl<$Res, $Val extends MindMapNode>
     Object? style = null,
     Object? childIds = null,
     Object? collapsed = null,
+    Object? priority = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -136,6 +141,10 @@ class _$MindMapNodeCopyWithImpl<$Res, $Val extends MindMapNode>
                 ? _value.collapsed
                 : collapsed // ignore: cast_nullable_to_non_nullable
                       as bool,
+            priority: null == priority
+                ? _value.priority
+                : priority // ignore: cast_nullable_to_non_nullable
+                      as String,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -187,6 +196,7 @@ abstract class _$$MindMapNodeImplCopyWith<$Res>
     MindMapNodeStyle style,
     List<String> childIds,
     bool collapsed,
+    String priority,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -218,6 +228,7 @@ class __$$MindMapNodeImplCopyWithImpl<$Res>
     Object? style = null,
     Object? childIds = null,
     Object? collapsed = null,
+    Object? priority = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -251,6 +262,10 @@ class __$$MindMapNodeImplCopyWithImpl<$Res>
             ? _value.collapsed
             : collapsed // ignore: cast_nullable_to_non_nullable
                   as bool,
+        priority: null == priority
+            ? _value.priority
+            : priority // ignore: cast_nullable_to_non_nullable
+                  as String,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -275,6 +290,7 @@ class _$MindMapNodeImpl extends _MindMapNode {
     this.style = const MindMapNodeStyle(),
     final List<String> childIds = const [],
     this.collapsed = false,
+    this.priority = 'none',
     required this.createdAt,
     required this.updatedAt,
   }) : _childIds = childIds,
@@ -322,6 +338,11 @@ class _$MindMapNodeImpl extends _MindMapNode {
   @JsonKey()
   final bool collapsed;
 
+  /// Priority level: 'none', 'low', 'high', 'urgent'
+  @override
+  @JsonKey()
+  final String priority;
+
   /// Timestamp when created
   @override
   final DateTime createdAt;
@@ -332,7 +353,7 @@ class _$MindMapNodeImpl extends _MindMapNode {
 
   @override
   String toString() {
-    return 'MindMapNode(id: $id, parentId: $parentId, text: $text, position: $position, style: $style, childIds: $childIds, collapsed: $collapsed, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'MindMapNode(id: $id, parentId: $parentId, text: $text, position: $position, style: $style, childIds: $childIds, collapsed: $collapsed, priority: $priority, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -350,6 +371,8 @@ class _$MindMapNodeImpl extends _MindMapNode {
             const DeepCollectionEquality().equals(other._childIds, _childIds) &&
             (identical(other.collapsed, collapsed) ||
                 other.collapsed == collapsed) &&
+            (identical(other.priority, priority) ||
+                other.priority == priority) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -367,6 +390,7 @@ class _$MindMapNodeImpl extends _MindMapNode {
     style,
     const DeepCollectionEquality().hash(_childIds),
     collapsed,
+    priority,
     createdAt,
     updatedAt,
   );
@@ -394,6 +418,7 @@ abstract class _MindMapNode extends MindMapNode {
     final MindMapNodeStyle style,
     final List<String> childIds,
     final bool collapsed,
+    final String priority,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$MindMapNodeImpl;
@@ -430,6 +455,10 @@ abstract class _MindMapNode extends MindMapNode {
   @override
   bool get collapsed;
 
+  /// Priority level: 'none', 'low', 'high', 'urgent'
+  @override
+  String get priority;
+
   /// Timestamp when created
   @override
   DateTime get createdAt;
@@ -452,20 +481,23 @@ MindMapNodeStyle _$MindMapNodeStyleFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$MindMapNodeStyle {
-  /// Background color as ARGB int
+  /// Background color as ARGB int (Everforest light parchment by default)
   int get backgroundColor => throw _privateConstructorUsedError;
 
   /// Text color as ARGB int
   int get textColor => throw _privateConstructorUsedError;
 
-  /// Border color as ARGB int
+  /// Border color as ARGB int (Everforest primary green)
   int get borderColor => throw _privateConstructorUsedError;
 
   /// Border width
   double get borderWidth => throw _privateConstructorUsedError;
 
-  /// Shape: 'rectangle', 'rounded', 'circle', 'ellipse'
+  /// Shape: 'rounded', 'rectangle', 'circle', 'diamond'
   String get shape => throw _privateConstructorUsedError;
+
+  /// Optional emoji icon for the node (single character)
+  String get emoji => throw _privateConstructorUsedError;
 
   /// Serializes this MindMapNodeStyle to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -490,6 +522,7 @@ abstract class $MindMapNodeStyleCopyWith<$Res> {
     int borderColor,
     double borderWidth,
     String shape,
+    String emoji,
   });
 }
 
@@ -513,6 +546,7 @@ class _$MindMapNodeStyleCopyWithImpl<$Res, $Val extends MindMapNodeStyle>
     Object? borderColor = null,
     Object? borderWidth = null,
     Object? shape = null,
+    Object? emoji = null,
   }) {
     return _then(
       _value.copyWith(
@@ -536,6 +570,10 @@ class _$MindMapNodeStyleCopyWithImpl<$Res, $Val extends MindMapNodeStyle>
                 ? _value.shape
                 : shape // ignore: cast_nullable_to_non_nullable
                       as String,
+            emoji: null == emoji
+                ? _value.emoji
+                : emoji // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -557,6 +595,7 @@ abstract class _$$MindMapNodeStyleImplCopyWith<$Res>
     int borderColor,
     double borderWidth,
     String shape,
+    String emoji,
   });
 }
 
@@ -579,6 +618,7 @@ class __$$MindMapNodeStyleImplCopyWithImpl<$Res>
     Object? borderColor = null,
     Object? borderWidth = null,
     Object? shape = null,
+    Object? emoji = null,
   }) {
     return _then(
       _$MindMapNodeStyleImpl(
@@ -602,6 +642,10 @@ class __$$MindMapNodeStyleImplCopyWithImpl<$Res>
             ? _value.shape
             : shape // ignore: cast_nullable_to_non_nullable
                   as String,
+        emoji: null == emoji
+            ? _value.emoji
+            : emoji // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -611,17 +655,18 @@ class __$$MindMapNodeStyleImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$MindMapNodeStyleImpl implements _MindMapNodeStyle {
   const _$MindMapNodeStyleImpl({
-    this.backgroundColor = 0xFFFFFFFF,
+    this.backgroundColor = 0xFFFDF6E3,
     this.textColor = 0xFF000000,
-    this.borderColor = 0xFF000000,
+    this.borderColor = 0xFF708238,
     this.borderWidth = 2.0,
     this.shape = 'rounded',
+    this.emoji = '',
   });
 
   factory _$MindMapNodeStyleImpl.fromJson(Map<String, dynamic> json) =>
       _$$MindMapNodeStyleImplFromJson(json);
 
-  /// Background color as ARGB int
+  /// Background color as ARGB int (Everforest light parchment by default)
   @override
   @JsonKey()
   final int backgroundColor;
@@ -631,7 +676,7 @@ class _$MindMapNodeStyleImpl implements _MindMapNodeStyle {
   @JsonKey()
   final int textColor;
 
-  /// Border color as ARGB int
+  /// Border color as ARGB int (Everforest primary green)
   @override
   @JsonKey()
   final int borderColor;
@@ -641,14 +686,19 @@ class _$MindMapNodeStyleImpl implements _MindMapNodeStyle {
   @JsonKey()
   final double borderWidth;
 
-  /// Shape: 'rectangle', 'rounded', 'circle', 'ellipse'
+  /// Shape: 'rounded', 'rectangle', 'circle', 'diamond'
   @override
   @JsonKey()
   final String shape;
 
+  /// Optional emoji icon for the node (single character)
+  @override
+  @JsonKey()
+  final String emoji;
+
   @override
   String toString() {
-    return 'MindMapNodeStyle(backgroundColor: $backgroundColor, textColor: $textColor, borderColor: $borderColor, borderWidth: $borderWidth, shape: $shape)';
+    return 'MindMapNodeStyle(backgroundColor: $backgroundColor, textColor: $textColor, borderColor: $borderColor, borderWidth: $borderWidth, shape: $shape, emoji: $emoji)';
   }
 
   @override
@@ -664,7 +714,8 @@ class _$MindMapNodeStyleImpl implements _MindMapNodeStyle {
                 other.borderColor == borderColor) &&
             (identical(other.borderWidth, borderWidth) ||
                 other.borderWidth == borderWidth) &&
-            (identical(other.shape, shape) || other.shape == shape));
+            (identical(other.shape, shape) || other.shape == shape) &&
+            (identical(other.emoji, emoji) || other.emoji == emoji));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -676,6 +727,7 @@ class _$MindMapNodeStyleImpl implements _MindMapNodeStyle {
     borderColor,
     borderWidth,
     shape,
+    emoji,
   );
 
   /// Create a copy of MindMapNodeStyle
@@ -702,12 +754,13 @@ abstract class _MindMapNodeStyle implements MindMapNodeStyle {
     final int borderColor,
     final double borderWidth,
     final String shape,
+    final String emoji,
   }) = _$MindMapNodeStyleImpl;
 
   factory _MindMapNodeStyle.fromJson(Map<String, dynamic> json) =
       _$MindMapNodeStyleImpl.fromJson;
 
-  /// Background color as ARGB int
+  /// Background color as ARGB int (Everforest light parchment by default)
   @override
   int get backgroundColor;
 
@@ -715,7 +768,7 @@ abstract class _MindMapNodeStyle implements MindMapNodeStyle {
   @override
   int get textColor;
 
-  /// Border color as ARGB int
+  /// Border color as ARGB int (Everforest primary green)
   @override
   int get borderColor;
 
@@ -723,9 +776,13 @@ abstract class _MindMapNodeStyle implements MindMapNodeStyle {
   @override
   double get borderWidth;
 
-  /// Shape: 'rectangle', 'rounded', 'circle', 'ellipse'
+  /// Shape: 'rounded', 'rectangle', 'circle', 'diamond'
   @override
   String get shape;
+
+  /// Optional emoji icon for the node (single character)
+  @override
+  String get emoji;
 
   /// Create a copy of MindMapNodeStyle
   /// with the given fields replaced by the non-null parameter values.

@@ -31,6 +31,9 @@ class MindMapNode with _$MindMapNode {
     /// Whether this node is collapsed (children hidden)
     @Default(false) bool collapsed,
 
+    /// Priority level: 'none', 'low', 'high', 'urgent'
+    @Default('none') String priority,
+
     /// Timestamp when created
     required DateTime createdAt,
 
@@ -46,20 +49,23 @@ class MindMapNode with _$MindMapNode {
 @freezed
 class MindMapNodeStyle with _$MindMapNodeStyle {
   const factory MindMapNodeStyle({
-    /// Background color as ARGB int
-    @Default(0xFFFFFFFF) int backgroundColor,
+    /// Background color as ARGB int (Everforest light parchment by default)
+    @Default(0xFFFDF6E3) int backgroundColor,
 
     /// Text color as ARGB int
     @Default(0xFF000000) int textColor,
 
-    /// Border color as ARGB int
-    @Default(0xFF000000) int borderColor,
+    /// Border color as ARGB int (Everforest primary green)
+    @Default(0xFF708238) int borderColor,
 
     /// Border width
     @Default(2.0) double borderWidth,
 
-    /// Shape: 'rectangle', 'rounded', 'circle', 'ellipse'
+    /// Shape: 'rounded', 'rectangle', 'circle', 'diamond'
     @Default('rounded') String shape,
+
+    /// Optional emoji icon for the node (single character)
+    @Default('') String emoji,
   }) = _MindMapNodeStyle;
 
   factory MindMapNodeStyle.fromJson(Map<String, dynamic> json) =>

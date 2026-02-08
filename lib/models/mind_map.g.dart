@@ -23,6 +23,7 @@ _$MindMapNodeImpl _$$MindMapNodeImplFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       collapsed: json['collapsed'] as bool? ?? false,
+      priority: json['priority'] as String? ?? 'none',
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -36,6 +37,7 @@ Map<String, dynamic> _$$MindMapNodeImplToJson(_$MindMapNodeImpl instance) =>
       'style': instance.style,
       'childIds': instance.childIds,
       'collapsed': instance.collapsed,
+      'priority': instance.priority,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
@@ -43,11 +45,12 @@ Map<String, dynamic> _$$MindMapNodeImplToJson(_$MindMapNodeImpl instance) =>
 _$MindMapNodeStyleImpl _$$MindMapNodeStyleImplFromJson(
   Map<String, dynamic> json,
 ) => _$MindMapNodeStyleImpl(
-  backgroundColor: (json['backgroundColor'] as num?)?.toInt() ?? 0xFFFFFFFF,
+  backgroundColor: (json['backgroundColor'] as num?)?.toInt() ?? 0xFFFDF6E3,
   textColor: (json['textColor'] as num?)?.toInt() ?? 0xFF000000,
-  borderColor: (json['borderColor'] as num?)?.toInt() ?? 0xFF000000,
+  borderColor: (json['borderColor'] as num?)?.toInt() ?? 0xFF708238,
   borderWidth: (json['borderWidth'] as num?)?.toDouble() ?? 2.0,
   shape: json['shape'] as String? ?? 'rounded',
+  emoji: json['emoji'] as String? ?? '',
 );
 
 Map<String, dynamic> _$$MindMapNodeStyleImplToJson(
@@ -58,6 +61,7 @@ Map<String, dynamic> _$$MindMapNodeStyleImplToJson(
   'borderColor': instance.borderColor,
   'borderWidth': instance.borderWidth,
   'shape': instance.shape,
+  'emoji': instance.emoji,
 };
 
 _$MindMapGraphImpl _$$MindMapGraphImplFromJson(Map<String, dynamic> json) =>
