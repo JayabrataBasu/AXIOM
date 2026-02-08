@@ -645,123 +645,129 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.add, color: cs.primary),
-              title: const Text('Add child'),
-              onTap: () {
-                Navigator.pop(context);
-                _showAddChildDialog(node.id);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.edit, color: cs.secondary),
-              title: const Text('Edit text'),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() {
-                  _editingNodeId = node.id;
-                  _textController.text = node.text;
-                });
-              },
-            ),
-            const Divider(height: 8),
-            // Styling options
-            ListTile(
-              leading: const Icon(Icons.palette),
-              title: const Text('Background color'),
-              onTap: () {
-                Navigator.pop(context);
-                _showColorPicker(
-                  node.id,
-                  'background',
-                  Color(node.style.backgroundColor),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.border_color),
-              title: const Text('Border color'),
-              onTap: () {
-                Navigator.pop(context);
-                _showColorPicker(
-                  node.id,
-                  'border',
-                  Color(node.style.borderColor),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.text_fields),
-              title: const Text('Text color'),
-              onTap: () {
-                Navigator.pop(context);
-                _showColorPicker(node.id, 'text', Color(node.style.textColor));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.category),
-              title: const Text('Shape'),
-              onTap: () {
-                Navigator.pop(context);
-                _showShapePicker(node.id, node.style.shape);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.emoji_emotions),
-              title: const Text('Add emoji'),
-              onTap: () {
-                Navigator.pop(context);
-                _showEmojiPicker(node.id);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.flag),
-              title: const Text('Priority'),
-              onTap: () {
-                Navigator.pop(context);
-                _showPriorityPicker(node.id, node.priority);
-              },
-            ),
-            const Divider(height: 8),
-            if (node.childIds.isNotEmpty)
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               ListTile(
-                leading: Icon(
-                  node.collapsed ? Icons.expand_more : Icons.expand_less,
-                  color: cs.tertiary,
+                leading: Icon(Icons.add, color: cs.primary),
+                title: const Text('Add child'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showAddChildDialog(node.id);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.edit, color: cs.secondary),
+                title: const Text('Edit text'),
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _editingNodeId = node.id;
+                    _textController.text = node.text;
+                  });
+                },
+              ),
+              const Divider(height: 8),
+              // Styling options
+              ListTile(
+                leading: const Icon(Icons.palette),
+                title: const Text('Background color'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showColorPicker(
+                    node.id,
+                    'background',
+                    Color(node.style.backgroundColor),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.border_color),
+                title: const Text('Border color'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showColorPicker(
+                    node.id,
+                    'border',
+                    Color(node.style.borderColor),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.text_fields),
+                title: const Text('Text color'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showColorPicker(
+                    node.id,
+                    'text',
+                    Color(node.style.textColor),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.category),
+                title: const Text('Shape'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showShapePicker(node.id, node.style.shape);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.emoji_emotions),
+                title: const Text('Add emoji'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEmojiPicker(node.id);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.flag),
+                title: const Text('Priority'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showPriorityPicker(node.id, node.priority);
+                },
+              ),
+              const Divider(height: 8),
+              if (node.childIds.isNotEmpty)
+                ListTile(
+                  leading: Icon(
+                    node.collapsed ? Icons.expand_more : Icons.expand_less,
+                    color: cs.tertiary,
+                  ),
+                  title: Text(node.collapsed ? 'Expand' : 'Collapse'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref
+                        .read(
+                          mindMapNotifierProvider((
+                            workspaceId: widget.workspaceId,
+                            mapId: widget.mapId,
+                          )).notifier,
+                        )
+                        .toggleNodeCollapsed(node.id);
+                  },
                 ),
-                title: Text(node.collapsed ? 'Expand' : 'Collapse'),
-                onTap: () {
-                  Navigator.pop(context);
-                  ref
-                      .read(
-                        mindMapNotifierProvider((
-                          workspaceId: widget.workspaceId,
-                          mapId: widget.mapId,
-                        )).notifier,
-                      )
-                      .toggleNodeCollapsed(node.id);
-                },
-              ),
-            if (node.parentId != null)
-              ListTile(
-                leading: Icon(Icons.delete, color: cs.error),
-                title: const Text('Delete'),
-                onTap: () {
-                  Navigator.pop(context);
-                  ref
-                      .read(
-                        mindMapNotifierProvider((
-                          workspaceId: widget.workspaceId,
-                          mapId: widget.mapId,
-                        )).notifier,
-                      )
-                      .deleteNode(node.id);
-                },
-              ),
-          ],
+              if (node.parentId != null)
+                ListTile(
+                  leading: Icon(Icons.delete, color: cs.error),
+                  title: const Text('Delete'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref
+                        .read(
+                          mindMapNotifierProvider((
+                            workspaceId: widget.workspaceId,
+                            mapId: widget.mapId,
+                          )).notifier,
+                        )
+                        .deleteNode(node.id);
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
