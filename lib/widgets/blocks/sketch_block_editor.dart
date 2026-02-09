@@ -32,18 +32,24 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
   int _lastUpdateMillis = 0;
   static const int _throttleMs = 4;
 
+  /// ValueNotifier to trigger only CustomPaint repaints, not full widget rebuilds
+  late final ValueNotifier<List<SketchPoint>> _currentStrokeNotifier;
+  late final ValueNotifier<List<SketchStroke>> _strokesNotifier;
+
   void _startStroke(Offset position, SketchToolState toolState) {
     if (toolState.tool == SketchTool.selector) return;
 
     _isDrawing = true;
+
     if (toolState.tool == SketchTool.eraser) {
       _eraseAt(position);
-      setState(() {});
+      _strokesNotifier.value = List.from(_strokes);
       return;
     }
 
-    _currentStroke = [SketchPoint.fromOffset(position, pressure: 1.0)];
-    setState(() {});
+    final point = SketchPoint.fromOffset(position, pressure: 1.0);
+    _currentStroke = [point];
+    _currentStrokeNotifier.value = List.from(_currentStroke);
   }
 
   void _updateStroke(Offset position, SketchToolState toolState) {
@@ -51,7 +57,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
 
     if (toolState.tool == SketchTool.eraser) {
       _eraseAt(position);
-      setState(() {});
+      _strokesNotifier.value = List.from(_strokes);
       return;
     }
 
@@ -61,7 +67,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
       _lastUpdateMillis = now;
 
       _currentStroke.add(SketchPoint.fromOffset(position, pressure: 1.0));
-      setState(() {});
+      _currentStrokeNotifier.value = List.from(_currentStroke);
     }
   }
 
@@ -80,8 +86,9 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
           width: _effectiveStrokeWidth(toolState),
         ),
       );
+      _strokesNotifier.value = List.from(_strokes);
       _currentStroke = [];
-      setState(() {});
+      _currentStrokeNotifier.value = [];
       _saveStrokes();
     }
     _isDrawing = false;
@@ -95,7 +102,16 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
   @override
   void initState() {
     super.initState();
+    _currentStrokeNotifier = ValueNotifier<List<SketchPoint>>([]);
+    _strokesNotifier = ValueNotifier<List<SketchStroke>>([]);
     _loadStrokes();
+  }
+
+  @override
+  void dispose() {
+    _currentStrokeNotifier.dispose();
+    _strokesNotifier.dispose();
+    super.dispose();
   }
 
   Future<void> _loadStrokes() async {
@@ -106,8 +122,9 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
     final block = widget.block as SketchBlock;
     final strokes = await _sketchService.loadStrokes(block.id);
     if (mounted) {
+      _strokes = strokes;
+      _strokesNotifier.value = List.from(_strokes);
       setState(() {
-        _strokes = strokes;
         _isLoading = false;
       });
     }
@@ -301,69 +318,53 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               child: Listener(
                 behavior: HitTestBehavior.opaque,
                 onPointerDown: (event) {
-                  if (event.kind == PointerDeviceKind.touch) return;
                   final toolState = ref.read(sketchToolsProvider);
                   _startStroke(event.localPosition, toolState);
                 },
                 onPointerMove: (event) {
-                  if (event.kind == PointerDeviceKind.touch) return;
-                  if (!_isDrawing && event.buttons == 0) return;
-                  final toolState = ref.read(sketchToolsProvider);
-                  if (!_isDrawing && event.buttons != 0) {
-                    _startStroke(event.localPosition, toolState);
-                  } else {
-                    _updateStroke(event.localPosition, toolState);
+                  if (!_isDrawing) {
+                    return;
                   }
+                  final toolState = ref.read(sketchToolsProvider);
+                  _updateStroke(event.localPosition, toolState);
                 },
                 onPointerUp: (event) {
-                  if (event.kind == PointerDeviceKind.touch) return;
                   final toolState = ref.read(sketchToolsProvider);
                   _endStroke(toolState);
                 },
                 onPointerCancel: (event) {
-                  if (event.kind == PointerDeviceKind.touch) return;
                   _isDrawing = false;
                   _currentStroke = [];
-                  setState(() {});
+                  _currentStrokeNotifier.value = [];
                 },
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onPanStart: (details) {
-                    final toolState = ref.read(sketchToolsProvider);
-                    _startStroke(details.localPosition, toolState);
-                  },
-                  onPanUpdate: (details) {
-                    final toolState = ref.read(sketchToolsProvider);
-                    _updateStroke(details.localPosition, toolState);
-                  },
-                  onPanEnd: (details) {
-                    final toolState = ref.read(sketchToolsProvider);
-                    _endStroke(toolState);
-                  },
-                  onPanCancel: () {
-                    _isDrawing = false;
-                    _currentStroke = [];
-                    setState(() {});
-                  },
-                  child: Stack(
-                    children: [
-                      // Background - Everforest bg5 for sketch canvas
-                      Container(color: AxiomColors.bg5),
-                      // Canvas
-                      RepaintBoundary(
-                        child: CustomPaint(
-                          painter: _SketchCanvasPainter(
-                            strokes: _strokes,
-                            currentStroke: _currentStroke,
-                            currentColor: effectiveColor,
-                            currentWidth: toolState.brushSize,
-                            currentTool: toolState.tool,
-                          ),
-                          size: Size.infinite,
-                        ),
+                child: Stack(
+                  children: [
+                    // Background - Everforest bg5 for sketch canvas
+                    Container(color: AxiomColors.bg5),
+                    // Canvas - ValueListenableBuilder for low-latency repainting
+                    RepaintBoundary(
+                      child: ValueListenableBuilder<List<SketchPoint>>(
+                        valueListenable: _currentStrokeNotifier,
+                        builder: (context, currentStroke, _) {
+                          return ValueListenableBuilder<List<SketchStroke>>(
+                            valueListenable: _strokesNotifier,
+                            builder: (context, strokes, _) {
+                              return CustomPaint(
+                                painter: _SketchCanvasPainter(
+                                  strokes: strokes,
+                                  currentStroke: currentStroke,
+                                  currentColor: effectiveColor,
+                                  currentWidth: toolState.brushSize,
+                                  currentTool: toolState.tool,
+                                ),
+                                size: Size.infinite,
+                              );
+                            },
+                          );
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -381,30 +382,35 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               bottom: Radius.circular(AxiomRadius.md),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_strokes.length} stroke${_strokes.length != 1 ? 's' : ''}',
-                style: AxiomTypography.labelSmall.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-              TextButton.icon(
-                onPressed: _strokes.isEmpty ? null : _clear,
-                icon: Icon(
-                  Icons.clear,
-                  size: 18,
-                  color: _strokes.isEmpty ? cs.outlineVariant : cs.error,
-                ),
-                label: Text(
-                  'Clear',
-                  style: TextStyle(
-                    color: _strokes.isEmpty ? cs.outlineVariant : cs.error,
+          child: ValueListenableBuilder<List<SketchStroke>>(
+            valueListenable: _strokesNotifier,
+            builder: (context, strokes, _) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${strokes.length} stroke${strokes.length != 1 ? 's' : ''}',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ),
-            ],
+                  TextButton.icon(
+                    onPressed: strokes.isEmpty ? null : _clear,
+                    icon: Icon(
+                      Icons.clear,
+                      size: 18,
+                      color: strokes.isEmpty ? cs.outlineVariant : cs.error,
+                    ),
+                    label: Text(
+                      'Clear',
+                      style: TextStyle(
+                        color: strokes.isEmpty ? cs.outlineVariant : cs.error,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ],
