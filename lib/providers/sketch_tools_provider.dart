@@ -4,10 +4,10 @@ import '../services/settings_service.dart';
 
 /// Enum defining available sketch tools.
 enum SketchTool {
-  pen,      // Standard pen (size 1-10, thinning 0.5)
-  marker,   // Wide marker (size 8-20, thinning 0.2, semi-transparent)
-  pencil,   // Thin pencil (size 1-3, thinning 0.8, precise)
-  brush,    // Artistic brush (size 10-30, thinning 0.5, smooth)
+  pen, // Standard pen (size 1-10, thinning 0.5)
+  marker, // Wide marker (size 8-20, thinning 0.2, semi-transparent)
+  pencil, // Thin pencil (size 1-3, thinning 0.8, precise)
+  brush, // Artistic brush (size 10-30, thinning 0.5, smooth)
   eraser,
   selector, // For future selection/transformation
 }
@@ -79,15 +79,20 @@ class SketchToolState {
 /// Notifier managing sketch tool state with persistence.
 class SketchToolsNotifier extends StateNotifier<SketchToolState> {
   final SettingsService _settings = SettingsService.instance;
+  final String? blockId; // null for global canvas tools
 
-  SketchToolsNotifier() : super(SketchToolState.defaultPen) {
+  SketchToolsNotifier({this.blockId}) : super(SketchToolState.defaultPen) {
     _loadToolState();
   }
+
+  /// Get settings key for this instance (global or per-block)
+  String get _settingsKey =>
+      blockId != null ? 'sketchTools_$blockId' : 'sketchTools';
 
   /// Load saved tool state from settings.
   Future<void> _loadToolState() async {
     try {
-      final json = await _settings.get('sketchTools');
+      final json = await _settings.get(_settingsKey);
       if (json != null && json is Map<String, dynamic>) {
         state = SketchToolState.fromJson(json);
       }
@@ -99,7 +104,7 @@ class SketchToolsNotifier extends StateNotifier<SketchToolState> {
   /// Save current state to settings.
   Future<void> _saveToolState() async {
     try {
-      await _settings.set('sketchTools', state.toJson());
+      await _settings.set(_settingsKey, state.toJson());
     } catch (e) {
       debugPrint('Failed to save sketch tool state: $e');
     }
@@ -150,10 +155,20 @@ class SketchToolsNotifier extends StateNotifier<SketchToolState> {
   }
 }
 
-/// Riverpod StateNotifier provider for sketch tools.
-/// Watches this provider in any ConsumerWidget or ConsumerStatefulWidget
-/// that needs to access or modify sketch settings.
+/// Riverpod StateNotifier provider for sketch tools (global canvas-level).
+/// For backward compatibility with existing canvas sketch functionality.
 final sketchToolsProvider =
     StateNotifierProvider<SketchToolsNotifier, SketchToolState>((ref) {
-  return SketchToolsNotifier();
-});
+      return SketchToolsNotifier();
+    });
+
+/// Per-block sketch tools provider using family pattern.
+/// Each block gets its own independent tool state keyed by blockId.
+/// Usage: ref.watch(sketchToolsBlockProvider(blockId))
+final sketchToolsBlockProvider =
+    StateNotifierProvider.family<SketchToolsNotifier, SketchToolState, String>((
+      ref,
+      blockId,
+    ) {
+      return SketchToolsNotifier(blockId: blockId);
+    });

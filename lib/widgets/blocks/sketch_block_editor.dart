@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/design_tokens.dart';
 import '../../models/models.dart';
@@ -35,6 +34,9 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
   /// ValueNotifier to trigger only CustomPaint repaints, not full widget rebuilds
   late final ValueNotifier<List<SketchPoint>> _currentStrokeNotifier;
   late final ValueNotifier<List<SketchStroke>> _strokesNotifier;
+
+  /// Get the block ID for per-block tool state
+  String get _blockId => (widget.block as SketchBlock).id;
 
   void _startStroke(Offset position, SketchToolState toolState) {
     if (toolState.tool == SketchTool.selector) return;
@@ -84,6 +86,7 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
           points: List.from(_currentStroke),
           color: _effectiveColorForTool(toolState),
           width: _effectiveStrokeWidth(toolState),
+          tool: toolState.tool, // Save the tool type with the stroke
         ),
       );
       _strokesNotifier.value = List.from(_strokes);
@@ -163,10 +166,85 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
     _saveStrokes();
   }
 
+  /// Build a compact tool button
+  Widget _buildToolButton(
+    BuildContext context,
+    SketchTool tool,
+    IconData icon,
+    SketchToolState toolState,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final isSelected = toolState.tool == tool;
+
+    return InkWell(
+      onTap: () =>
+          ref.read(sketchToolsBlockProvider(_blockId).notifier).setTool(tool),
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isSelected ? cs.primaryContainer : cs.surfaceContainerHighest,
+          border: Border.all(
+            color: isSelected ? cs.primary : cs.outlineVariant,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: isSelected ? cs.onPrimaryContainer : cs.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
+  /// Build a compact color button
+  Widget _buildColorButton(
+    BuildContext context,
+    Color color,
+    SketchToolState toolState,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final isSelected = toolState.color == color;
+
+    return Padding(
+      padding: EdgeInsets.only(right: AxiomSpacing.xs),
+      child: InkWell(
+        onTap: () => ref
+            .read(sketchToolsBlockProvider(_blockId).notifier)
+            .setColor(color),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSelected ? cs.primary : cs.outlineVariant,
+              width: isSelected ? 3 : 1.5,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: cs.primary.withAlpha(50),
+                      blurRadius: 4,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : null,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final toolState = ref.watch(sketchToolsProvider);
+    final toolState = ref.watch(sketchToolsBlockProvider(_blockId));
     final effectiveColor = toolState.color.withValues(alpha: toolState.opacity);
 
     if (_isLoading) {
@@ -263,23 +341,164 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
             ],
           ),
         ),
-        // Opacity control
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AxiomSpacing.sm + 2,
-            vertical: AxiomSpacing.sm,
+        // Tool Controls - Compact per-block tool selection
+        Container(
+          padding: EdgeInsets.all(AxiomSpacing.sm + 2),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            border: Border(
+              bottom: BorderSide(color: cs.outlineVariant, width: 1),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Tool buttons row
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildToolButton(
+                    context,
+                    SketchTool.pen,
+                    Icons.edit,
+                    toolState,
+                  ),
+                  SizedBox(width: AxiomSpacing.xs),
+                  _buildToolButton(
+                    context,
+                    SketchTool.marker,
+                    Icons.border_color,
+                    toolState,
+                  ),
+                  SizedBox(width: AxiomSpacing.xs),
+                  _buildToolButton(
+                    context,
+                    SketchTool.brush,
+                    Icons.brush,
+                    toolState,
+                  ),
+                  SizedBox(width: AxiomSpacing.xs),
+                  _buildToolButton(
+                    context,
+                    SketchTool.pencil,
+                    Icons.create,
+                    toolState,
+                  ),
+                  SizedBox(width: AxiomSpacing.xs),
+                  _buildToolButton(
+                    context,
+                    SketchTool.eraser,
+                    Icons.auto_fix_normal,
+                    toolState,
+                  ),
+                ],
+              ),
+              SizedBox(height: AxiomSpacing.sm),
+              // Color quick-select
+              Row(
                 children: [
                   Text(
-                    'Opacity',
+                    'Color: ',
                     style: AxiomTypography.labelSmall.copyWith(
                       color: cs.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildColorButton(context, Colors.black, toolState),
+                          _buildColorButton(
+                            context,
+                            AxiomColors.red,
+                            toolState,
+                          ),
+                          _buildColorButton(
+                            context,
+                            AxiomColors.orange,
+                            toolState,
+                          ),
+                          _buildColorButton(
+                            context,
+                            AxiomColors.yellow,
+                            toolState,
+                          ),
+                          _buildColorButton(
+                            context,
+                            AxiomColors.green,
+                            toolState,
+                          ),
+                          _buildColorButton(
+                            context,
+                            AxiomColors.aqua,
+                            toolState,
+                          ),
+                          _buildColorButton(
+                            context,
+                            AxiomColors.blue,
+                            toolState,
+                          ),
+                          _buildColorButton(
+                            context,
+                            AxiomColors.purple,
+                            toolState,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: AxiomSpacing.sm),
+              // Size slider
+              Row(
+                children: [
+                  Text(
+                    'Size: ',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Expanded(
+                    child: Slider(
+                      value: toolState.brushSize,
+                      min: 1.0,
+                      max: 50.0,
+                      divisions: 49,
+                      onChanged: (value) => ref
+                          .read(sketchToolsBlockProvider(_blockId).notifier)
+                          .setBrushSize(value),
+                    ),
+                  ),
+                  Text(
+                    '${toolState.brushSize.toStringAsFixed(1)}px',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              // Opacity slider
+              Row(
+                children: [
+                  Text(
+                    'Opacity: ',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Expanded(
+                    child: Slider(
+                      value: toolState.opacity,
+                      min: 0.0,
+                      max: 1.0,
+                      divisions: 10,
+                      onChanged: (value) => ref
+                          .read(sketchToolsBlockProvider(_blockId).notifier)
+                          .setOpacity(value),
                     ),
                   ),
                   Text(
@@ -289,14 +508,6 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
                     ),
                   ),
                 ],
-              ),
-              Slider(
-                value: toolState.opacity,
-                min: 0.0,
-                max: 1.0,
-                divisions: 10,
-                onChanged: (value) =>
-                    ref.read(sketchToolsProvider.notifier).setOpacity(value),
               ),
             ],
           ),
@@ -318,18 +529,24 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               child: Listener(
                 behavior: HitTestBehavior.opaque,
                 onPointerDown: (event) {
-                  final toolState = ref.read(sketchToolsProvider);
+                  final toolState = ref.read(
+                    sketchToolsBlockProvider(_blockId),
+                  );
                   _startStroke(event.localPosition, toolState);
                 },
                 onPointerMove: (event) {
                   if (!_isDrawing) {
                     return;
                   }
-                  final toolState = ref.read(sketchToolsProvider);
+                  final toolState = ref.read(
+                    sketchToolsBlockProvider(_blockId),
+                  );
                   _updateStroke(event.localPosition, toolState);
                 },
                 onPointerUp: (event) {
-                  final toolState = ref.read(sketchToolsProvider);
+                  final toolState = ref.read(
+                    sketchToolsBlockProvider(_blockId),
+                  );
                   _endStroke(toolState);
                 },
                 onPointerCancel: (event) {
@@ -515,7 +732,7 @@ class _SketchCanvasPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Draw completed strokes with their own colors and widths
+    // Draw completed strokes with their own colors, widths, and tool types
     for (final stroke in strokes) {
       final paint = Paint()
         ..color = stroke.color
@@ -523,7 +740,7 @@ class _SketchCanvasPainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round
         ..strokeWidth = stroke.width;
 
-      _drawStroke(canvas, paint, stroke.points, SketchTool.pen);
+      _drawStroke(canvas, paint, stroke.points, stroke.tool);
     }
 
     // Draw current stroke with current tool settings
@@ -557,29 +774,47 @@ class _SketchCanvasPainter extends CustomPainter {
     List<SketchPoint> points,
     SketchTool tool,
   ) {
+    if (points.isEmpty) return;
+
+    // Single point handling
     if (points.length < 2) {
-      // Draw a single point as a small circle
-      if (points.isNotEmpty) {
-        final point = points[0];
-        final pressureWidth = (paint.strokeWidth * point.pressure).clamp(
-          0.5,
-          50.0,
-        );
-        final pressureAlpha = (paint.color.a * point.pressure)
-            .clamp(0, 255)
-            .toDouble();
-        final pressurePaint = Paint()
-          ..color = paint.color.withValues(alpha: pressureAlpha)
-          ..strokeCap = paint.strokeCap
-          ..strokeJoin = paint.strokeJoin
-          ..strokeWidth = pressureWidth;
-        canvas.drawCircle(point.toOffset(), pressureWidth / 2, pressurePaint);
-      }
+      final point = points[0];
+      final pressureWidth = (paint.strokeWidth * point.pressure).clamp(
+        0.5,
+        50.0,
+      );
+      final pressureAlpha = (paint.color.a * point.pressure)
+          .clamp(0, 255)
+          .toDouble();
+      final pressurePaint = Paint()
+        ..color = paint.color.withValues(alpha: pressureAlpha)
+        ..strokeCap = paint.strokeCap
+        ..strokeJoin = paint.strokeJoin
+        ..strokeWidth = pressureWidth;
+      canvas.drawCircle(point.toOffset(), pressureWidth / 2, pressurePaint);
       return;
     }
 
-    // Use a single Path to avoid visual thickness doubling from
-    // overlapping round caps on individual line segments.
+    // Tool-specific rendering
+    switch (tool) {
+      case SketchTool.marker:
+        _drawMarkerStroke(canvas, paint, points);
+        break;
+      case SketchTool.brush:
+        _drawBrushStroke(canvas, paint, points);
+        break;
+      case SketchTool.pencil:
+        _drawPencilStroke(canvas, paint, points);
+        break;
+      case SketchTool.pen:
+      default:
+        _drawPenStroke(canvas, paint, points);
+        break;
+    }
+  }
+
+  /// Pen: Smooth, consistent line
+  void _drawPenStroke(Canvas canvas, Paint paint, List<SketchPoint> points) {
     final strokePaint = Paint()
       ..color = paint.color
       ..strokeCap = StrokeCap.round
@@ -595,6 +830,93 @@ class _SketchCanvasPainter extends CustomPainter {
     }
 
     canvas.drawPath(path, strokePaint);
+  }
+
+  /// Marker: Soft, semi-transparent overlapping circles for blended effect
+  void _drawMarkerStroke(Canvas canvas, Paint paint, List<SketchPoint> points) {
+    // Marker has extra transparency and softer edges
+    final markerPaint = Paint()
+      ..color = paint.color.withValues(alpha: paint.color.a * 0.4)
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.fill;
+
+    // Draw overlapping circles for soft blended texture
+    final spacing = (paint.strokeWidth * 0.3).clamp(1.0, 10.0);
+
+    for (int i = 0; i < points.length; i++) {
+      // Skip some points based on spacing
+      if (i > 0 && i < points.length - 1) {
+        final dist = (points[i].toOffset() - points[i - 1].toOffset()).distance;
+        if (dist < spacing) continue;
+      }
+
+      final point = points[i];
+      final radius = paint.strokeWidth * 0.6;
+      canvas.drawCircle(point.toOffset(), radius, markerPaint);
+    }
+  }
+
+  /// Brush: Variable-width path with pressure sensitivity and smooth edges
+  void _drawBrushStroke(Canvas canvas, Paint paint, List<SketchPoint> points) {
+    // Brush has slight transparency and variable width
+    final brushPaint = Paint()
+      ..color = paint.color.withValues(alpha: paint.color.a * 0.85)
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    // Draw variable-width segments
+    for (int i = 0; i < points.length - 1; i++) {
+      final p1 = points[i];
+      final p2 = points[i + 1];
+
+      // Vary width based on position in stroke (thicker in middle)
+      final progress = i / points.length;
+      final widthVariation = (1.0 - (progress - 0.5).abs() * 2) * 0.3 + 0.7;
+      final segmentWidth = paint.strokeWidth * widthVariation * p1.pressure;
+
+      // Draw segment with variable width
+      final offset1 = p1.toOffset();
+      final offset2 = p2.toOffset();
+
+      canvas.drawLine(offset1, offset2, brushPaint..strokeWidth = segmentWidth);
+    }
+  }
+
+  /// Pencil: Thin line with slight opacity variation for grainy texture
+  void _drawPencilStroke(Canvas canvas, Paint paint, List<SketchPoint> points) {
+    final basePath = Path();
+    basePath.moveTo(points.first.toOffset().dx, points.first.toOffset().dy);
+
+    for (int i = 1; i < points.length; i++) {
+      basePath.lineTo(points[i].toOffset().dx, points[i].toOffset().dy);
+    }
+
+    // Main pencil stroke
+    final pencilPaint = Paint()
+      ..color = paint.color
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = paint.strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawPath(basePath, pencilPaint);
+
+    // Add texture with slightly offset thin lines (grain effect)
+    final texturePaint = Paint()
+      ..color = paint.color.withValues(alpha: paint.color.a * 0.15)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = paint.strokeWidth * 0.3
+      ..style = PaintingStyle.stroke;
+
+    // Sample every few points to add texture variation
+    for (int i = 0; i < points.length - 1; i += 3) {
+      final p1 = points[i].toOffset();
+      final p2 = points[i + 1].toOffset();
+
+      // Slight offset for grain effect
+      final offset = Offset(0.3, 0.3);
+      canvas.drawLine(p1 + offset, p2 + offset, texturePaint);
+    }
   }
 
   @override
