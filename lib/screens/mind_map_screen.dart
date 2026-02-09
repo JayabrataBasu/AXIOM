@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/mind_map.dart';
 import '../models/position.dart';
@@ -69,6 +70,65 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
     final dy = -nodeScreenY + (viewH / 2);
 
     _transformController.value = Matrix4.translationValues(dx, dy, 0);
+  }
+
+  Rect _visibleCanvasRect(Size viewportSize) {
+    final inverse = Matrix4.inverted(_transformController.value);
+    final topLeft = MatrixUtils.transformPoint(inverse, Offset.zero);
+    final topRight = MatrixUtils.transformPoint(
+      inverse,
+      Offset(viewportSize.width, 0),
+    );
+    final bottomLeft = MatrixUtils.transformPoint(
+      inverse,
+      Offset(0, viewportSize.height),
+    );
+    final bottomRight = MatrixUtils.transformPoint(
+      inverse,
+      Offset(viewportSize.width, viewportSize.height),
+    );
+
+    final minX = [
+      topLeft.dx,
+      topRight.dx,
+      bottomLeft.dx,
+      bottomRight.dx,
+    ].reduce((a, b) => a < b ? a : b);
+    final maxX = [
+      topLeft.dx,
+      topRight.dx,
+      bottomLeft.dx,
+      bottomRight.dx,
+    ].reduce((a, b) => a > b ? a : b);
+    final minY = [
+      topLeft.dy,
+      topRight.dy,
+      bottomLeft.dy,
+      bottomRight.dy,
+    ].reduce((a, b) => a < b ? a : b);
+    final maxY = [
+      topLeft.dy,
+      topRight.dy,
+      bottomLeft.dy,
+      bottomRight.dy,
+    ].reduce((a, b) => a > b ? a : b);
+
+    return Rect.fromLTRB(minX, minY, maxX, maxY);
+  }
+
+  bool _isNodeVisible(MindMapNode node, Rect visibleRect) {
+    const nodeHalfWidth = 75.0;
+    const nodeHalfHeight = 40.0;
+    const visibilityPadding = 200.0;
+
+    final nodeRect = Rect.fromLTRB(
+      node.position.x - nodeHalfWidth,
+      node.position.y - nodeHalfHeight,
+      node.position.x + nodeHalfWidth,
+      node.position.y + nodeHalfHeight,
+    );
+
+    return visibleRect.inflate(visibilityPadding).overlaps(nodeRect);
   }
 
   Future<void> _showSearchDialog(MindMapGraph map) async {
@@ -233,45 +293,60 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
               if (mounted) _centerOnRootNode(map);
             });
           }
-          return InteractiveViewer(
-            transformationController: _transformController,
-            constrained: false,
-            boundaryMargin: const EdgeInsets.all(2000),
-            minScale: 0.1,
-            maxScale: 4.0,
-            child: CustomPaint(
-              painter: _MindMapPainter(
-                map: map,
-                selectedNodeId: _selectedNodeId,
-                colorScheme: cs,
-              ),
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTapDown: (details) => _handleTap(details.localPosition, map),
-                onLongPressStart: (details) =>
-                    _handleLongPress(details.localPosition, map),
-                child: SizedBox(
-                  width: 4000,
-                  height: 4000,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: map.nodes.values.map((node) {
-                      return Positioned(
-                        left: node.position.x - 75,
-                        top: node.position.y - 40,
-                        child: GestureDetector(
-                          onTap: () => _selectNode(node.id),
-                          onLongPress: () => _showNodeContextMenu(node),
-                          onPanUpdate: (details) =>
-                              _handleNodeDrag(node.id, details.delta),
-                          child: _buildNodeWidget(node, cs),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return AnimatedBuilder(
+                animation: _transformController,
+                builder: (context, _) {
+                  final visibleRect = _visibleCanvasRect(constraints.biggest);
+                  final visibleNodes = map.nodes.values
+                      .where((node) => _isNodeVisible(node, visibleRect))
+                      .toList();
+
+                  return InteractiveViewer(
+                    transformationController: _transformController,
+                    constrained: false,
+                    boundaryMargin: const EdgeInsets.all(2000),
+                    minScale: 0.1,
+                    maxScale: 4.0,
+                    child: CustomPaint(
+                      painter: _MindMapPainter(
+                        map: map,
+                        selectedNodeId: _selectedNodeId,
+                        colorScheme: cs,
+                      ),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTapDown: (details) =>
+                            _handleTap(details.localPosition, map),
+                        onLongPressStart: (details) =>
+                            _handleLongPress(details.localPosition, map),
+                        child: SizedBox(
+                          width: 4000,
+                          height: 4000,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: visibleNodes.map((node) {
+                              return Positioned(
+                                left: node.position.x - 75,
+                                top: node.position.y - 40,
+                                child: GestureDetector(
+                                  onTap: () => _selectNode(node.id),
+                                  onLongPress: () => _showNodeContextMenu(node),
+                                  onPanUpdate: (details) =>
+                                      _handleNodeDrag(node.id, details.delta),
+                                  child: _buildNodeWidget(node, cs),
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
           );
         },
       ),
