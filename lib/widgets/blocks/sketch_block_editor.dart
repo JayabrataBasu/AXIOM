@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/design_tokens.dart';
 import '../../models/models.dart';
@@ -27,6 +28,69 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
   List<SketchPoint> _currentStroke = [];
   final SketchService _sketchService = SketchService.instance;
   bool _isLoading = true;
+  bool _isDrawing = false;
+  int _lastUpdateMillis = 0;
+  static const int _throttleMs = 4;
+
+  void _startStroke(Offset position, SketchToolState toolState) {
+    if (toolState.tool == SketchTool.selector) return;
+
+    _isDrawing = true;
+    if (toolState.tool == SketchTool.eraser) {
+      _eraseAt(position);
+      setState(() {});
+      return;
+    }
+
+    _currentStroke = [SketchPoint.fromOffset(position, pressure: 1.0)];
+    setState(() {});
+  }
+
+  void _updateStroke(Offset position, SketchToolState toolState) {
+    if (toolState.tool == SketchTool.selector) return;
+
+    if (toolState.tool == SketchTool.eraser) {
+      _eraseAt(position);
+      setState(() {});
+      return;
+    }
+
+    if (_currentStroke.isNotEmpty) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - _lastUpdateMillis < _throttleMs) return;
+      _lastUpdateMillis = now;
+
+      _currentStroke.add(SketchPoint.fromOffset(position, pressure: 1.0));
+      setState(() {});
+    }
+  }
+
+  void _endStroke(SketchToolState toolState) {
+    if (toolState.tool == SketchTool.eraser) {
+      _saveStrokes();
+      _isDrawing = false;
+      return;
+    }
+
+    if (_currentStroke.isNotEmpty) {
+      _strokes.add(
+        SketchStroke(
+          points: List.from(_currentStroke),
+          color: _effectiveColorForTool(toolState),
+          width: _effectiveStrokeWidth(toolState),
+        ),
+      );
+      _currentStroke = [];
+      setState(() {});
+      _saveStrokes();
+    }
+    _isDrawing = false;
+  }
+
+  Color _effectiveColorForTool(SketchToolState toolState) {
+    final toolColor = toolState.color;
+    return toolColor.withValues(alpha: toolState.opacity);
+  }
 
   @override
   void initState() {
@@ -230,84 +294,77 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
           ),
           child: SizedBox(
             height: 300,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onPanStart: (details) {
-                final toolState = ref.read(sketchToolsProvider);
-                if (toolState.tool == SketchTool.selector) {
-                  return;
-                }
-
-                if (toolState.tool == SketchTool.eraser) {
-                  // Erase strokes that overlap this point
-                  _eraseAt(details.localPosition);
-                  setState(() {});
-                  return;
-                }
-
-                _currentStroke = [
-                  SketchPoint.fromOffset(details.localPosition, pressure: 1.0),
-                ];
-                setState(() {});
-              },
-              onPanUpdate: (details) {
-                final toolState = ref.read(sketchToolsProvider);
-
-                if (toolState.tool == SketchTool.eraser) {
-                  _eraseAt(details.localPosition);
-                  setState(() {});
-                  return;
-                }
-
-                if (_currentStroke.isNotEmpty) {
-                  _currentStroke.add(
-                    SketchPoint.fromOffset(
-                      details.localPosition,
-                      pressure: 1.0,
-                    ),
-                  );
-                  // Minimal repaint trigger
-                  (context as Element).markNeedsBuild();
-                }
-              },
-              onPanEnd: (details) {
-                final toolState = ref.read(sketchToolsProvider);
-                if (toolState.tool == SketchTool.eraser) {
-                  _saveStrokes();
-                  return;
-                }
-
-                if (_currentStroke.isNotEmpty) {
-                  _strokes.add(
-                    SketchStroke(
-                      points: List.from(_currentStroke),
-                      color: effectiveColor,
-                      width: _effectiveStrokeWidth(toolState),
-                    ),
-                  );
+            child: ClipRRect(
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(AxiomRadius.md),
+              ),
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                onPointerDown: (event) {
+                  if (event.kind == PointerDeviceKind.touch) return;
+                  final toolState = ref.read(sketchToolsProvider);
+                  _startStroke(event.localPosition, toolState);
+                },
+                onPointerMove: (event) {
+                  if (event.kind == PointerDeviceKind.touch) return;
+                  if (!_isDrawing && event.buttons == 0) return;
+                  final toolState = ref.read(sketchToolsProvider);
+                  if (!_isDrawing && event.buttons != 0) {
+                    _startStroke(event.localPosition, toolState);
+                  } else {
+                    _updateStroke(event.localPosition, toolState);
+                  }
+                },
+                onPointerUp: (event) {
+                  if (event.kind == PointerDeviceKind.touch) return;
+                  final toolState = ref.read(sketchToolsProvider);
+                  _endStroke(toolState);
+                },
+                onPointerCancel: (event) {
+                  if (event.kind == PointerDeviceKind.touch) return;
+                  _isDrawing = false;
                   _currentStroke = [];
                   setState(() {});
-                  _saveStrokes();
-                }
-              },
-              child: Stack(
-                children: [
-                  // Background - Everforest bg5 for sketch canvas
-                  Container(color: AxiomColors.bg5),
-                  // Canvas
-                  RepaintBoundary(
-                    child: CustomPaint(
-                      painter: _SketchCanvasPainter(
-                        strokes: _strokes,
-                        currentStroke: _currentStroke,
-                        currentColor: effectiveColor,
-                        currentWidth: toolState.brushSize,
-                        currentTool: toolState.tool,
+                },
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanStart: (details) {
+                    final toolState = ref.read(sketchToolsProvider);
+                    _startStroke(details.localPosition, toolState);
+                  },
+                  onPanUpdate: (details) {
+                    final toolState = ref.read(sketchToolsProvider);
+                    _updateStroke(details.localPosition, toolState);
+                  },
+                  onPanEnd: (details) {
+                    final toolState = ref.read(sketchToolsProvider);
+                    _endStroke(toolState);
+                  },
+                  onPanCancel: () {
+                    _isDrawing = false;
+                    _currentStroke = [];
+                    setState(() {});
+                  },
+                  child: Stack(
+                    children: [
+                      // Background - Everforest bg5 for sketch canvas
+                      Container(color: AxiomColors.bg5),
+                      // Canvas
+                      RepaintBoundary(
+                        child: CustomPaint(
+                          painter: _SketchCanvasPainter(
+                            strokes: _strokes,
+                            currentStroke: _currentStroke,
+                            currentColor: effectiveColor,
+                            currentWidth: toolState.brushSize,
+                            currentTool: toolState.tool,
+                          ),
+                          size: Size.infinite,
+                        ),
                       ),
-                      size: Size.infinite,
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

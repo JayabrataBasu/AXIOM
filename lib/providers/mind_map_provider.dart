@@ -32,20 +32,14 @@ class MindMapNotifier extends StateNotifier<AsyncValue<MindMapGraph>> {
   final MindMapService _service = MindMapService.instance;
 
   Future<void> _loadMap() async {
-    print('MindMapNotifier: Loading map $mapId from workspace $workspaceId');
     try {
       final map = await _service.loadMindMap(workspaceId, mapId);
       if (map != null) {
-        print(
-          'MindMapNotifier: Successfully loaded map with ${map.nodes.length} nodes',
-        );
         state = AsyncValue.data(map);
       } else {
-        print('MindMapNotifier: Map not found');
         state = AsyncValue.error('Mind map not found', StackTrace.current);
       }
     } catch (e, st) {
-      print('MindMapNotifier: Error loading map: $e');
       state = AsyncValue.error(e, st);
     }
   }

@@ -53,12 +53,7 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
     final dx = -nodeScreenX + (viewW / 2);
     final dy = -nodeScreenY + (viewH / 2);
 
-    print(
-      'CENTERING: root=(${rootNode.position.x}, ${rootNode.position.y}), '
-      'viewport=(${viewW}x${viewH}), translate=($dx, $dy)',
-    );
-
-    _transformController.value = Matrix4.identity()..translate(dx, dy);
+    _transformController.value = Matrix4.translationValues(dx, dy, 0);
   }
 
   @override
@@ -70,11 +65,6 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
       )),
     );
     final cs = Theme.of(context).colorScheme;
-
-    print('MindMapScreen: mapAsync state = ${mapAsync.runtimeType}');
-    mapAsync.whenData((map) {
-      print('MindMapScreen: Loaded map with ${map.nodes.length} nodes');
-    });
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -132,9 +122,6 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
           ),
         ),
         data: (map) {
-          print(
-            'MindMapScreen: Rendering map with root ${map.rootNodeId}, nodes: ${map.nodes.length}',
-          );
           // Auto-center viewport on root node on first load
           if (!_hasInitialCentered) {
             _hasInitialCentered = true;
@@ -165,9 +152,6 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: map.nodes.values.map((node) {
-                      print(
-                        '  Node "${node.text}" at (${node.position.x}, ${node.position.y}) -> Positioned(left:${node.position.x - 75}, top:${node.position.y - 40})',
-                      );
                       return Positioned(
                         left: node.position.x - 75,
                         top: node.position.y - 40,
@@ -809,7 +793,7 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
           spacing: 8,
           runSpacing: 8,
           children: colors.map((color) {
-            final isSelected = color == currentColor.value;
+            final isSelected = color == currentColor.toARGB32();
             return GestureDetector(
               onTap: () {
                 Navigator.pop(context);

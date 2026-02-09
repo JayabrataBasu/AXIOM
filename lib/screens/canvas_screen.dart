@@ -569,14 +569,13 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                 label: 'Search',
                 onPressed: () async {
                   if (!mounted) return;
-                  final ctx = context;
                   final nav = await Navigator.push<search.SearchNavigation?>(
-                    ctx,
+                    context,
                     MaterialPageRoute(
                       builder: (_) => const SearchNodesScreen(),
                     ),
                   );
-                  if (nav == null || !mounted) return;
+                  if (!mounted || nav == null) return;
                   final nodes =
                       ref.read(nodesNotifierProvider).valueOrNull ?? [];
                   final position = _getNodePosition(nodes, nav.nodeId);
@@ -584,7 +583,7 @@ class _CanvasScreenState extends ConsumerState<CanvasScreen> {
                   ref.read(canvasViewProvider.notifier).selectNode(nav.nodeId);
                   if (nav.blockId.isNotEmpty && mounted) {
                     Navigator.push(
-                      ctx,
+                      context,
                       MaterialPageRoute(
                         builder: (_) => NodeEditorScreen(
                           nodeId: nav.nodeId,

@@ -34,27 +34,17 @@ class MindMapService {
   Future<MindMapGraph?> loadMindMap(String workspaceId, String mapId) async {
     try {
       final filePath = await _getMindMapFilePath(workspaceId, mapId);
-      print('Loading mind map from: $filePath');
       final file = File(filePath);
 
       if (!file.existsSync()) {
-        print('Mind map file does not exist: $filePath');
         return null;
       }
 
       final jsonString = await file.readAsString();
-      print(
-        'Mind map JSON: ${jsonString.substring(0, jsonString.length > 100 ? 100 : jsonString.length)}...',
-      );
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       final map = MindMapGraph.fromJson(json);
-      print(
-        'Successfully loaded mind map: ${map.name} with ${map.nodes.length} nodes',
-      );
       return map;
-    } catch (e, st) {
-      print('Error loading mind map $mapId: $e');
-      print('Stack trace: $st');
+    } catch (_) {
       return null;
     }
   }
@@ -69,8 +59,7 @@ class MindMapService {
       final jsonString = jsonEncode(json);
 
       await file.writeAsString(jsonString);
-    } catch (e) {
-      print('Error saving mind map ${map.id}: $e');
+    } catch (_) {
       rethrow;
     }
   }
@@ -91,14 +80,11 @@ class MindMapService {
           final jsonString = await file.readAsString();
           final json = jsonDecode(jsonString) as Map<String, dynamic>;
           maps.add(MindMapGraph.fromJson(json));
-        } catch (e) {
-          print('Error loading mind map from ${file.path}: $e');
-        }
+        } catch (_) {}
       }
 
       return maps;
-    } catch (e) {
-      print('Error listing mind maps for workspace $workspaceId: $e');
+    } catch (_) {
       return [];
     }
   }
@@ -112,8 +98,7 @@ class MindMapService {
       if (file.existsSync()) {
         await file.delete();
       }
-    } catch (e) {
-      print('Error deleting mind map $mapId: $e');
+    } catch (_) {
       rethrow;
     }
   }
@@ -123,7 +108,6 @@ class MindMapService {
     required String workspaceId,
     required String name,
   }) async {
-    print('Creating mind map: $name in workspace: $workspaceId');
     final now = DateTime.now();
     final mapId = DateTime.now().millisecondsSinceEpoch.toString();
     final rootNodeId = '${mapId}_root';
@@ -148,7 +132,6 @@ class MindMapService {
     );
 
     await saveMindMap(map);
-    print('Created mind map with ID: $mapId');
     return map;
   }
 }
