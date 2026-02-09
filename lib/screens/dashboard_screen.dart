@@ -12,6 +12,9 @@ import '../widgets/components/axiom_card.dart';
 import '../providers/workspace_providers.dart';
 import '../providers/workspace_state_provider.dart';
 import '../models/workspace_session.dart';
+import '../models/mind_map.dart';
+import '../services/mind_map_service.dart';
+import 'mind_map_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -224,6 +227,10 @@ class DashboardScreen extends ConsumerWidget {
           _buildRecentWorkspaces(context, ref, sessions),
           const SizedBox(height: AxiomSpacing.xxl),
 
+          // Mind maps section
+          _buildMindMapsSection(context, ref),
+          const SizedBox(height: AxiomSpacing.xxl),
+
           // Quick stats
           _buildQuickStats(context, sessions),
         ],
@@ -428,6 +435,242 @@ class DashboardScreen extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMindMapsSection(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final workspaceId = ref.watch(activeWorkspaceIdProvider) ?? '';
+    final mindMapService = MindMapService.instance;
+
+    return FutureBuilder<List<MindMapGraph>>(
+      future: mindMapService.listMindMaps(workspaceId),
+      builder: (context, snapshot) {
+        final mindMaps = snapshot.data ?? [];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Mind Maps',
+                  style: AxiomTypography.heading2.copyWith(color: cs.onSurface),
+                ),
+                TextButton.icon(
+                  onPressed: () => _createNewMindMap(context, ref),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('New'),
+                ),
+              ],
+            ),
+            const SizedBox(height: AxiomSpacing.md),
+
+            if (snapshot.connectionState == ConnectionState.waiting)
+              const Center(child: CircularProgressIndicator())
+            else if (mindMaps.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AxiomSpacing.xl),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AxiomRadius.md),
+                  border: Border.all(color: cs.outlineVariant),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.account_tree_outlined,
+                      size: 48,
+                      color: cs.onSurfaceVariant.withAlpha(100),
+                    ),
+                    const SizedBox(height: AxiomSpacing.md),
+                    Text(
+                      'No mind maps yet',
+                      style: AxiomTypography.heading3.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: AxiomSpacing.xs),
+                    Text(
+                      'Create your first mind map to visualize ideas',
+                      style: AxiomTypography.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(150),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: AxiomSpacing.md,
+                  mainAxisSpacing: AxiomSpacing.md,
+                  childAspectRatio: 1.2,
+                ),
+                itemCount: mindMaps.length,
+                itemBuilder: (context, index) {
+                  final mindMap = mindMaps[index];
+                  return _buildMindMapCard(context, ref, mindMap);
+                },
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMindMapCard(
+    BuildContext context,
+    WidgetRef ref,
+    MindMapGraph mindMap,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return AxiomCard(
+      elevated: true,
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => MindMapScreen(
+              workspaceId: mindMap.workspaceId,
+              mapId: mindMap.id,
+            ),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Top row: icon + node count
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AxiomColors.purple.withAlpha(30),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.account_tree,
+                  color: AxiomColors.purple,
+                  size: 20,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                ),
+                child: Text(
+                  '${mindMap.nodes.length} nodes',
+                  style: AxiomTypography.labelSmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Bottom: title + timestamp
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                mindMap.name,
+                style: AxiomTypography.heading3.copyWith(
+                  color: cs.onSurface,
+                  fontSize: 16,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.schedule_rounded,
+                    size: 14,
+                    color: cs.onSurfaceVariant.withAlpha(120),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'Updated ${_formatDate(mindMap.updatedAt)}',
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _createNewMindMap(BuildContext context, WidgetRef ref) async {
+    final nameController = TextEditingController();
+
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Mind Map'),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Mind map name',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              if (name.isNotEmpty) {
+                Navigator.pop(context, name);
+              }
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null || !context.mounted) return;
+
+    final workspaceId = ref.read(activeWorkspaceIdProvider) ?? '';
+    final mindMapService = MindMapService.instance;
+
+    final newMap = await mindMapService.createMindMap(
+      workspaceId: workspaceId,
+      name: result,
+    );
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) =>
+            MindMapScreen(workspaceId: newMap.workspaceId, mapId: newMap.id),
       ),
     );
   }

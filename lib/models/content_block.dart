@@ -99,6 +99,15 @@ sealed class ContentBlock with _$ContentBlock {
     required DateTime createdAt,
   }) = ToolBlock;
 
+  /// A mind map reference block linking to a mind map.
+  @FreezedUnionValue('mind_map_ref')
+  const factory ContentBlock.mindMapRef({
+    required String id,
+    required String mapId,
+    @Default('') String label,
+    required DateTime createdAt,
+  }) = MindMapRefBlock;
+
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String?;
 
@@ -160,6 +169,12 @@ sealed class ContentBlock with _$ContentBlock {
       'workspace_ref' => ContentBlock.workspaceRef(
         id: json['id'] as String,
         sessionId: json['sessionId'] as String,
+        label: (json['label'] as String?) ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'mind_map_ref' => ContentBlock.mindMapRef(
+        id: json['id'] as String,
+        mapId: json['mapId'] as String,
         label: (json['label'] as String?) ?? '',
         createdAt: DateTime.parse(json['createdAt'] as String),
       ),

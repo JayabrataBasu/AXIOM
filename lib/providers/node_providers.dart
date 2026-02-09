@@ -286,6 +286,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         MathBlock() => block, // Use updateBlockLatex instead
         AudioBlock() => block, // Audio is read-only after creation
         WorkspaceRefBlock() => block, // Read-only workspace references
+        MindMapRefBlock() => block, // Read-only mind map references
         ToolBlock() =>
           block, // Tool results are computed, use updateToolBlockOutput
       };
@@ -353,6 +354,29 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     final newBlock = ContentBlock.workspaceRef(
       id: _uuid.v4(),
       sessionId: sessionId,
+      label: label,
+      createdAt: now,
+    );
+
+    final node = currentNodes[nodeIndex];
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
+    await updateNode(updated);
+  }
+
+  /// Add a mind map reference block pointing to a mind map.
+  Future<void> addMindMapRefBlock(
+    String nodeId, {
+    required String mapId,
+    String label = '',
+  }) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final now = DateTime.now();
+    final newBlock = ContentBlock.mindMapRef(
+      id: _uuid.v4(),
+      mapId: mapId,
       label: label,
       createdAt: now,
     );

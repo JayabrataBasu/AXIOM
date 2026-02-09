@@ -118,6 +118,19 @@ class ContentBlockListConverter
                 'label': label,
                 'createdAt': createdAt.toIso8601String(),
               },
+            MindMapRefBlock(
+              :final id,
+              :final mapId,
+              :final label,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'mind_map_ref',
+                'id': id,
+                'mapId': mapId,
+                'label': label,
+                'createdAt': createdAt.toIso8601String(),
+              },
             ToolBlock(
               :final id,
               :final toolType,

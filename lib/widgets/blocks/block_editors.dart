@@ -61,6 +61,12 @@ enum BlockType {
     'Workspace',
     'Link to workspace session',
     BlockCategory.integration,
+  ),
+  mindMapRef(
+    Icons.account_tree,
+    'Mind Map',
+    'Link to mind map',
+    BlockCategory.integration,
   );
 
   const BlockType(this.icon, this.label, this.description, this.category);

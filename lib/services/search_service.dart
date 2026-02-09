@@ -126,6 +126,10 @@ class SearchService {
         content = block.label;
         blockType = 'Workspace Reference';
         break;
+      case MindMapRefBlock():
+        content = block.label;
+        blockType = 'Mind Map';
+        break;
       case ToolBlock():
         return null;
     }

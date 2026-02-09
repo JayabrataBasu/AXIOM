@@ -266,6 +266,11 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
         Colors.lime,
         label.isNotEmpty ? label : 'Session: ${sessionId.substring(0, 6)}...',
       ),
+      MindMapRefBlock(:final label, :final mapId) => (
+        'MINDMAP',
+        Colors.purple,
+        label.isNotEmpty ? label : 'Map: ${mapId.substring(0, 6)}...',
+      ),
       ToolBlock(:final toolType) => ('TOOL', Colors.pink, toolType),
     };
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_service.dart';
+import '../services/mind_map_service.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../theme/design_tokens.dart';
@@ -571,6 +572,13 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         onDelete: () => _deleteBlock(node.id, block.id),
         child: const Text('Tool Block (Coming Soon)'),
       ),
+      MindMapRefBlock() => MindMapRefBlockEditor(
+        key: ValueKey(block.id),
+        block: block,
+        dragIndex: index,
+        onDelete: () => _deleteBlock(node.id, block.id),
+        workspaceId: node.workspaceId,
+      ),
     };
 
     // Wrap with highlight decoration if this block is highlighted
@@ -620,6 +628,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         break;
       case BlockType.workspaceRef:
         await _addWorkspaceRefBlock(node);
+        break;
+      case BlockType.mindMapRef:
+        await _addMindMapRefBlock(node);
         break;
     }
   }
@@ -770,6 +781,127 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Workspace reference added')));
+  }
+
+  Future<void> _addMindMapRefBlock(IdeaNode node) async {
+    final mindMapService = MindMapService.instance;
+    final workspaceId = ref.read(activeWorkspaceIdProvider) ?? node.workspaceId;
+
+    // Load existing mind maps for this workspace
+    final mindMaps = await mindMapService.listMindMaps(workspaceId);
+
+    if (!mounted) return;
+
+    final result = await showDialog<_MindMapChoice?>(
+      context: context,
+      builder: (context) {
+        final labelController = TextEditingController();
+
+        return AlertDialog(
+          title: const Text('Mind Map'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (mindMaps.isNotEmpty) ...[
+                  Text(
+                    'Existing mind maps',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 240),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: mindMaps.length,
+                      itemBuilder: (context, index) {
+                        final mindMap = mindMaps[index];
+                        return ListTile(
+                          dense: true,
+                          leading: const Icon(Icons.account_tree),
+                          title: Text(
+                            mindMap.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${mindMap.nodes.length} nodes • Created ${mindMap.createdAt.toLocal().toIso8601String().split('T').first}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          onTap: () => Navigator.pop(
+                            context,
+                            _MindMapChoice(mindMap.id, mindMap.name),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const Divider(height: 24),
+                ],
+                Text(
+                  'Create new mind map',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: labelController,
+                  decoration: const InputDecoration(
+                    labelText: 'Mind map name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                final label = labelController.text.trim();
+                if (label.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a name')),
+                  );
+                  return;
+                }
+                Navigator.pop(context, _MindMapChoice('__create__', label));
+              },
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    final nodesNotifier = ref.read(nodesNotifierProvider.notifier);
+
+    // Create mind map if requested
+    String mapId = result.mapId;
+    String label = result.label;
+
+    if (result.mapId == '__create__') {
+      final newMap = await mindMapService.createMindMap(
+        workspaceId: workspaceId,
+        name: label,
+      );
+      mapId = newMap.id;
+      label = newMap.name;
+    }
+
+    await nodesNotifier.addMindMapRefBlock(node.id, mapId: mapId, label: label);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Mind map reference added')));
   }
 
   void _updateBlockContent(String nodeId, String blockId, String content) {
@@ -1040,5 +1172,11 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
 class _WorkspaceSessionChoice {
   const _WorkspaceSessionChoice(this.sessionId, this.label);
   final String sessionId;
+  final String label;
+}
+
+class _MindMapChoice {
+  const _MindMapChoice(this.mapId, this.label);
+  final String mapId;
   final String label;
 }
