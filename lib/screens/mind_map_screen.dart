@@ -56,6 +56,100 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
     _transformController.value = Matrix4.translationValues(dx, dy, 0);
   }
 
+  void _centerOnNode(MindMapNode node) {
+    final size = MediaQuery.of(context).size;
+    final appBarH = kToolbarHeight + MediaQuery.of(context).padding.top;
+    final viewW = size.width;
+    final viewH = size.height - appBarH;
+
+    final nodeScreenX = node.position.x;
+    final nodeScreenY = node.position.y;
+
+    final dx = -nodeScreenX + (viewW / 2);
+    final dy = -nodeScreenY + (viewH / 2);
+
+    _transformController.value = Matrix4.translationValues(dx, dy, 0);
+  }
+
+  Future<void> _showSearchDialog(MindMapGraph map) async {
+    final queryController = TextEditingController();
+
+    final selectedNodeId = await showDialog<String?>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final query = queryController.text.trim().toLowerCase();
+            final nodes = map.nodes.values.toList()
+              ..sort((a, b) => a.text.compareTo(b.text));
+            final filtered = query.isEmpty
+                ? nodes
+                : nodes
+                      .where((n) => n.text.toLowerCase().contains(query))
+                      .toList();
+
+            return AlertDialog(
+              title: const Text('Find Node'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: queryController,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Search nodes',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                    const SizedBox(height: 12),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 280),
+                      child: filtered.isEmpty
+                          ? const Center(child: Text('No matches'))
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: filtered.length,
+                              itemBuilder: (context, index) {
+                                final node = filtered[index];
+                                return ListTile(
+                                  dense: true,
+                                  leading: const Icon(Icons.account_tree),
+                                  title: Text(
+                                    node.text,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onTap: () => Navigator.pop(context, node.id),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (selectedNodeId == null) return;
+    final node = map.nodes[selectedNodeId];
+    if (node == null) return;
+
+    setState(() => _selectedNodeId = node.id);
+    _centerOnNode(node);
+  }
+
   @override
   Widget build(BuildContext context) {
     final mapAsync = ref.watch(
@@ -82,6 +176,16 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: cs.onSurfaceVariant),
+            onPressed: () {
+              final map = mapAsync.valueOrNull;
+              if (map != null) {
+                _showSearchDialog(map);
+              }
+            },
+            tooltip: 'Find node',
+          ),
           IconButton(
             icon: Icon(Icons.add_circle_outline, color: cs.primary),
             onPressed: () => _showAddNodeDialog(context),
