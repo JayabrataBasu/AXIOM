@@ -807,6 +807,9 @@ mixin _$MindMapGraph {
   /// Workspace this map belongs to
   String get workspaceId => throw _privateConstructorUsedError;
 
+  /// Template identifier used to create this map
+  String get templateId => throw _privateConstructorUsedError;
+
   /// Root node ID
   String? get rootNodeId => throw _privateConstructorUsedError;
 
@@ -840,6 +843,7 @@ abstract class $MindMapGraphCopyWith<$Res> {
     String id,
     String name,
     String workspaceId,
+    String templateId,
     String? rootNodeId,
     Map<String, MindMapNode> nodes,
     DateTime createdAt,
@@ -865,6 +869,7 @@ class _$MindMapGraphCopyWithImpl<$Res, $Val extends MindMapGraph>
     Object? id = null,
     Object? name = null,
     Object? workspaceId = null,
+    Object? templateId = null,
     Object? rootNodeId = freezed,
     Object? nodes = null,
     Object? createdAt = null,
@@ -883,6 +888,10 @@ class _$MindMapGraphCopyWithImpl<$Res, $Val extends MindMapGraph>
             workspaceId: null == workspaceId
                 ? _value.workspaceId
                 : workspaceId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            templateId: null == templateId
+                ? _value.templateId
+                : templateId // ignore: cast_nullable_to_non_nullable
                       as String,
             rootNodeId: freezed == rootNodeId
                 ? _value.rootNodeId
@@ -919,6 +928,7 @@ abstract class _$$MindMapGraphImplCopyWith<$Res>
     String id,
     String name,
     String workspaceId,
+    String templateId,
     String? rootNodeId,
     Map<String, MindMapNode> nodes,
     DateTime createdAt,
@@ -943,6 +953,7 @@ class __$$MindMapGraphImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? workspaceId = null,
+    Object? templateId = null,
     Object? rootNodeId = freezed,
     Object? nodes = null,
     Object? createdAt = null,
@@ -961,6 +972,10 @@ class __$$MindMapGraphImplCopyWithImpl<$Res>
         workspaceId: null == workspaceId
             ? _value.workspaceId
             : workspaceId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        templateId: null == templateId
+            ? _value.templateId
+            : templateId // ignore: cast_nullable_to_non_nullable
                   as String,
         rootNodeId: freezed == rootNodeId
             ? _value.rootNodeId
@@ -990,6 +1005,7 @@ class _$MindMapGraphImpl extends _MindMapGraph {
     required this.id,
     required this.name,
     required this.workspaceId,
+    this.templateId = 'blank',
     this.rootNodeId,
     final Map<String, MindMapNode> nodes = const {},
     required this.createdAt,
@@ -1011,6 +1027,11 @@ class _$MindMapGraphImpl extends _MindMapGraph {
   /// Workspace this map belongs to
   @override
   final String workspaceId;
+
+  /// Template identifier used to create this map
+  @override
+  @JsonKey()
+  final String templateId;
 
   /// Root node ID
   @override
@@ -1038,7 +1059,7 @@ class _$MindMapGraphImpl extends _MindMapGraph {
 
   @override
   String toString() {
-    return 'MindMapGraph(id: $id, name: $name, workspaceId: $workspaceId, rootNodeId: $rootNodeId, nodes: $nodes, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'MindMapGraph(id: $id, name: $name, workspaceId: $workspaceId, templateId: $templateId, rootNodeId: $rootNodeId, nodes: $nodes, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -1050,6 +1071,8 @@ class _$MindMapGraphImpl extends _MindMapGraph {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.workspaceId, workspaceId) ||
                 other.workspaceId == workspaceId) &&
+            (identical(other.templateId, templateId) ||
+                other.templateId == templateId) &&
             (identical(other.rootNodeId, rootNodeId) ||
                 other.rootNodeId == rootNodeId) &&
             const DeepCollectionEquality().equals(other._nodes, _nodes) &&
@@ -1066,6 +1089,7 @@ class _$MindMapGraphImpl extends _MindMapGraph {
     id,
     name,
     workspaceId,
+    templateId,
     rootNodeId,
     const DeepCollectionEquality().hash(_nodes),
     createdAt,
@@ -1091,6 +1115,7 @@ abstract class _MindMapGraph extends MindMapGraph {
     required final String id,
     required final String name,
     required final String workspaceId,
+    final String templateId,
     final String? rootNodeId,
     final Map<String, MindMapNode> nodes,
     required final DateTime createdAt,
@@ -1112,6 +1137,10 @@ abstract class _MindMapGraph extends MindMapGraph {
   /// Workspace this map belongs to
   @override
   String get workspaceId;
+
+  /// Template identifier used to create this map
+  @override
+  String get templateId;
 
   /// Root node ID
   @override

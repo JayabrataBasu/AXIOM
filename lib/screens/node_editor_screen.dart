@@ -796,85 +796,117 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       context: context,
       builder: (context) {
         final labelController = TextEditingController();
+        String selectedTemplateId = MindMapService.templates.first.id;
 
-        return AlertDialog(
-          title: const Text('Mind Map'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (mindMaps.isNotEmpty) ...[
-                  Text(
-                    'Existing mind maps',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 240),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: mindMaps.length,
-                      itemBuilder: (context, index) {
-                        final mindMap = mindMaps[index];
-                        return ListTile(
-                          dense: true,
-                          leading: const Icon(Icons.account_tree),
-                          title: Text(
-                            mindMap.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            '${mindMap.nodes.length} nodes • Created ${mindMap.createdAt.toLocal().toIso8601String().split('T').first}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          onTap: () => Navigator.pop(
-                            context,
-                            _MindMapChoice(mindMap.id, mindMap.name),
-                          ),
-                        );
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Mind Map'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (mindMaps.isNotEmpty) ...[
+                      Text(
+                        'Existing mind maps',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 240),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: mindMaps.length,
+                          itemBuilder: (context, index) {
+                            final mindMap = mindMaps[index];
+                            return ListTile(
+                              dense: true,
+                              leading: const Icon(Icons.account_tree),
+                              title: Text(
+                                mindMap.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                '${mindMap.nodes.length} nodes • Created ${mindMap.createdAt.toLocal().toIso8601String().split('T').first}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              onTap: () => Navigator.pop(
+                                context,
+                                _MindMapChoice(mindMap.id, mindMap.name),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const Divider(height: 24),
+                    ],
+                    Text(
+                      'Create new mind map',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: labelController,
+                      decoration: const InputDecoration(
+                        labelText: 'Mind map name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedTemplateId,
+                      decoration: const InputDecoration(
+                        labelText: 'Template',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: MindMapService.templates
+                          .map(
+                            (template) => DropdownMenuItem<String>(
+                              value: template.id,
+                              child: Text(template.name),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => selectedTemplateId = value);
                       },
                     ),
-                  ),
-                  const Divider(height: 24),
-                ],
-                Text(
-                  'Create new mind map',
-                  style: Theme.of(context).textTheme.labelLarge,
+                  ],
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: labelController,
-                  decoration: const InputDecoration(
-                    labelText: 'Mind map name',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton.icon(
+                  onPressed: () {
+                    final label = labelController.text.trim();
+                    if (label.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter a name')),
+                      );
+                      return;
+                    }
+                    Navigator.pop(
+                      context,
+                      _MindMapChoice(
+                        '__create__',
+                        label,
+                        templateId: selectedTemplateId,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Create'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton.icon(
-              onPressed: () {
-                final label = labelController.text.trim();
-                if (label.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a name')),
-                  );
-                  return;
-                }
-                Navigator.pop(context, _MindMapChoice('__create__', label));
-              },
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Create'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -888,9 +920,10 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     String label = result.label;
 
     if (result.mapId == '__create__') {
-      final newMap = await mindMapService.createMindMap(
+      final newMap = await mindMapService.createMindMapWithTemplate(
         workspaceId: workspaceId,
         name: label,
+        templateId: result.templateId ?? 'blank',
       );
       mapId = newMap.id;
       label = newMap.name;
@@ -1176,7 +1209,8 @@ class _WorkspaceSessionChoice {
 }
 
 class _MindMapChoice {
-  const _MindMapChoice(this.mapId, this.label);
+  const _MindMapChoice(this.mapId, this.label, {this.templateId});
   final String mapId;
   final String label;
+  final String? templateId;
 }

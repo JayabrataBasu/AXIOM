@@ -625,34 +625,68 @@ class DashboardScreen extends ConsumerWidget {
   Future<void> _createNewMindMap(BuildContext context, WidgetRef ref) async {
     final nameController = TextEditingController();
 
-    final result = await showDialog<String?>(
+    final result = await showDialog<_MindMapCreateChoice?>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Mind Map'),
-        content: TextField(
-          controller: nameController,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Mind map name',
-            border: OutlineInputBorder(),
+      builder: (context) {
+        String selectedTemplateId = MindMapService.templates.first.id;
+
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Create Mind Map'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Mind map name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedTemplateId,
+                  decoration: const InputDecoration(
+                    labelText: 'Template',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: MindMapService.templates
+                      .map(
+                        (template) => DropdownMenuItem<String>(
+                          value: template.id,
+                          child: Text(template.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() => selectedTemplateId = value);
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final name = nameController.text.trim();
+                  if (name.isNotEmpty) {
+                    Navigator.pop(
+                      context,
+                      _MindMapCreateChoice(name, selectedTemplateId),
+                    );
+                  }
+                },
+                child: const Text('Create'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isNotEmpty) {
-                Navigator.pop(context, name);
-              }
-            },
-            child: const Text('Create'),
-          ),
-        ],
-      ),
+        );
+      },
     );
 
     if (result == null || !context.mounted) return;
@@ -660,9 +694,10 @@ class DashboardScreen extends ConsumerWidget {
     final workspaceId = ref.read(activeWorkspaceIdProvider) ?? '';
     final mindMapService = MindMapService.instance;
 
-    final newMap = await mindMapService.createMindMap(
+    final newMap = await mindMapService.createMindMapWithTemplate(
       workspaceId: workspaceId,
-      name: result,
+      name: result.name,
+      templateId: result.templateId,
     );
 
     if (!context.mounted) return;
@@ -824,6 +859,12 @@ class _StitchStatCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MindMapCreateChoice {
+  const _MindMapCreateChoice(this.name, this.templateId);
+  final String name;
+  final String templateId;
 }
 
 /// M3 styled drawer item

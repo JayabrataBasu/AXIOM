@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:path/path.dart' as path;
 import '../models/mind_map.dart';
 import '../models/position.dart';
@@ -11,6 +12,30 @@ class MindMapService {
   static final MindMapService instance = MindMapService._();
 
   final FileService _fileService = FileService.instance;
+
+  /// Built-in mind map templates
+  static const List<MindMapTemplate> templates = [
+    MindMapTemplate(
+      id: 'blank',
+      name: 'Blank',
+      description: 'Start from scratch',
+    ),
+    MindMapTemplate(
+      id: 'swot',
+      name: 'SWOT Analysis',
+      description: 'Strengths, Weaknesses, Opportunities, Threats',
+    ),
+    MindMapTemplate(
+      id: 'project',
+      name: 'Project Plan',
+      description: 'Goals, Tasks, Risks, Timeline',
+    ),
+    MindMapTemplate(
+      id: 'meeting',
+      name: 'Meeting Notes',
+      description: 'Agenda, Decisions, Actions, Questions',
+    ),
+  ];
 
   /// Get the directory for mind maps in a workspace
   Future<Directory> _getMindMapsDir(String workspaceId) async {
@@ -108,25 +133,37 @@ class MindMapService {
     required String workspaceId,
     required String name,
   }) async {
+    return createMindMapWithTemplate(
+      workspaceId: workspaceId,
+      name: name,
+      templateId: 'blank',
+    );
+  }
+
+  /// Create a new mind map with a specific template
+  Future<MindMapGraph> createMindMapWithTemplate({
+    required String workspaceId,
+    required String name,
+    required String templateId,
+  }) async {
     final now = DateTime.now();
     final mapId = DateTime.now().millisecondsSinceEpoch.toString();
     final rootNodeId = '${mapId}_root';
 
-    // Position root node at center of the 4000x4000 canvas
-    final rootNode = MindMapNode(
-      id: rootNodeId,
-      text: name,
-      position: const Position(x: 2000, y: 2000),
-      createdAt: now,
-      updatedAt: now,
+    final nodes = _buildTemplateNodes(
+      templateId: templateId,
+      rootNodeId: rootNodeId,
+      name: name,
+      now: now,
     );
 
     final map = MindMapGraph(
       id: mapId,
       name: name,
       workspaceId: workspaceId,
+      templateId: templateId,
       rootNodeId: rootNodeId,
-      nodes: {rootNodeId: rootNode},
+      nodes: nodes,
       createdAt: now,
       updatedAt: now,
     );
@@ -134,4 +171,83 @@ class MindMapService {
     await saveMindMap(map);
     return map;
   }
+
+  Map<String, MindMapNode> _buildTemplateNodes({
+    required String templateId,
+    required String rootNodeId,
+    required String name,
+    required DateTime now,
+  }) {
+    final center = const Position(x: 2000, y: 2000);
+
+    MindMapNode rootNode(String text) => MindMapNode(
+      id: rootNodeId,
+      text: text,
+      position: center,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    List<MindMapNode> childrenFromLabels(List<String> labels) {
+      final radius = 280.0;
+      return List.generate(labels.length, (index) {
+        final angle = (index / labels.length) * 6.283185307179586;
+        final childId = '${rootNodeId}_$index';
+        return MindMapNode(
+          id: childId,
+          parentId: rootNodeId,
+          text: labels[index],
+          position: Position(
+            x: center.x + radius * math.cos(angle),
+            y: center.y + radius * math.sin(angle),
+          ),
+          createdAt: now,
+          updatedAt: now,
+        );
+      });
+    }
+
+    switch (templateId) {
+      case 'swot':
+        final labels = ['Strengths', 'Weaknesses', 'Opportunities', 'Threats'];
+        final root = rootNode(name);
+        final children = childrenFromLabels(labels);
+        return {
+          root.id: root.copyWith(childIds: children.map((c) => c.id).toList()),
+          for (final child in children) child.id: child,
+        };
+      case 'project':
+        final labels = ['Goals', 'Tasks', 'Timeline', 'Risks'];
+        final root = rootNode(name);
+        final children = childrenFromLabels(labels);
+        return {
+          root.id: root.copyWith(childIds: children.map((c) => c.id).toList()),
+          for (final child in children) child.id: child,
+        };
+      case 'meeting':
+        final labels = ['Agenda', 'Decisions', 'Actions', 'Questions'];
+        final root = rootNode(name);
+        final children = childrenFromLabels(labels);
+        return {
+          root.id: root.copyWith(childIds: children.map((c) => c.id).toList()),
+          for (final child in children) child.id: child,
+        };
+      case 'blank':
+      default:
+        final root = rootNode(name);
+        return {root.id: root};
+    }
+  }
+}
+
+class MindMapTemplate {
+  const MindMapTemplate({
+    required this.id,
+    required this.name,
+    required this.description,
+  });
+
+  final String id;
+  final String name;
+  final String description;
 }

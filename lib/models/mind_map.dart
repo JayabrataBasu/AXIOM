@@ -87,6 +87,9 @@ class MindMapGraph with _$MindMapGraph {
     /// Workspace this map belongs to
     required String workspaceId,
 
+    /// Template identifier used to create this map
+    @Default('blank') String templateId,
+
     /// Root node ID
     String? rootNodeId,
 

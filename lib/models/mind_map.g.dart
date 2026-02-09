@@ -69,6 +69,7 @@ _$MindMapGraphImpl _$$MindMapGraphImplFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       name: json['name'] as String,
       workspaceId: json['workspaceId'] as String,
+      templateId: json['templateId'] as String? ?? 'blank',
       rootNodeId: json['rootNodeId'] as String?,
       nodes:
           (json['nodes'] as Map<String, dynamic>?)?.map(
@@ -85,6 +86,7 @@ Map<String, dynamic> _$$MindMapGraphImplToJson(_$MindMapGraphImpl instance) =>
       'id': instance.id,
       'name': instance.name,
       'workspaceId': instance.workspaceId,
+      'templateId': instance.templateId,
       'rootNodeId': instance.rootNodeId,
       'nodes': instance.nodes,
       'createdAt': instance.createdAt.toIso8601String(),
