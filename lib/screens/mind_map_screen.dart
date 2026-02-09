@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import '../models/mind_map.dart';
 import '../models/position.dart';
 import '../providers/mind_map_provider.dart';
@@ -210,6 +213,224 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
     _centerOnNode(node);
   }
 
+  Future<void> _showExportDialog(MindMapGraph map) async {
+    final cs = Theme.of(context).colorScheme;
+
+    final format = await showDialog<String?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Export Mind Map'),
+        content: const Text('Choose export format:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'png'),
+            child: const Text('PNG'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'jpg'),
+            child: const Text('JPG'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (format == null) return;
+
+    // Calculate canvas bounds
+    if (map.nodes.isEmpty) {
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No nodes to export')));
+      return;
+    }
+
+    // Show loading dialog
+    if (!mounted) return;
+    // ignore: use_build_context_synchronously
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Exporting mind map...'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    try {
+      await _exportMindMapAsImage(map, format);
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context); // Close loading dialog
+
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Mind map exported as $format'),
+          backgroundColor: cs.primaryContainer,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context); // Close loading dialog
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e'), backgroundColor: cs.error),
+      );
+    }
+  }
+
+  Future<void> _exportMindMapAsImage(MindMapGraph map, String format) async {
+    final nodes = map.nodes.values.toList();
+    if (nodes.isEmpty) throw Exception('No nodes to export');
+
+    // Calculate canvas bounds with padding
+    double minX = double.infinity;
+    double maxX = double.negativeInfinity;
+    double minY = double.infinity;
+    double maxY = double.negativeInfinity;
+
+    const nodePadding = 100.0;
+    for (final node in nodes) {
+      minX = minX > node.position.x - 75 - nodePadding
+          ? node.position.x - 75 - nodePadding
+          : minX;
+      maxX = maxX < node.position.x + 75 + nodePadding
+          ? node.position.x + 75 + nodePadding
+          : maxX;
+      minY = minY > node.position.y - 40 - nodePadding
+          ? node.position.y - 40 - nodePadding
+          : minY;
+      maxY = maxY < node.position.y + 40 + nodePadding
+          ? node.position.y + 40 + nodePadding
+          : maxY;
+    }
+
+    final canvasWidth = (maxX - minX).toInt();
+    final canvasHeight = (maxY - minY).toInt();
+
+    // Create image
+    final image = img.Image(
+      width: canvasWidth.clamp(100, 4000),
+      height: canvasHeight.clamp(100, 4000),
+    );
+
+    // Fill background (Everforest background light)
+    final bgColor = img.ColorRgba8(248, 248, 246, 255);
+    for (int y = 0; y < image.height; y++) {
+      for (int x = 0; x < image.width; x++) {
+        image.setPixelRgba(x, y, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+      }
+    }
+
+    // Draw connections (lines between parent-child nodes)
+    final lineColor = img.ColorRgba8(
+      150,
+      150,
+      150,
+      180,
+    ); // Gray line for connections
+
+    for (final node in nodes) {
+      for (final childId in node.childIds) {
+        final child = map.nodes[childId];
+        if (child == null) continue;
+
+        final startX = ((node.position.x - minX).toInt()).clamp(
+          0,
+          image.width - 1,
+        );
+        final startY = ((node.position.y - minY).toInt()).clamp(
+          0,
+          image.height - 1,
+        );
+        final endX = ((child.position.x - minX).toInt()).clamp(
+          0,
+          image.width - 1,
+        );
+        final endY = ((child.position.y - minY).toInt()).clamp(
+          0,
+          image.height - 1,
+        );
+
+        // Draw line
+        img.drawLine(
+          image,
+          x1: startX,
+          y1: startY,
+          x2: endX,
+          y2: endY,
+          color: lineColor,
+        );
+      }
+    }
+
+    // Draw nodes as circles with text
+    for (final node in nodes) {
+      final x = ((node.position.x - minX).toInt()).clamp(0, image.width - 1);
+      final y = ((node.position.y - minY).toInt()).clamp(0, image.height - 1);
+
+      // Parse node background color (stored as int)
+      final bgColorInt = node.style.backgroundColor;
+      final r = (bgColorInt >> 16) & 0xFF;
+      final g = (bgColorInt >> 8) & 0xFF;
+      final b = bgColorInt & 0xFF;
+      final nodeColor = img.ColorRgba8(r, g, b, 255);
+
+      // Draw node circle
+      img.drawCircle(image, x: x, y: y, radius: 20, color: nodeColor);
+
+      // Border
+      img.drawCircle(image, x: x, y: y, radius: 20, color: lineColor);
+    }
+
+    // Encode and save
+    List<int> encoded;
+    if (format == 'png') {
+      encoded = img.encodePng(image);
+    } else {
+      encoded = img.encodeJpg(image, quality: 95);
+    }
+
+    // Save to Documents directory (persistent storage)
+    Directory directory;
+    try {
+      directory = await getApplicationDocumentsDirectory();
+      // Create AXIOM/Exports subdirectory
+      final exportsDir = Directory('${directory.path}/AXIOM/MindMapExports');
+      if (!await exportsDir.exists()) {
+        await exportsDir.create(recursive: true);
+      }
+      directory = exportsDir;
+    } catch (e) {
+      // Fallback to temp directory if Documents not available
+      directory = await getTemporaryDirectory();
+    }
+
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final extension = format == 'png' ? 'png' : 'jpg';
+    final filepath =
+        '${directory.path}/mindmap_${map.name.replaceAll(' ', '_')}_$timestamp.$extension';
+
+    final file = File(filepath);
+    await file.writeAsBytes(encoded);
+  }
+
   @override
   Widget build(BuildContext context) {
     final mapAsync = ref.watch(
@@ -250,6 +471,16 @@ class _MindMapScreenState extends ConsumerState<MindMapScreen> {
             icon: Icon(Icons.add_circle_outline, color: cs.primary),
             onPressed: () => _showAddNodeDialog(context),
             tooltip: 'Add root node',
+          ),
+          IconButton(
+            icon: Icon(Icons.download, color: cs.onSurfaceVariant),
+            onPressed: () {
+              final map = mapAsync.valueOrNull;
+              if (map != null) {
+                _showExportDialog(map);
+              }
+            },
+            tooltip: 'Export',
           ),
           IconButton(
             icon: Icon(Icons.refresh, color: cs.onSurfaceVariant),
