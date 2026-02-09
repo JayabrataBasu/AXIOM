@@ -526,62 +526,71 @@ class _SketchBlockEditorState extends ConsumerState<SketchBlockEditor> {
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(AxiomRadius.md),
               ),
-              child: Listener(
-                behavior: HitTestBehavior.opaque,
-                onPointerDown: (event) {
-                  final toolState = ref.read(
-                    sketchToolsBlockProvider(_blockId),
-                  );
-                  _startStroke(event.localPosition, toolState);
-                },
-                onPointerMove: (event) {
-                  if (!_isDrawing) {
-                    return;
-                  }
-                  final toolState = ref.read(
-                    sketchToolsBlockProvider(_blockId),
-                  );
-                  _updateStroke(event.localPosition, toolState);
-                },
-                onPointerUp: (event) {
-                  final toolState = ref.read(
-                    sketchToolsBlockProvider(_blockId),
-                  );
-                  _endStroke(toolState);
-                },
-                onPointerCancel: (event) {
-                  _isDrawing = false;
-                  _currentStroke = [];
-                  _currentStrokeNotifier.value = [];
-                },
-                child: Stack(
-                  children: [
-                    // Background - Everforest bg5 for sketch canvas
-                    Container(color: AxiomColors.bg5),
-                    // Canvas - ValueListenableBuilder for low-latency repainting
-                    RepaintBoundary(
-                      child: ValueListenableBuilder<List<SketchPoint>>(
-                        valueListenable: _currentStrokeNotifier,
-                        builder: (context, currentStroke, _) {
-                          return ValueListenableBuilder<List<SketchStroke>>(
-                            valueListenable: _strokesNotifier,
-                            builder: (context, strokes, _) {
-                              return CustomPaint(
-                                painter: _SketchCanvasPainter(
-                                  strokes: strokes,
-                                  currentStroke: currentStroke,
-                                  currentColor: effectiveColor,
-                                  currentWidth: toolState.brushSize,
-                                  currentTool: toolState.tool,
-                                ),
-                                size: Size.infinite,
-                              );
-                            },
-                          );
-                        },
+              child: GestureDetector(
+                // Consume drag gestures to prevent parent scrolling
+                onVerticalDragDown: (_) {},
+                onVerticalDragUpdate: (_) {},
+                onVerticalDragEnd: (_) {},
+                onHorizontalDragDown: (_) {},
+                onHorizontalDragUpdate: (_) {},
+                onHorizontalDragEnd: (_) {},
+                child: Listener(
+                  behavior: HitTestBehavior.opaque,
+                  onPointerDown: (event) {
+                    final toolState = ref.read(
+                      sketchToolsBlockProvider(_blockId),
+                    );
+                    _startStroke(event.localPosition, toolState);
+                  },
+                  onPointerMove: (event) {
+                    if (!_isDrawing) {
+                      return;
+                    }
+                    final toolState = ref.read(
+                      sketchToolsBlockProvider(_blockId),
+                    );
+                    _updateStroke(event.localPosition, toolState);
+                  },
+                  onPointerUp: (event) {
+                    final toolState = ref.read(
+                      sketchToolsBlockProvider(_blockId),
+                    );
+                    _endStroke(toolState);
+                  },
+                  onPointerCancel: (event) {
+                    _isDrawing = false;
+                    _currentStroke = [];
+                    _currentStrokeNotifier.value = [];
+                  },
+                  child: Stack(
+                    children: [
+                      // Background - Everforest bg5 for sketch canvas
+                      Container(color: AxiomColors.bg5),
+                      // Canvas - ValueListenableBuilder for low-latency repainting
+                      RepaintBoundary(
+                        child: ValueListenableBuilder<List<SketchPoint>>(
+                          valueListenable: _currentStrokeNotifier,
+                          builder: (context, currentStroke, _) {
+                            return ValueListenableBuilder<List<SketchStroke>>(
+                              valueListenable: _strokesNotifier,
+                              builder: (context, strokes, _) {
+                                return CustomPaint(
+                                  painter: _SketchCanvasPainter(
+                                    strokes: strokes,
+                                    currentStroke: currentStroke,
+                                    currentColor: effectiveColor,
+                                    currentWidth: toolState.brushSize,
+                                    currentTool: toolState.tool,
+                                  ),
+                                  size: Size.infinite,
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
