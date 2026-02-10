@@ -15,7 +15,9 @@ class MathsService {
 
   /// Get the maths directory for a workspace
   Future<String> _getMathsDir(String workspaceId) async {
-    final dir = await _fileService.getSubdirectory('workspaces/$workspaceId/maths');
+    final dir = await _fileService.getSubdirectory(
+      'workspaces/$workspaceId/maths',
+    );
     return dir.path;
   }
 
@@ -31,8 +33,8 @@ class MathsService {
     final now = DateTime.now();
 
     // Initialize with zeros if no values provided
-    final values = initialValues ??
-        List.generate(rows, (_) => List.filled(cols, 0.0));
+    final values =
+        initialValues ?? List.generate(rows, (_) => List.filled(cols, 0.0));
 
     final matrix = MatrixObject(
       id: id,
@@ -86,10 +88,13 @@ class MathsService {
     required String objectId,
   }) async {
     try {
-      final file = File(path.join(await _getMathsDir(workspaceId), '$objectId.json'));
+      final file = File(
+        path.join(await _getMathsDir(workspaceId), '$objectId.json'),
+      );
       if (!await file.exists()) return null;
 
-      final json = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      final json =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       return MathsObject.fromJson(json);
     } catch (e) {
       return null;
@@ -105,7 +110,8 @@ class MathsService {
     await for (final entity in dir.list()) {
       if (entity is File && entity.path.endsWith('.json')) {
         try {
-          final json = jsonDecode(await entity.readAsString()) as Map<String, dynamic>;
+          final json =
+              jsonDecode(await entity.readAsString()) as Map<String, dynamic>;
           objects.add(MathsObject.fromJson(json));
         } catch (e) {
           // Skip invalid files
@@ -124,7 +130,9 @@ class MathsService {
     required String objectId,
   }) async {
     try {
-      final file = File(path.join(await _getMathsDir(workspaceId), '$objectId.json'));
+      final file = File(
+        path.join(await _getMathsDir(workspaceId), '$objectId.json'),
+      );
       if (await file.exists()) {
         await file.delete();
         return true;
@@ -186,10 +194,7 @@ class MathsService {
   }
 
   /// Add two matrices
-  static List<List<double>> add(
-    List<List<double>> a,
-    List<List<double>> b,
-  ) {
+  static List<List<double>> add(List<List<double>> a, List<List<double>> b) {
     if (a.length != b.length || a[0].length != b[0].length) {
       throw ArgumentError('Matrices must have same dimensions');
     }
@@ -458,7 +463,7 @@ class MathsService {
   /// Simple expression evaluator (supports +, -, *, /, ^, parentheses)
   static String _evaluateSimple(String expr) {
     expr = expr.replaceAll(' ', '');
-    
+
     // Handle powers
     while (expr.contains('^')) {
       final match = RegExp(r'([0-9.]+)\^([0-9.]+)').firstMatch(expr);
@@ -498,7 +503,7 @@ class MathsService {
     for (int i = 0; i <= points; i++) {
       final x = xMin + i * step;
       final y = evaluateExpression(equation, x);
-      
+
       if (!y.isNaN && !y.isInfinite) {
         plotPoints.add({'x': x, 'y': y});
       }

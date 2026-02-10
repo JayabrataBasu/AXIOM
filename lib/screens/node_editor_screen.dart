@@ -584,9 +584,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         blockType: 'Maths',
         dragIndex: index,
         onDelete: () => _deleteBlock(node.id, block.id),
-        child: const Center(
-          child: Text('Maths Block (Coming Soon)'),
-        ),
+        child: const Center(child: Text('Maths Block (Coming Soon)')),
       ),
     };
 

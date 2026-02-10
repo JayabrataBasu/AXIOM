@@ -4,10 +4,7 @@ part 'maths.freezed.dart';
 part 'maths.g.dart';
 
 /// Type of mathematical object
-enum MathsObjectType {
-  matrix,
-  graph,
-}
+enum MathsObjectType { matrix, graph }
 
 /// Type of mathematical operation
 enum MathsOperationType {
@@ -53,9 +50,9 @@ class MathsObject with _$MathsObject {
 
   /// Get the type of this maths object
   MathsObjectType get type => map(
-        matrix: (_) => MathsObjectType.matrix,
-        graph: (_) => MathsObjectType.graph,
-      );
+    matrix: (_) => MathsObjectType.matrix,
+    graph: (_) => MathsObjectType.graph,
+  );
 }
 
 /// Data for matrix objects
