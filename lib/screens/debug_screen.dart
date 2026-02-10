@@ -271,6 +271,11 @@ class _NodeCardState extends ConsumerState<_NodeCard> {
         Colors.purple,
         label.isNotEmpty ? label : 'Map: ${mapId.substring(0, 6)}...',
       ),
+      MathsRefBlock(:final label, :final mathsObjectId) => (
+        'MATHS',
+        Colors.amber,
+        label.isNotEmpty ? label : 'Maths: ${mathsObjectId.substring(0, 6)}...',
+      ),
       ToolBlock(:final toolType) => ('TOOL', Colors.pink, toolType),
     };
 

@@ -579,6 +579,15 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         onDelete: () => _deleteBlock(node.id, block.id),
         workspaceId: node.workspaceId,
       ),
+      MathsRefBlock() => BlockEditorCard(
+        key: ValueKey(block.id),
+        blockType: 'Maths',
+        dragIndex: index,
+        onDelete: () => _deleteBlock(node.id, block.id),
+        child: const Center(
+          child: Text('Maths Block (Coming Soon)'),
+        ),
+      ),
     };
 
     // Wrap with highlight decoration if this block is highlighted

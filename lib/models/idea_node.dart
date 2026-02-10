@@ -131,6 +131,19 @@ class ContentBlockListConverter
                 'label': label,
                 'createdAt': createdAt.toIso8601String(),
               },
+            MathsRefBlock(
+              :final id,
+              :final mathsObjectId,
+              :final label,
+              :final createdAt,
+            ) =>
+              {
+                'type': 'maths_ref',
+                'id': id,
+                'mathsObjectId': mathsObjectId,
+                'label': label,
+                'createdAt': createdAt.toIso8601String(),
+              },
             ToolBlock(
               :final id,
               :final toolType,

@@ -130,6 +130,10 @@ class SearchService {
         content = block.label;
         blockType = 'Mind Map';
         break;
+      case MathsRefBlock():
+        content = block.label;
+        blockType = 'Maths';
+        break;
       case ToolBlock():
         return null;
     }

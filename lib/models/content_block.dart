@@ -108,6 +108,15 @@ sealed class ContentBlock with _$ContentBlock {
     required DateTime createdAt,
   }) = MindMapRefBlock;
 
+  /// A maths reference block linking to a mathematical object.
+  @FreezedUnionValue('maths_ref')
+  const factory ContentBlock.mathsRef({
+    required String id,
+    required String mathsObjectId,
+    @Default('') String label,
+    required DateTime createdAt,
+  }) = MathsRefBlock;
+
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String?;
 
@@ -175,6 +184,12 @@ sealed class ContentBlock with _$ContentBlock {
       'mind_map_ref' => ContentBlock.mindMapRef(
         id: json['id'] as String,
         mapId: json['mapId'] as String,
+        label: (json['label'] as String?) ?? '',
+        createdAt: DateTime.parse(json['createdAt'] as String),
+      ),
+      'maths_ref' => ContentBlock.mathsRef(
+        id: json['id'] as String,
+        mathsObjectId: json['mathsObjectId'] as String,
         label: (json['label'] as String?) ?? '',
         createdAt: DateTime.parse(json['createdAt'] as String),
       ),

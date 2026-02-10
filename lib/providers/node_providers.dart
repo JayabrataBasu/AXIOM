@@ -287,6 +287,7 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
         AudioBlock() => block, // Audio is read-only after creation
         WorkspaceRefBlock() => block, // Read-only workspace references
         MindMapRefBlock() => block, // Read-only mind map references
+        MathsRefBlock() => block, // Read-only maths references
         ToolBlock() =>
           block, // Tool results are computed, use updateToolBlockOutput
       };

@@ -83,6 +83,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -142,6 +149,13 @@ mixin _$ContentBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -196,6 +210,13 @@ mixin _$ContentBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -211,6 +232,7 @@ mixin _$ContentBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -225,6 +247,7 @@ mixin _$ContentBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -239,6 +262,7 @@ mixin _$ContentBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 
@@ -448,6 +472,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return text(id, content, createdAt);
   }
@@ -511,6 +542,13 @@ class _$TextBlockImpl extends TextBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return text?.call(id, content, createdAt);
   }
@@ -569,6 +607,13 @@ class _$TextBlockImpl extends TextBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -591,6 +636,7 @@ class _$TextBlockImpl extends TextBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return text(this);
   }
@@ -609,6 +655,7 @@ class _$TextBlockImpl extends TextBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return text?.call(this);
   }
@@ -627,6 +674,7 @@ class _$TextBlockImpl extends TextBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (text != null) {
@@ -826,6 +874,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return heading(id, content, level, createdAt);
   }
@@ -889,6 +944,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return heading?.call(id, content, level, createdAt);
   }
@@ -947,6 +1009,13 @@ class _$HeadingBlockImpl extends HeadingBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -969,6 +1038,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return heading(this);
   }
@@ -987,6 +1057,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return heading?.call(this);
   }
@@ -1005,6 +1076,7 @@ class _$HeadingBlockImpl extends HeadingBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (heading != null) {
@@ -1211,6 +1283,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return bulletList(id, items, createdAt);
   }
@@ -1274,6 +1353,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return bulletList?.call(id, items, createdAt);
   }
@@ -1332,6 +1418,13 @@ class _$BulletListBlockImpl extends BulletListBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -1354,6 +1447,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return bulletList(this);
   }
@@ -1372,6 +1466,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return bulletList?.call(this);
   }
@@ -1390,6 +1485,7 @@ class _$BulletListBlockImpl extends BulletListBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (bulletList != null) {
@@ -1591,6 +1687,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return code(id, content, language, createdAt);
   }
@@ -1654,6 +1757,13 @@ class _$CodeBlockImpl extends CodeBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return code?.call(id, content, language, createdAt);
   }
@@ -1712,6 +1822,13 @@ class _$CodeBlockImpl extends CodeBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1734,6 +1851,7 @@ class _$CodeBlockImpl extends CodeBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return code(this);
   }
@@ -1752,6 +1870,7 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return code?.call(this);
   }
@@ -1770,6 +1889,7 @@ class _$CodeBlockImpl extends CodeBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (code != null) {
@@ -1978,6 +2098,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return quote(id, content, attribution, createdAt);
   }
@@ -2041,6 +2168,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return quote?.call(id, content, attribution, createdAt);
   }
@@ -2099,6 +2233,13 @@ class _$QuoteBlockImpl extends QuoteBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -2121,6 +2262,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return quote(this);
   }
@@ -2139,6 +2281,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return quote?.call(this);
   }
@@ -2157,6 +2300,7 @@ class _$QuoteBlockImpl extends QuoteBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (quote != null) {
@@ -2365,6 +2509,13 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return sketch(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -2428,6 +2579,13 @@ class _$SketchBlockImpl extends SketchBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return sketch?.call(id, strokeFile, thumbnailFile, createdAt);
   }
@@ -2486,6 +2644,13 @@ class _$SketchBlockImpl extends SketchBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -2508,6 +2673,7 @@ class _$SketchBlockImpl extends SketchBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return sketch(this);
   }
@@ -2526,6 +2692,7 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return sketch?.call(this);
   }
@@ -2544,6 +2711,7 @@ class _$SketchBlockImpl extends SketchBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (sketch != null) {
@@ -2735,6 +2903,13 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return math(id, latex, createdAt);
   }
@@ -2798,6 +2973,13 @@ class _$MathBlockImpl extends MathBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return math?.call(id, latex, createdAt);
   }
@@ -2856,6 +3038,13 @@ class _$MathBlockImpl extends MathBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (math != null) {
@@ -2878,6 +3067,7 @@ class _$MathBlockImpl extends MathBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return math(this);
   }
@@ -2896,6 +3086,7 @@ class _$MathBlockImpl extends MathBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return math?.call(this);
   }
@@ -2914,6 +3105,7 @@ class _$MathBlockImpl extends MathBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (math != null) {
@@ -3115,6 +3307,13 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return audio(id, audioFile, durationMs, createdAt);
   }
@@ -3178,6 +3377,13 @@ class _$AudioBlockImpl extends AudioBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return audio?.call(id, audioFile, durationMs, createdAt);
   }
@@ -3236,6 +3442,13 @@ class _$AudioBlockImpl extends AudioBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (audio != null) {
@@ -3258,6 +3471,7 @@ class _$AudioBlockImpl extends AudioBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return audio(this);
   }
@@ -3276,6 +3490,7 @@ class _$AudioBlockImpl extends AudioBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return audio?.call(this);
   }
@@ -3294,6 +3509,7 @@ class _$AudioBlockImpl extends AudioBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (audio != null) {
@@ -3498,6 +3714,13 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return workspaceRef(id, sessionId, label, createdAt);
   }
@@ -3561,6 +3784,13 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return workspaceRef?.call(id, sessionId, label, createdAt);
   }
@@ -3619,6 +3849,13 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (workspaceRef != null) {
@@ -3641,6 +3878,7 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return workspaceRef(this);
   }
@@ -3659,6 +3897,7 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return workspaceRef?.call(this);
   }
@@ -3677,6 +3916,7 @@ class _$WorkspaceRefBlockImpl extends WorkspaceRefBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (workspaceRef != null) {
@@ -3924,6 +4164,13 @@ class _$ToolBlockImpl extends ToolBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return tool(id, toolType, inputData, outputData, createdAt);
   }
@@ -3987,6 +4234,13 @@ class _$ToolBlockImpl extends ToolBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return tool?.call(id, toolType, inputData, outputData, createdAt);
   }
@@ -4045,6 +4299,13 @@ class _$ToolBlockImpl extends ToolBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (tool != null) {
@@ -4067,6 +4328,7 @@ class _$ToolBlockImpl extends ToolBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return tool(this);
   }
@@ -4085,6 +4347,7 @@ class _$ToolBlockImpl extends ToolBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return tool?.call(this);
   }
@@ -4103,6 +4366,7 @@ class _$ToolBlockImpl extends ToolBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (tool != null) {
@@ -4308,6 +4572,13 @@ class _$MindMapRefBlockImpl extends MindMapRefBlock {
       DateTime createdAt,
     )
     mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
   }) {
     return mindMapRef(id, mapId, label, createdAt);
   }
@@ -4371,6 +4642,13 @@ class _$MindMapRefBlockImpl extends MindMapRefBlock {
       DateTime createdAt,
     )?
     mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
   }) {
     return mindMapRef?.call(id, mapId, label, createdAt);
   }
@@ -4429,6 +4707,13 @@ class _$MindMapRefBlockImpl extends MindMapRefBlock {
     tool,
     TResult Function(String id, String mapId, String label, DateTime createdAt)?
     mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
     required TResult orElse(),
   }) {
     if (mindMapRef != null) {
@@ -4451,6 +4736,7 @@ class _$MindMapRefBlockImpl extends MindMapRefBlock {
     required TResult Function(WorkspaceRefBlock value) workspaceRef,
     required TResult Function(ToolBlock value) tool,
     required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
   }) {
     return mindMapRef(this);
   }
@@ -4469,6 +4755,7 @@ class _$MindMapRefBlockImpl extends MindMapRefBlock {
     TResult? Function(WorkspaceRefBlock value)? workspaceRef,
     TResult? Function(ToolBlock value)? tool,
     TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
   }) {
     return mindMapRef?.call(this);
   }
@@ -4487,6 +4774,7 @@ class _$MindMapRefBlockImpl extends MindMapRefBlock {
     TResult Function(WorkspaceRefBlock value)? workspaceRef,
     TResult Function(ToolBlock value)? tool,
     TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
     required TResult orElse(),
   }) {
     if (mindMapRef != null) {
@@ -4517,5 +4805,415 @@ abstract class MindMapRefBlock extends ContentBlock {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$MindMapRefBlockImplCopyWith<_$MindMapRefBlockImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$MathsRefBlockImplCopyWith<$Res>
+    implements $ContentBlockCopyWith<$Res> {
+  factory _$$MathsRefBlockImplCopyWith(
+    _$MathsRefBlockImpl value,
+    $Res Function(_$MathsRefBlockImpl) then,
+  ) = __$$MathsRefBlockImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String id,
+    String mathsObjectId,
+    String label,
+    DateTime createdAt,
+  });
+}
+
+/// @nodoc
+class __$$MathsRefBlockImplCopyWithImpl<$Res>
+    extends _$ContentBlockCopyWithImpl<$Res, _$MathsRefBlockImpl>
+    implements _$$MathsRefBlockImplCopyWith<$Res> {
+  __$$MathsRefBlockImplCopyWithImpl(
+    _$MathsRefBlockImpl _value,
+    $Res Function(_$MathsRefBlockImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? mathsObjectId = null,
+    Object? label = null,
+    Object? createdAt = null,
+  }) {
+    return _then(
+      _$MathsRefBlockImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        mathsObjectId: null == mathsObjectId
+            ? _value.mathsObjectId
+            : mathsObjectId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        label: null == label
+            ? _value.label
+            : label // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$MathsRefBlockImpl extends MathsRefBlock {
+  const _$MathsRefBlockImpl({
+    required this.id,
+    required this.mathsObjectId,
+    this.label = '',
+    required this.createdAt,
+  }) : super._();
+
+  @override
+  final String id;
+  @override
+  final String mathsObjectId;
+  @override
+  @JsonKey()
+  final String label;
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'ContentBlock.mathsRef(id: $id, mathsObjectId: $mathsObjectId, label: $label, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MathsRefBlockImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.mathsObjectId, mathsObjectId) ||
+                other.mathsObjectId == mathsObjectId) &&
+            (identical(other.label, label) || other.label == label) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, id, mathsObjectId, label, createdAt);
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MathsRefBlockImplCopyWith<_$MathsRefBlockImpl> get copyWith =>
+      __$$MathsRefBlockImplCopyWithImpl<_$MathsRefBlockImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String id, String content, DateTime createdAt)
+    text,
+    required TResult Function(
+      String id,
+      String content,
+      int level,
+      DateTime createdAt,
+    )
+    heading,
+    required TResult Function(String id, List<String> items, DateTime createdAt)
+    bulletList,
+    required TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )
+    code,
+    required TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )
+    quote,
+    required TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )
+    sketch,
+    required TResult Function(String id, String latex, DateTime createdAt) math,
+    required TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )
+    audio,
+    required TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )
+    workspaceRef,
+    required TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )
+    tool,
+    required TResult Function(
+      String id,
+      String mapId,
+      String label,
+      DateTime createdAt,
+    )
+    mindMapRef,
+    required TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )
+    mathsRef,
+  }) {
+    return mathsRef(id, mathsObjectId, label, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String id, String content, DateTime createdAt)? text,
+    TResult? Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult? Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult? Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult? Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult? Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult? Function(String id, String latex, DateTime createdAt)? math,
+    TResult? Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    TResult? Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
+    TResult? Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
+    TResult? Function(
+      String id,
+      String mapId,
+      String label,
+      DateTime createdAt,
+    )?
+    mindMapRef,
+    TResult? Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
+  }) {
+    return mathsRef?.call(id, mathsObjectId, label, createdAt);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String id, String content, DateTime createdAt)? text,
+    TResult Function(String id, String content, int level, DateTime createdAt)?
+    heading,
+    TResult Function(String id, List<String> items, DateTime createdAt)?
+    bulletList,
+    TResult Function(
+      String id,
+      String content,
+      String language,
+      DateTime createdAt,
+    )?
+    code,
+    TResult Function(
+      String id,
+      String content,
+      String attribution,
+      DateTime createdAt,
+    )?
+    quote,
+    TResult Function(
+      String id,
+      String strokeFile,
+      String thumbnailFile,
+      DateTime createdAt,
+    )?
+    sketch,
+    TResult Function(String id, String latex, DateTime createdAt)? math,
+    TResult Function(
+      String id,
+      String audioFile,
+      int durationMs,
+      DateTime createdAt,
+    )?
+    audio,
+    TResult Function(
+      String id,
+      String sessionId,
+      String label,
+      DateTime createdAt,
+    )?
+    workspaceRef,
+    TResult Function(
+      String id,
+      String toolType,
+      Map<String, dynamic> inputData,
+      Map<String, dynamic> outputData,
+      DateTime createdAt,
+    )?
+    tool,
+    TResult Function(String id, String mapId, String label, DateTime createdAt)?
+    mindMapRef,
+    TResult Function(
+      String id,
+      String mathsObjectId,
+      String label,
+      DateTime createdAt,
+    )?
+    mathsRef,
+    required TResult orElse(),
+  }) {
+    if (mathsRef != null) {
+      return mathsRef(id, mathsObjectId, label, createdAt);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(TextBlock value) text,
+    required TResult Function(HeadingBlock value) heading,
+    required TResult Function(BulletListBlock value) bulletList,
+    required TResult Function(CodeBlock value) code,
+    required TResult Function(QuoteBlock value) quote,
+    required TResult Function(SketchBlock value) sketch,
+    required TResult Function(MathBlock value) math,
+    required TResult Function(AudioBlock value) audio,
+    required TResult Function(WorkspaceRefBlock value) workspaceRef,
+    required TResult Function(ToolBlock value) tool,
+    required TResult Function(MindMapRefBlock value) mindMapRef,
+    required TResult Function(MathsRefBlock value) mathsRef,
+  }) {
+    return mathsRef(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(TextBlock value)? text,
+    TResult? Function(HeadingBlock value)? heading,
+    TResult? Function(BulletListBlock value)? bulletList,
+    TResult? Function(CodeBlock value)? code,
+    TResult? Function(QuoteBlock value)? quote,
+    TResult? Function(SketchBlock value)? sketch,
+    TResult? Function(MathBlock value)? math,
+    TResult? Function(AudioBlock value)? audio,
+    TResult? Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult? Function(ToolBlock value)? tool,
+    TResult? Function(MindMapRefBlock value)? mindMapRef,
+    TResult? Function(MathsRefBlock value)? mathsRef,
+  }) {
+    return mathsRef?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(TextBlock value)? text,
+    TResult Function(HeadingBlock value)? heading,
+    TResult Function(BulletListBlock value)? bulletList,
+    TResult Function(CodeBlock value)? code,
+    TResult Function(QuoteBlock value)? quote,
+    TResult Function(SketchBlock value)? sketch,
+    TResult Function(MathBlock value)? math,
+    TResult Function(AudioBlock value)? audio,
+    TResult Function(WorkspaceRefBlock value)? workspaceRef,
+    TResult Function(ToolBlock value)? tool,
+    TResult Function(MindMapRefBlock value)? mindMapRef,
+    TResult Function(MathsRefBlock value)? mathsRef,
+    required TResult orElse(),
+  }) {
+    if (mathsRef != null) {
+      return mathsRef(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class MathsRefBlock extends ContentBlock {
+  const factory MathsRefBlock({
+    required final String id,
+    required final String mathsObjectId,
+    final String label,
+    required final DateTime createdAt,
+  }) = _$MathsRefBlockImpl;
+  const MathsRefBlock._() : super._();
+
+  @override
+  String get id;
+  String get mathsObjectId;
+  String get label;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of ContentBlock
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MathsRefBlockImplCopyWith<_$MathsRefBlockImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
