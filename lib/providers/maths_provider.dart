@@ -1,242 +1,175 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/maths.dart';
-import '../services/file_service.dart';
 import '../services/maths_service.dart';
 
-part 'maths_provider.g.dart';
+/// Provider for a specific maths object
+final mathsObjectProvider = FutureProvider.family<MathsObject?, String>((
+  ref,
+  mathsObjectId,
+) async {
+  final workspaceId = ref.watch(activeMathsWorkspaceProvider);
+  if (workspaceId == null) return null;
 
-/// Provider for MathsService
-@riverpod
-MathsService mathsService(MathsServiceRef ref) {
-  final fileService = ref.watch(fileServiceProvider);
-  return MathsService(fileService);
-}
-
-/// Async provider to load a specific maths object
-@riverpod
-Future<MathsObject?> mathsObject(
-  MathsObjectRef ref, {
-  required String workspaceId,
-  required String mathsObjectId,
-}) async {
-  final service = ref.watch(mathsServiceProvider);
-  return service.loadMathsObject(
+  return await MathsService.instance.loadMathsObject(
     workspaceId: workspaceId,
     objectId: mathsObjectId,
   );
-}
+});
 
-/// Async provider to list all maths objects in a workspace
-@riverpod
-Future<List<MathsObject>> mathsObjectsList(
-  MathsObjectsListRef ref,
-  String workspaceId,
-) async {
-  final service = ref.watch(mathsServiceProvider);
-  return service.listMathsObjects(workspaceId);
-}
-
-/// State notifier for managing a maths object's operations
-class MathsObjectNotifier extends AsyncNotifier<MathsObject> {
-  late String _workspaceId;
-  late String _mathsObjectId;
-
-  @override
-  Future<MathsObject> build({
-    required String workspaceId,
-    required String mathsObjectId,
-  }) async {
-    _workspaceId = workspaceId;
-    _mathsObjectId = mathsObjectId;
-
-    final service = ref.watch(mathsServiceProvider);
-    final loaded = await service.loadMathsObject(
-      workspaceId: workspaceId,
-      objectId: mathsObjectId,
-    );
-
-    if (loaded == null) {
-      throw Exception('Maths object not found');
-    }
-
-    return loaded;
-  }
-
-  /// Update the maths object
-  Future<void> updateMathsObject(MathsObject updated) async {
-    final service = ref.read(mathsServiceProvider);
-    await service.saveMathsObject(updated);
-    state = AsyncValue.data(updated);
-  }
-
-  /// Reload the maths object from disk
-  Future<void> reload() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(mathsServiceProvider);
-      final loaded = await service.loadMathsObject(
-        workspaceId: _workspaceId,
-        objectId: _mathsObjectId,
-      );
-
-      if (loaded == null) {
-        throw Exception('Maths object not found');
-      }
-
-      return loaded;
+/// Provider for listing all maths objects in a workspace
+final mathsObjectsListProvider =
+    FutureProvider.family<List<MathsObject>, String>((ref, workspaceId) async {
+      return await MathsService.instance.listMathsObjects(workspaceId);
     });
+
+/// Provider for the active workspace ID for maths objects
+final activeMathsWorkspaceProvider = StateProvider<String?>((ref) => null);
+
+/// State notifier for managing maths object operations
+class MathsObjectNotifier extends StateNotifier<AsyncValue<MathsObject>> {
+  MathsObjectNotifier(this.workspaceId, this.mathsObjectId)
+    : super(const AsyncValue.loading()) {
+    _loadObject();
+  }
+
+  final String workspaceId;
+  final String mathsObjectId;
+  final MathsService _service = MathsService.instance;
+
+  Future<void> _loadObject() async {
+    try {
+      final obj = await _service.loadMathsObject(
+        workspaceId: workspaceId,
+        objectId: mathsObjectId,
+      );
+      if (obj != null) {
+        state = AsyncValue.data(obj);
+      } else {
+        state = AsyncValue.error('Maths object not found', StackTrace.current);
+      }
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> _saveObject(MathsObject obj) async {
+    await _service.saveMathsObject(obj);
+  }
+
+  /// Save the current maths object state
+  Future<void> updateMathsObject(MathsObject updated) async {
+    try {
+      state = const AsyncValue.loading();
+      await _saveObject(updated);
+      state = AsyncValue.data(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Reload the object from disk
+  Future<void> reload() async {
+    try {
+      state = const AsyncValue.loading();
+      final obj = await _service.loadMathsObject(
+        workspaceId: workspaceId,
+        objectId: mathsObjectId,
+      );
+      if (obj != null) {
+        state = AsyncValue.data(obj);
+      } else {
+        state = AsyncValue.error('Maths object not found', StackTrace.current);
+      }
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 
   /// Add an operation to the maths object
   Future<void> addOperation(MathsOperation operation) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
+    try {
+      final current = state.valueOrNull;
+      if (current == null) return;
 
-    final updated = current.map(
-      matrix: (m) => m.copyWith(operations: [...m.operations, operation]),
-      graph: (g) => g.copyWith(operations: [...g.operations, operation]),
-    );
-
-    await updateMathsObject(updated);
-  }
-
-  /// Update matrix data
-  Future<void> updateMatrixData(MatrixData data) async {
-    final current = state.valueOrNull;
-    if (current is! MatrixObject) return;
-
-    final updated = current.copyWith(data: data, updatedAt: DateTime.now());
-    await updateMathsObject(updated);
-  }
-
-  /// Update graph data
-  Future<void> updateGraphData(GraphData data) async {
-    final current = state.valueOrNull;
-    if (current is! GraphObject) return;
-
-    final updated = current.copyWith(data: data, updatedAt: DateTime.now());
-    await updateMathsObject(updated);
-  }
-
-  /// Clear all operations
-  Future<void> clearOperations() async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-
-    final updated = current.map(
-      matrix: (m) => m.copyWith(operations: [], updatedAt: DateTime.now()),
-      graph: (g) => g.copyWith(operations: [], updatedAt: DateTime.now()),
-    );
-
-    await updateMathsObject(updated);
-  }
-}
-
-/// Provider for managing a specific maths object with operations
-@riverpod
-class MathsObjectNotifierProvider extends _$MathsObjectNotifierProvider
-    implements AsyncNotifier<MathsObject> {
-  late String _workspaceId;
-  late String _mathsObjectId;
-
-  @override
-  Future<MathsObject> build({
-    required String workspaceId,
-    required String mathsObjectId,
-  }) async {
-    _workspaceId = workspaceId;
-    _mathsObjectId = mathsObjectId;
-
-    final service = ref.watch(mathsServiceProvider);
-    final loaded = await service.loadMathsObject(
-      workspaceId: workspaceId,
-      objectId: mathsObjectId,
-    );
-
-    if (loaded == null) {
-      throw Exception('Maths object not found');
-    }
-
-    return loaded;
-  }
-
-  /// Update the maths object
-  Future<void> updateMathsObject(MathsObject updated) async {
-    final service = ref.read(mathsServiceProvider);
-    await service.saveMathsObject(updated);
-    state = AsyncValue.data(updated);
-  }
-
-  /// Reload the maths object from disk
-  Future<void> reload() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(mathsServiceProvider);
-      final loaded = await service.loadMathsObject(
-        workspaceId: _workspaceId,
-        objectId: _mathsObjectId,
-      );
-
-      if (loaded == null) {
-        throw Exception('Maths object not found');
+      late final MathsObject updated;
+      if (current is MatrixObject) {
+        final newOps = [...current.operations, operation];
+        updated = current.copyWith(
+          operations: newOps,
+          updatedAt: DateTime.now(),
+        );
+      } else if (current is GraphObject) {
+        final newOps = [...current.operations, operation];
+        updated = current.copyWith(
+          operations: newOps,
+          updatedAt: DateTime.now(),
+        );
+      } else {
+        return;
       }
 
-      return loaded;
-    });
+      await updateMathsObject(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 
-  /// Add an operation to the maths object
-  Future<void> addOperation(MathsOperation operation) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-
-    final updated = current.map(
-      matrix: (m) => m.copyWith(operations: [...m.operations, operation]),
-      graph: (g) => g.copyWith(operations: [...g.operations, operation]),
-    );
-
-    await updateMathsObject(updated);
-  }
-
-  /// Update matrix data
+  /// Update matrix data directly
   Future<void> updateMatrixData(MatrixData data) async {
-    final current = state.valueOrNull;
-    if (current is! MatrixObject) return;
+    try {
+      final current = state.valueOrNull;
+      if (current is! MatrixObject) return;
 
-    final updated = current.copyWith(data: data, updatedAt: DateTime.now());
-    await updateMathsObject(updated);
+      final updated = current.copyWith(data: data, updatedAt: DateTime.now());
+
+      await updateMathsObject(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 
-  /// Update graph data
+  /// Update graph data directly
   Future<void> updateGraphData(GraphData data) async {
-    final current = state.valueOrNull;
-    if (current is! GraphObject) return;
+    try {
+      final current = state.valueOrNull;
+      if (current is! GraphObject) return;
 
-    final updated = current.copyWith(data: data, updatedAt: DateTime.now());
-    await updateMathsObject(updated);
+      final updated = current.copyWith(data: data, updatedAt: DateTime.now());
+
+      await updateMathsObject(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 
   /// Clear all operations
   Future<void> clearOperations() async {
-    final current = state.valueOrNull;
-    if (current == null) return;
+    try {
+      final current = state.valueOrNull;
+      if (current == null) return;
 
-    final updated = current.map(
-      matrix: (m) => m.copyWith(operations: [], updatedAt: DateTime.now()),
-      graph: (g) => g.copyWith(operations: [], updatedAt: DateTime.now()),
-    );
+      late final MathsObject updated;
+      if (current is MatrixObject) {
+        updated = current.copyWith(operations: [], updatedAt: DateTime.now());
+      } else if (current is GraphObject) {
+        updated = current.copyWith(operations: [], updatedAt: DateTime.now());
+      } else {
+        return;
+      }
 
-    await updateMathsObject(updated);
+      await updateMathsObject(updated);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 }
 
-/// Provider for the active maths workspace
-@riverpod
-class ActiveMathsWorkspace extends _$ActiveMathsWorkspace {
-  @override
-  String build() => '';
-
-  void setWorkspace(String workspaceId) {
-    state = workspaceId;
-  }
-}
+/// StateNotifierProvider for managing maths objects with full operations support
+final mathsObjectNotifierProvider =
+    StateNotifierProvider.family<
+      MathsObjectNotifier,
+      AsyncValue<MathsObject>,
+      (String workspaceId, String mathsObjectId)
+    >((ref, params) {
+      return MathsObjectNotifier(params.$1, params.$2);
+    });

@@ -8,10 +8,11 @@ import 'file_service.dart';
 
 /// Service for managing mathematical objects and computations
 class MathsService {
-  final FileService _fileService;
-  static const _uuid = Uuid();
+  MathsService._();
+  static final MathsService instance = MathsService._();
 
-  MathsService(this._fileService);
+  final FileService _fileService = FileService.instance;
+  static const _uuid = Uuid();
 
   /// Get the maths directory for a workspace
   Future<String> _getMathsDir(String workspaceId) async {
