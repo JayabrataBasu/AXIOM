@@ -8,3 +8,4 @@ export 'splash_screen.dart';
 export 'dashboard_screen.dart';
 export 'onboarding_screen.dart';
 export 'settings_screen.dart';
+export 'maths_screen.dart';

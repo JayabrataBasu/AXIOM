@@ -119,8 +119,16 @@ class _MathsScreenState extends ConsumerState<MathsScreen>
             return TabBarView(
               controller: _tabController,
               children: [
-                GraphVisualizerTab(graph: obj),
-                GraphEquationsTab(graph: obj),
+                GraphVisualizerTab(
+                  workspaceId: widget.workspaceId,
+                  mathsObjectId: widget.mathsObjectId,
+                  graph: obj,
+                ),
+                GraphEquationsTab(
+                  workspaceId: widget.workspaceId,
+                  mathsObjectId: widget.mathsObjectId,
+                  graph: obj,
+                ),
               ],
             );
           }

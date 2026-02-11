@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../screens/screens.dart';
 import '../providers/workspace_state_provider.dart';
+import '../providers/maths_provider.dart';
 import '../main.dart' show AppShell;
 
 /// Provider for GoRouter instance

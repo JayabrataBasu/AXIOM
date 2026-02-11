@@ -67,6 +67,12 @@ enum BlockType {
     'Mind Map',
     'Link to mind map',
     BlockCategory.integration,
+  ),
+  mathsRef(
+    Icons.calculate_rounded,
+    'Maths Object',
+    'Link to maths object',
+    BlockCategory.integration,
   );
 
   const BlockType(this.icon, this.label, this.description, this.category);

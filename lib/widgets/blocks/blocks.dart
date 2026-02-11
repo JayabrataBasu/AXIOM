@@ -5,3 +5,4 @@ export 'audio_block_editor.dart';
 export 'audio_recorder_dialog.dart';
 export 'workspace_ref_block.dart';
 export 'mind_map_ref_block_editor.dart';
+export 'maths_ref_block_editor.dart';

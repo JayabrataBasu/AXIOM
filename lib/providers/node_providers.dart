@@ -387,6 +387,29 @@ class NodesNotifier extends AsyncNotifier<List<IdeaNode>> {
     await updateNode(updated);
   }
 
+  /// Add a maths reference block pointing to a maths object.
+  Future<void> addMathsRefBlock(
+    String nodeId, {
+    required String mathsObjectId,
+    String label = '',
+  }) async {
+    final currentNodes = state.valueOrNull ?? [];
+    final nodeIndex = currentNodes.indexWhere((n) => n.id == nodeId);
+    if (nodeIndex == -1) return;
+
+    final now = DateTime.now();
+    final newBlock = ContentBlock.mathsRef(
+      id: _uuid.v4(),
+      mathsObjectId: mathsObjectId,
+      label: label,
+      createdAt: now,
+    );
+
+    final node = currentNodes[nodeIndex];
+    final updated = node.copyWith(blocks: [...node.blocks, newBlock]);
+    await updateNode(updated);
+  }
+
   /// Update a code block's language.
   Future<void> updateCodeLanguage(
     String nodeId,
