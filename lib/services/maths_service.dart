@@ -434,6 +434,13 @@ class MathsService {
       // 'exp' by temporarily replacing function names.
       String processed = expr.replaceAll(' ', '');
       processed = processed.replaceAll('exp', '\u0001');
+
+      // Add implicit multiplication: 2x → 2*x, 2sin → 2*sin, etc.
+      processed = processed.replaceAllMapped(
+        RegExp(r'(\d)([a-zA-Z(])'),
+        (m) => '${m.group(1)}*${m.group(2)}',
+      );
+
       processed = processed.replaceAll('x', '($x)');
       processed = processed.replaceAll('\u0001', 'exp');
 
@@ -547,14 +554,15 @@ class _ExprParser {
     if (_matchWord('cos')) return _funcArg(math.cos);
     if (_matchWord('tan')) return _funcArg(math.tan);
     if (_matchWord('log')) return _funcArg(math.log);
-    if (_matchWord('ln'))  return _funcArg(math.log);
+    if (_matchWord('ln')) return _funcArg(math.log);
     if (_matchWord('exp')) return _funcArg(math.exp);
     if (_matchWord('sqrt')) return _funcArg(math.sqrt);
     if (_matchWord('abs')) return _funcArg((v) => v.abs());
 
     // Constants
     if (_matchWord('pi')) return math.pi;
-    if (_pos < _src.length && _src[_pos] == 'e' &&
+    if (_pos < _src.length &&
+        _src[_pos] == 'e' &&
         (_pos + 1 >= _src.length || !_isAlpha(_src[_pos + 1]))) {
       _pos++;
       return math.e;
@@ -573,8 +581,7 @@ class _ExprParser {
 
   double _number() {
     final start = _pos;
-    while (_pos < _src.length &&
-        (_src[_pos].contains(RegExp(r'[0-9.]')))) {
+    while (_pos < _src.length && (_src[_pos].contains(RegExp(r'[0-9.]')))) {
       _pos++;
     }
     if (_pos == start) {

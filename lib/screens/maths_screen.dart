@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -852,7 +853,9 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
         final offsets = points.map((p) => Offset(p['x']!, p['y']!)).toList();
         debugPrint('Equation "$eq": Generated ${offsets.length} points');
         if (offsets.isNotEmpty) {
-          debugPrint('  First point: ${offsets.first}, Last point: ${offsets.last}');
+          debugPrint(
+            '  First point: ${offsets.first}, Last point: ${offsets.last}',
+          );
         }
         plots.add(offsets);
       } catch (e, stack) {
@@ -1362,6 +1365,8 @@ class GraphEquationsTab extends ConsumerStatefulWidget {
 class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
   late List<TextEditingController> _eqControllers;
   List<String> _lastEquations = [];
+  Timer? _debounceTimer;
+  bool _isSelfSaving = false;
 
   @override
   void initState() {
@@ -1384,15 +1389,21 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _disposeControllers();
     super.dispose();
   }
 
-  Future<void> _saveEquations() async {
+  /// Core save logic — updates provider, invalidates cache, optionally shows snackbar.
+  Future<void> _saveEquations({bool showSnackbar = false}) async {
     final equations = _eqControllers
         .map((c) => c.text.trim())
         .where((eq) => eq.isNotEmpty)
         .toList();
+
+    // Mark that we are saving so the provider sync-back doesn't fight us
+    _isSelfSaving = true;
+    _lastEquations = equations;
 
     final notifier = ref.read(
       mathsObjectNotifierProvider((
@@ -1404,33 +1415,40 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
     final mathsObj = await ref.read(
       mathsObjectProvider(widget.mathsObjectId).future,
     );
-    if (mathsObj is! GraphObject) return;
+    if (mathsObj is! GraphObject) {
+      _isSelfSaving = false;
+      return;
+    }
 
     await notifier.updateGraphData(
       mathsObj.data.copyWith(equations: equations),
     );
 
+    // Invalidate the FutureProvider so the graph tab re-fetches updated data
+    ref.invalidate(mathsObjectProvider(widget.mathsObjectId));
+
+    _isSelfSaving = false;
+
     if (!mounted) return;
 
-    // Clear any existing snackbars first
-    ScaffoldMessenger.of(context).clearSnackBars();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${equations.length} equation(s) saved'),
-        duration: const Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'View',
-          onPressed: () {
-            if (mounted) {
-              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              DefaultTabController.of(context).animateTo(0);
-            }
-          },
+    if (showSnackbar) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${equations.length} equation(s) saved'),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
         ),
-      ),
-    );
+      );
+    }
+  }
+
+  /// Debounced auto-save — called on every keystroke
+  void _onEquationChanged() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 600), () {
+      _saveEquations();
+    });
   }
 
   void _addEquation() {
@@ -1458,18 +1476,16 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
   @override
   Widget build(BuildContext context) {
     // Watch the provider to rebuild when equations change from elsewhere
-    final mathsObjAsync = ref.watch(
-      mathsObjectProvider(widget.mathsObjectId),
-    );
+    final mathsObjAsync = ref.watch(mathsObjectProvider(widget.mathsObjectId));
 
-    // Update controllers if the saved equations differ from what we're editing
+    // Update controllers if the saved equations differ from what we're editing,
+    // but NOT if we just triggered the save ourselves (avoid stomping on typing).
     mathsObjAsync.whenData((obj) {
-      if (obj is GraphObject) {
+      if (obj is GraphObject && !_isSelfSaving) {
         final savedEquations = obj.data.equations;
-        // Only update if saved equations differ and we're not currently editing
         if (!_listsEqual(_lastEquations, savedEquations)) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
+            if (mounted && !_isSelfSaving) {
               setState(() {
                 _lastEquations = savedEquations;
                 _disposeControllers();
@@ -1500,7 +1516,7 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
               ),
               const Spacer(),
               ElevatedButton.icon(
-                onPressed: _saveEquations,
+                onPressed: () => _saveEquations(showSnackbar: true),
                 icon: const Icon(Icons.check, size: 16),
                 label: const Text('Save'),
                 style: ElevatedButton.styleFrom(
@@ -1596,7 +1612,9 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
                                   vertical: AxiomSpacing.sm,
                                 ),
                               ),
-                              onSubmitted: (_) => _saveEquations(),
+                              onChanged: (_) => _onEquationChanged(),
+                              onSubmitted: (_) =>
+                                  _saveEquations(showSnackbar: true),
                             ),
                           ),
                           IconButton(

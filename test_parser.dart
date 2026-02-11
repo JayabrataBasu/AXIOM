@@ -7,16 +7,20 @@ class ExprParser {
 
   double parse() {
     final result = _expr();
-    if (_pos < _src.length) throw FormatException('Unexpected at $_pos: ${_src[_pos]}');
+    if (_pos < _src.length)
+      throw FormatException('Unexpected at $_pos: ${_src[_pos]}');
     return result;
   }
 
   double _expr() {
     double r = _term();
     while (_pos < _src.length) {
-      if (_m('+')) { r += _term(); }
-      else if (_m('-')) { r -= _term(); }
-      else break;
+      if (_m('+')) {
+        r += _term();
+      } else if (_m('-')) {
+        r -= _term();
+      } else
+        break;
     }
     return r;
   }
@@ -24,9 +28,12 @@ class ExprParser {
   double _term() {
     double r = _power();
     while (_pos < _src.length) {
-      if (_m('*')) { r *= _power(); }
-      else if (_m('/')) { r /= _power(); }
-      else break;
+      if (_m('*')) {
+        r *= _power();
+      } else if (_m('/')) {
+        r /= _power();
+      } else
+        break;
     }
     return r;
   }
@@ -44,7 +51,11 @@ class ExprParser {
   }
 
   double _atom() {
-    if (_m('(')) { final r = _expr(); _e(')'); return r; }
+    if (_m('(')) {
+      final r = _expr();
+      _e(')');
+      return r;
+    }
     if (_mw('sin')) return _fn(math.sin);
     if (_mw('cos')) return _fn(math.cos);
     if (_mw('sqrt')) return _fn(math.sqrt);
@@ -52,7 +63,12 @@ class ExprParser {
     return _number();
   }
 
-  double _fn(double Function(double) f) { _e('('); final a = _expr(); _e(')'); return f(a); }
+  double _fn(double Function(double) f) {
+    _e('(');
+    final a = _expr();
+    _e(')');
+    return f(a);
+  }
 
   double _number() {
     final s = _pos;
@@ -61,19 +77,38 @@ class ExprParser {
     return double.parse(_src.substring(s, _pos));
   }
 
-  bool _m(String c) { if (_pos < _src.length && _src[_pos] == c) { _pos++; return true; } return false; }
-  bool _mw(String w) {
-    if (_pos + w.length <= _src.length && _src.substring(_pos, _pos + w.length) == w) {
-      _pos += w.length; return true;
+  bool _m(String c) {
+    if (_pos < _src.length && _src[_pos] == c) {
+      _pos++;
+      return true;
     }
     return false;
   }
-  void _e(String c) { if (!_m(c)) throw FormatException('Expected $c'); }
+
+  bool _mw(String w) {
+    if (_pos + w.length <= _src.length &&
+        _src.substring(_pos, _pos + w.length) == w) {
+      _pos += w.length;
+      return true;
+    }
+    return false;
+  }
+
+  void _e(String c) {
+    if (!_m(c)) throw FormatException('Expected $c');
+  }
 }
 
 double eval(String expr, double x) {
   String p = expr.replaceAll(' ', '');
   p = p.replaceAll('exp', '\u0001');
+
+  // Add implicit multiplication: 2x → 2*x, 2sin → 2*sin
+  p = p.replaceAllMapped(
+    RegExp(r'(\d)([a-zA-Z(])'),
+    (m) => '${m.group(1)}*${m.group(2)}',
+  );
+
   p = p.replaceAll('x', '($x)');
   p = p.replaceAll('\u0001', 'exp');
   return ExprParser(p).parse();
@@ -83,8 +118,11 @@ void main() {
   print('x^2 at x=-10: ${eval("x^2", -10)}  (expect 100)');
   print('x^2 at x=5:   ${eval("x^2", 5)}    (expect 25)');
   print('2*x+3 at x=4: ${eval("2*x+3", 4)}  (expect 11)');
+  print('2x+3 at x=4:  ${eval("2x+3", 4)}   (expect 11, implicit *)');
+  print('2x^3 at x=2:  ${eval("2x^3", 2)}   (expect 16, implicit *)');
+  print('3sin(x) at x=0: ${eval("3sin(x)", 0)} (expect 0, implicit *)');
   print('sin(x) at x=0: ${eval("sin(x)", 0)} (expect 0)');
-  print('sin(x) at x=pi/2: ${eval("sin(x)", math.pi/2)} (expect ~1)');
+  print('sin(x) at x=pi/2: ${eval("sin(x)", math.pi / 2)} (expect ~1)');
   print('x^3 at x=-2:  ${eval("x^3", -2)}   (expect -8)');
   print('sqrt(x) at x=9: ${eval("sqrt(x)", 9)} (expect 3)');
   print('(x+1)*(x-1) at x=5: ${eval("(x+1)*(x-1)", 5)} (expect 24)');
