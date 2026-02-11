@@ -134,8 +134,7 @@ class MathsObjectNotifier extends AsyncNotifier<MathsObject> {
 
 /// Provider for managing a specific maths object with operations
 @riverpod
-class MathsObjectNotifierProvider
-    extends _$MathsObjectNotifierProvider
+class MathsObjectNotifierProvider extends _$MathsObjectNotifierProvider
     implements AsyncNotifier<MathsObject> {
   late String _workspaceId;
   late String _mathsObjectId;

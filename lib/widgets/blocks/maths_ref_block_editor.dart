@@ -87,10 +87,7 @@ class _MathsRefBlockEditorState extends State<MathsRefBlockEditor> {
                       Expanded(
                         child: Text(
                           'Maths object not found',
-                          style: TextStyle(
-                            color: cs.error,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: cs.error, fontSize: 12),
                         ),
                       ),
                     ],
@@ -169,11 +166,7 @@ class _MathsRefBlockEditorState extends State<MathsRefBlockEditor> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_outward,
-                  size: 16,
-                  color: cs.primary,
-                ),
+                Icon(Icons.arrow_outward, size: 16, color: cs.primary),
               ],
             ),
             const SizedBox(height: 8),
@@ -196,79 +189,79 @@ class _MathsRefBlockEditorState extends State<MathsRefBlockEditor> {
   Widget _buildPreview(MathsObject mathsObject, ColorScheme cs) {
     return switch (mathsObject) {
       MatrixObject(:final data) => Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AxiomRadius.xs),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Matrix ${data.rows}×${data.cols}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: cs.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                _buildMatrixPreview(data, cs),
-              ],
-            ),
-          ),
-      GraphObject(:final data) => Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AxiomRadius.xs),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Graph',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: cs.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                if (data.equations.isNotEmpty)
-                  Text(
-                    data.equations.first,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontFamily: 'monospace',
-                      color: cs.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  )
-                else
-                  Text(
-                    '(No equations)',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: cs.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-      _ => SizedBox(
-            height: 60,
-            child: Center(
-              child: Text(
-                'Unknown maths object',
-                style: TextStyle(color: cs.onSurfaceVariant),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(AxiomRadius.xs),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Matrix ${data.rows}×${data.cols}',
+              style: TextStyle(
+                fontSize: 11,
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
             ),
+            const SizedBox(height: 4),
+            _buildMatrixPreview(data, cs),
+          ],
+        ),
+      ),
+      GraphObject(:final data) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(AxiomRadius.xs),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Graph',
+              style: TextStyle(
+                fontSize: 11,
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            if (data.equations.isNotEmpty)
+              Text(
+                data.equations.first,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                  color: cs.onSurface,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            else
+              Text(
+                '(No equations)',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: cs.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+          ],
+        ),
+      ),
+      _ => SizedBox(
+        height: 60,
+        child: Center(
+          child: Text(
+            'Unknown maths object',
+            style: TextStyle(color: cs.onSurfaceVariant),
           ),
+        ),
+      ),
     };
   }
 
@@ -290,10 +283,7 @@ class _MathsRefBlockEditorState extends State<MathsRefBlockEditor> {
               ),
               child: Text(
                 val.toStringAsFixed(0),
-                style: TextStyle(
-                  fontSize: 8,
-                  color: cs.onSurface,
-                ),
+                style: TextStyle(fontSize: 8, color: cs.onSurface),
               ),
             );
           }).toList(),
