@@ -556,7 +556,7 @@ class DashboardScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Top row: icon + node count
+          // Top row: icon + node count + delete
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -573,18 +573,39 @@ class DashboardScreen extends ConsumerWidget {
                   size: 20,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(AxiomRadius.xs),
-                ),
-                child: Text(
-                  '${mindMap.nodes.length} nodes',
-                  style: AxiomTypography.labelSmall.copyWith(
-                    color: cs.onSurfaceVariant,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                    ),
+                    child: Text(
+                      '${mindMap.nodes.length} nodes',
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  InkWell(
+                    onTap: () => _deleteMindMap(context, ref, mindMap),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -715,6 +736,52 @@ class DashboardScreen extends ConsumerWidget {
             MindMapScreen(workspaceId: newMap.workspaceId, mapId: newMap.id),
       ),
     );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // MIND MAP DELETION
+  // ═══════════════════════════════════════════════════════════════════
+
+  Future<void> _deleteMindMap(
+    BuildContext context,
+    WidgetRef ref,
+    MindMapGraph mindMap,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Mind Map'),
+        content: Text(
+          'Are you sure you want to delete "${mindMap.name}"?\n\n'
+          'This action cannot be undone. Any node blocks referencing this '
+          'mind map will show as broken references.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AxiomColors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    final workspaceId = ref.read(activeWorkspaceIdProvider) ?? '';
+    await MindMapService.instance.deleteMindMap(workspaceId, mindMap.id);
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('"${mindMap.name}" deleted')));
+    // Force rebuild
+    ref.invalidate(activeWorkspaceIdProvider);
   }
 
   // ═══════════════════════════════════════════════════════════════════

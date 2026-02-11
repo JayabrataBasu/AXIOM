@@ -63,7 +63,7 @@ class MathsService {
       id: id,
       name: name,
       workspaceId: workspaceId,
-      data: GraphData(equations: equations ?? []),
+      data: GraphData(equations: equations ?? ['x']),
       createdAt: now,
       updatedAt: now,
     );

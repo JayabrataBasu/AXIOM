@@ -832,8 +832,7 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
   }
 
   /// Generate all plot data for current equations
-  List<List<Offset>> _generateAllPlots() {
-    final data = widget.graph.data;
+  List<List<Offset>> _generateAllPlots(GraphData data) {
     final plots = <List<Offset>>[];
 
     for (final eq in data.equations) {
@@ -860,8 +859,12 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
         widget.mathsObjectId,
       )).notifier,
     );
+    final mathsObj = await ref.read(
+      mathsObjectProvider(widget.mathsObjectId).future,
+    );
+    if (mathsObj is! GraphObject) return;
     await notifier.updateGraphData(
-      widget.graph.data.copyWith(domainMin: min, domainMax: max),
+      mathsObj.data.copyWith(domainMin: min, domainMax: max),
     );
   }
 
@@ -872,84 +875,162 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
         widget.mathsObjectId,
       )).notifier,
     );
+    final mathsObj = await ref.read(
+      mathsObjectProvider(widget.mathsObjectId).future,
+    );
+    if (mathsObj is! GraphObject) return;
     await notifier.updateGraphData(
-      widget.graph.data.copyWith(rangeMin: min, rangeMax: max),
+      mathsObj.data.copyWith(rangeMin: min, rangeMax: max),
+    );
+  }
+
+  Future<void> _autoFit() async {
+    final mathsObj = await ref.read(
+      mathsObjectProvider(widget.mathsObjectId).future,
+    );
+    if (mathsObj is! GraphObject) return;
+
+    final data = mathsObj.data;
+    double minX = data.domainMin;
+    double maxX = data.domainMax;
+    double minY = double.infinity;
+    double maxY = double.negativeInfinity;
+
+    // Sample all equations to find Y range
+    for (final eq in data.equations) {
+      if (eq.trim().isEmpty) continue;
+      try {
+        final points = MathsService.generatePlotPoints(
+          equation: eq,
+          xMin: minX,
+          xMax: maxX,
+          points: 100,
+        );
+        for (final p in points) {
+          final y = p['y']!;
+          if (y.isFinite) {
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (!minY.isFinite || !maxY.isFinite) return;
+
+    // Add 10% padding
+    final yPadding = (maxY - minY) * 0.1;
+    minY -= yPadding;
+    maxY += yPadding;
+
+    final notifier = ref.read(
+      mathsObjectNotifierProvider((
+        widget.workspaceId,
+        widget.mathsObjectId,
+      )).notifier,
+    );
+    await notifier.updateGraphData(
+      data.copyWith(rangeMin: minY, rangeMax: maxY),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.graph.data;
-    final plots = _generateAllPlots();
+    // Watch the provider so we rebuild when equations change
+    final mathsObjAsync = ref.watch(
+      mathsObjectProvider(widget.mathsObjectId),
+    );
 
-    final curveColors = [
-      AxiomColors.aqua,
-      AxiomColors.purple,
-      AxiomColors.orange,
-      AxiomColors.blue,
-      AxiomColors.red,
-      AxiomColors.green,
-    ];
+    return mathsObjAsync.when(
+      data: (mathsObj) {
+        if (mathsObj is! GraphObject) {
+          return const Center(child: Text('Not a graph object'));
+        }
 
-    return Column(
-      children: [
-        // Domain / Range controls
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AxiomSpacing.md,
-            vertical: AxiomSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: AxiomColors.bg1,
-            border: Border(
-              bottom: BorderSide(color: AxiomColors.bg3, width: 1),
+        final data = mathsObj.data;
+        final plots = _generateAllPlots(data);
+
+        final curveColors = [
+          AxiomColors.aqua,
+          AxiomColors.purple,
+          AxiomColors.orange,
+          AxiomColors.blue,
+          AxiomColors.red,
+          AxiomColors.green,
+        ];
+
+        return Column(
+          children: [
+            // Domain / Range controls
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AxiomSpacing.md,
+                vertical: AxiomSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: AxiomColors.bg1,
+                border: Border(
+                  bottom: BorderSide(color: AxiomColors.bg3, width: 1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  _DomainChip(
+                    label: 'x',
+                    min: data.domainMin,
+                    max: data.domainMax,
+                    onChanged: _updateDomain,
+                  ),
+                  const SizedBox(width: AxiomSpacing.sm),
+                  _DomainChip(
+                    label: 'y',
+                    min: data.rangeMin,
+                    max: data.rangeMax,
+                    onChanged: _updateRange,
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.fit_screen, size: 20),
+                    tooltip: 'Auto Fit',
+                    onPressed: _autoFit,
+                    color: AxiomColors.aqua,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.center_focus_strong, size: 20),
+                    tooltip: 'Reset View',
+                    onPressed: () =>
+                        _transformController.value = Matrix4.identity(),
+                    color: AxiomColors.grey1,
+                  ),
+                ],
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              _DomainChip(
-                label: 'x',
-                min: data.domainMin,
-                max: data.domainMax,
-                onChanged: _updateDomain,
-              ),
-              const SizedBox(width: AxiomSpacing.sm),
-              _DomainChip(
-                label: 'y',
-                min: data.rangeMin,
-                max: data.rangeMax,
-                onChanged: _updateRange,
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.center_focus_strong, size: 20),
-                tooltip: 'Reset View',
-                onPressed: () =>
-                    _transformController.value = Matrix4.identity(),
-                color: AxiomColors.grey1,
-              ),
-            ],
-          ),
-        ),
 
         // Graph canvas
         Expanded(
-          child: InteractiveViewer(
-            transformationController: _transformController,
-            boundaryMargin: const EdgeInsets.all(100),
-            minScale: 0.3,
-            maxScale: 5.0,
-            child: CustomPaint(
-              painter: _GraphPainter(
-                plots: plots,
-                colors: curveColors,
-                domainMin: data.domainMin,
-                domainMax: data.domainMax,
-                rangeMin: data.rangeMin,
-                rangeMax: data.rangeMax,
-              ),
-              size: Size.infinite,
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return InteractiveViewer(
+                transformationController: _transformController,
+                boundaryMargin: const EdgeInsets.all(100),
+                minScale: 0.3,
+                maxScale: 5.0,
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  child: CustomPaint(
+                    painter: _GraphPainter(
+                      plots: plots,
+                      colors: curveColors,
+                      domainMin: data.domainMin,
+                      domainMax: data.domainMax,
+                      rangeMin: data.rangeMin,
+                      rangeMax: data.rangeMax,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
 
@@ -980,6 +1061,12 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
             ),
           ),
       ],
+    );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: Text('Error: $e', style: TextStyle(color: AxiomColors.red)),
+      ),
     );
   }
 }
@@ -1291,8 +1378,31 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
         widget.mathsObjectId,
       )).notifier,
     );
+
+    final mathsObj = await ref.read(
+      mathsObjectProvider(widget.mathsObjectId).future,
+    );
+    if (mathsObj is! GraphObject) return;
+
     await notifier.updateGraphData(
-      widget.graph.data.copyWith(equations: equations),
+      mathsObj.data.copyWith(equations: equations),
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${equations.length} equation(s) saved'),
+        duration: const Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'View Graph',
+          onPressed: () {
+            // Switch to the Graph tab (index 0)
+            if (mounted) {
+              DefaultTabController.of(context).animateTo(0);
+            }
+          },
+        ),
+      ),
     );
   }
 
