@@ -65,6 +65,26 @@ final routerProvider = Provider<GoRouter>((ref) {
               return NodeEditorScreen(nodeId: nodeId);
             },
           ),
+          // Maths Screen
+          GoRoute(
+            path: 'maths/:mathsId',
+            name: 'maths-editor',
+            builder: (context, state) {
+              final workspaceId = state.pathParameters['id']!;
+              final mathsId = state.pathParameters['mathsId']!;
+              return ProviderScope(
+                overrides: [
+                  activeMathsWorkspaceProvider.overrideWith(
+                    (ref) => workspaceId,
+                  ),
+                ],
+                child: MathsScreen(
+                  workspaceId: workspaceId,
+                  mathsObjectId: mathsId,
+                ),
+              );
+            },
+          ),
         ],
       ),
 

@@ -845,9 +845,7 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
           xMax: data.domainMax,
           points: data.plotPoints,
         );
-        plots.add(
-          points.map((p) => Offset(p['x']!, p['y']!)).toList(),
-        );
+        plots.add(points.map((p) => Offset(p['x']!, p['y']!)).toList());
       } catch (_) {
         plots.add([]);
       }
@@ -857,8 +855,10 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
 
   Future<void> _updateDomain(double min, double max) async {
     final notifier = ref.read(
-      mathsObjectNotifierProvider((widget.workspaceId, widget.mathsObjectId))
-          .notifier,
+      mathsObjectNotifierProvider((
+        widget.workspaceId,
+        widget.mathsObjectId,
+      )).notifier,
     );
     await notifier.updateGraphData(
       widget.graph.data.copyWith(domainMin: min, domainMax: max),
@@ -867,8 +867,10 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
 
   Future<void> _updateRange(double min, double max) async {
     final notifier = ref.read(
-      mathsObjectNotifierProvider((widget.workspaceId, widget.mathsObjectId))
-          .notifier,
+      mathsObjectNotifierProvider((
+        widget.workspaceId,
+        widget.mathsObjectId,
+      )).notifier,
     );
     await notifier.updateGraphData(
       widget.graph.data.copyWith(rangeMin: min, rangeMax: max),
@@ -922,7 +924,8 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
               IconButton(
                 icon: const Icon(Icons.center_focus_strong, size: 20),
                 tooltip: 'Reset View',
-                onPressed: () => _transformController.value = Matrix4.identity(),
+                onPressed: () =>
+                    _transformController.value = Matrix4.identity(),
                 color: AxiomColors.grey1,
               ),
             ],
@@ -956,29 +959,20 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
             padding: const EdgeInsets.all(AxiomSpacing.sm),
             decoration: BoxDecoration(
               color: AxiomColors.bg1,
-              border: Border(
-                top: BorderSide(color: AxiomColors.bg3, width: 1),
-              ),
+              border: Border(top: BorderSide(color: AxiomColors.bg3, width: 1)),
             ),
             child: Wrap(
               spacing: AxiomSpacing.md,
               children: List.generate(data.equations.length, (i) {
-                final color =
-                    curveColors[i % curveColors.length];
+                final color = curveColors[i % curveColors.length];
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 14,
-                      height: 3,
-                      color: color,
-                    ),
+                    Container(width: 14, height: 3, color: color),
                     const SizedBox(width: 4),
                     Text(
                       'y = ${data.equations[i]}',
-                      style: AxiomTypography.labelSmall.copyWith(
-                        color: color,
-                      ),
+                      style: AxiomTypography.labelSmall.copyWith(color: color),
                     ),
                   ],
                 );
@@ -1146,17 +1140,19 @@ class _GraphPainter extends CustomPainter {
     }
 
     // ── Tick labels
-    final textStyle = const TextStyle(
-      color: Color(0xFF829181),
-      fontSize: 9,
-    );
+    final textStyle = const TextStyle(color: Color(0xFF829181), fontSize: 9);
     final xStep = _niceStep(domainMax - domainMin);
-    for (double x = (domainMin / xStep).ceilToDouble() * xStep;
-        x <= domainMax;
-        x += xStep) {
+    for (
+      double x = (domainMin / xStep).ceilToDouble() * xStep;
+      x <= domainMax;
+      x += xStep
+    ) {
       if (x.abs() < xStep * 0.01) continue; // skip 0
       final tp = TextPainter(
-        text: TextSpan(text: x.toStringAsFixed(x == x.roundToDouble() ? 0 : 1), style: textStyle),
+        text: TextSpan(
+          text: x.toStringAsFixed(x == x.roundToDouble() ? 0 : 1),
+          style: textStyle,
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
       final px = toX(x);
@@ -1164,12 +1160,17 @@ class _GraphPainter extends CustomPainter {
       tp.paint(canvas, Offset(px - tp.width / 2, y0 + 2));
     }
     final yStep = _niceStep(rangeMax - rangeMin);
-    for (double y = (rangeMin / yStep).ceilToDouble() * yStep;
-        y <= rangeMax;
-        y += yStep) {
+    for (
+      double y = (rangeMin / yStep).ceilToDouble() * yStep;
+      y <= rangeMax;
+      y += yStep
+    ) {
       if (y.abs() < yStep * 0.01) continue;
       final tp = TextPainter(
-        text: TextSpan(text: y.toStringAsFixed(y == y.roundToDouble() ? 0 : 1), style: textStyle),
+        text: TextSpan(
+          text: y.toStringAsFixed(y == y.roundToDouble() ? 0 : 1),
+          style: textStyle,
+        ),
         textDirection: TextDirection.ltr,
       )..layout();
       final py = toY(y);
@@ -1215,9 +1216,9 @@ class _GraphPainter extends CustomPainter {
     final mag = _pow10(rough.abs().floor().toString().length - 1);
     final norm = rough / mag;
     if (norm < 1.5) return mag.toDouble();
-    if (norm < 3.5) return 2 * mag;
-    if (norm < 7.5) return 5 * mag;
-    return 10 * mag;
+    if (norm < 3.5) return (2 * mag).toDouble();
+    if (norm < 7.5) return (5 * mag).toDouble();
+    return (10 * mag).toDouble();
   }
 
   int _pow10(int exp) {
@@ -1285,8 +1286,10 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
         .toList();
 
     final notifier = ref.read(
-      mathsObjectNotifierProvider((widget.workspaceId, widget.mathsObjectId))
-          .notifier,
+      mathsObjectNotifierProvider((
+        widget.workspaceId,
+        widget.mathsObjectId,
+      )).notifier,
     );
     await notifier.updateGraphData(
       widget.graph.data.copyWith(equations: equations),
@@ -1354,16 +1357,13 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.functions,
-                        size: 48,
-                        color: AxiomColors.grey1,
-                      ),
+                      Icon(Icons.functions, size: 48, color: AxiomColors.grey1),
                       const SizedBox(height: AxiomSpacing.md),
                       Text(
                         'No equations yet',
-                        style: AxiomTypography.bodyMedium
-                            .copyWith(color: AxiomColors.grey1),
+                        style: AxiomTypography.bodyMedium.copyWith(
+                          color: AxiomColors.grey1,
+                        ),
                       ),
                       const SizedBox(height: AxiomSpacing.sm),
                       TextButton.icon(
@@ -1389,8 +1389,7 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
                     final color = curveColors[index % curveColors.length];
 
                     return Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: AxiomSpacing.sm),
+                      padding: const EdgeInsets.only(bottom: AxiomSpacing.sm),
                       child: Row(
                         children: [
                           Container(
@@ -1398,15 +1397,15 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
                             height: 40,
                             decoration: BoxDecoration(
                               color: color,
-                              borderRadius:
-                                  BorderRadius.circular(2),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                           ),
                           const SizedBox(width: AxiomSpacing.sm),
                           Text(
                             'y =',
-                            style: AxiomTypography.bodyMedium
-                                .copyWith(color: AxiomColors.grey1),
+                            style: AxiomTypography.bodyMedium.copyWith(
+                              color: AxiomColors.grey1,
+                            ),
                           ),
                           const SizedBox(width: AxiomSpacing.sm),
                           Expanded(
@@ -1415,15 +1414,15 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
                               style: AxiomTypography.bodyMedium,
                               decoration: InputDecoration(
                                 hintText: 'e.g. x^2, sin(x), 2*x+1',
-                                hintStyle: AxiomTypography.bodyMedium
-                                    .copyWith(color: AxiomColors.grey2),
+                                hintStyle: AxiomTypography.bodyMedium.copyWith(
+                                  color: AxiomColors.grey2,
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(
                                     AxiomRadius.sm,
                                   ),
                                 ),
-                                contentPadding:
-                                    const EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                   horizontal: AxiomSpacing.sm,
                                   vertical: AxiomSpacing.sm,
                                 ),

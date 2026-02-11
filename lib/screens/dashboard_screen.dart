@@ -13,8 +13,11 @@ import '../providers/workspace_providers.dart';
 import '../providers/workspace_state_provider.dart';
 import '../models/workspace_session.dart';
 import '../models/mind_map.dart';
+import '../models/maths.dart';
 import '../services/mind_map_service.dart';
+import '../services/maths_service.dart';
 import 'mind_map_screen.dart';
+import 'maths_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -229,6 +232,10 @@ class DashboardScreen extends ConsumerWidget {
 
           // Mind maps section
           _buildMindMapsSection(context, ref),
+          const SizedBox(height: AxiomSpacing.xxl),
+
+          // Maths Corner section
+          _buildMathsCornerSection(context, ref),
           const SizedBox(height: AxiomSpacing.xxl),
 
           // Quick stats
@@ -708,6 +715,405 @@ class DashboardScreen extends ConsumerWidget {
             MindMapScreen(workspaceId: newMap.workspaceId, mapId: newMap.id),
       ),
     );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // MATHS CORNER SECTION
+  // ═══════════════════════════════════════════════════════════════════
+
+  Widget _buildMathsCornerSection(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final workspaceId = ref.watch(activeWorkspaceIdProvider) ?? '';
+    final mathsService = MathsService.instance;
+
+    return FutureBuilder<List<MathsObject>>(
+      future: mathsService.listMathsObjects(workspaceId),
+      builder: (context, snapshot) {
+        final objects = snapshot.data ?? [];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Maths Corner',
+                  style: AxiomTypography.heading2.copyWith(color: cs.onSurface),
+                ),
+                TextButton.icon(
+                  onPressed: () => _createNewMathsObject(context, ref),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('New'),
+                ),
+              ],
+            ),
+            const SizedBox(height: AxiomSpacing.md),
+
+            if (snapshot.connectionState == ConnectionState.waiting)
+              const Center(child: CircularProgressIndicator())
+            else if (objects.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AxiomSpacing.xl),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AxiomRadius.md),
+                  border: Border.all(color: cs.outlineVariant),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.calculate_outlined,
+                      size: 48,
+                      color: cs.onSurfaceVariant.withAlpha(100),
+                    ),
+                    const SizedBox(height: AxiomSpacing.md),
+                    Text(
+                      'No maths objects yet',
+                      style: AxiomTypography.heading3.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: AxiomSpacing.xs),
+                    Text(
+                      'Create matrices or graphs for computation',
+                      style: AxiomTypography.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant.withAlpha(150),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: AxiomSpacing.md,
+                  mainAxisSpacing: AxiomSpacing.md,
+                  childAspectRatio: 1.2,
+                ),
+                itemCount: objects.length,
+                itemBuilder: (context, index) {
+                  final obj = objects[index];
+                  return _buildMathsCard(context, ref, obj);
+                },
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMathsCard(BuildContext context, WidgetRef ref, MathsObject obj) {
+    final cs = Theme.of(context).colorScheme;
+    final isMatrix = obj is MatrixObject;
+    final String subtitle;
+    if (obj is MatrixObject) {
+      subtitle = '${obj.data.rows}×${obj.data.cols} matrix';
+    } else if (obj is GraphObject) {
+      subtitle = '${obj.data.equations.length} equations';
+    } else {
+      subtitle = 'unknown';
+    }
+    final accentColor = isMatrix ? AxiomColors.aqua : AxiomColors.orange;
+
+    return AxiomCard(
+      elevated: true,
+      onTap: () {
+        final workspaceId = ref.read(activeWorkspaceIdProvider) ?? '';
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>
+                MathsScreen(workspaceId: workspaceId, mathsObjectId: obj.id),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Top row: icon + type badge + delete button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: accentColor.withAlpha(30),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isMatrix ? Icons.grid_on : Icons.show_chart,
+                  color: accentColor,
+                  size: 20,
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                    ),
+                    child: Text(
+                      subtitle,
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  InkWell(
+                    onTap: () => _deleteMathsObject(context, ref, obj),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: cs.onSurfaceVariant.withAlpha(120),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Bottom: title + timestamp
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                obj.name,
+                style: AxiomTypography.heading3.copyWith(
+                  color: cs.onSurface,
+                  fontSize: 16,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 12,
+                    color: cs.onSurfaceVariant.withAlpha(100),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    obj.updatedAt.toLocal().toIso8601String().split('T').first,
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant.withAlpha(100),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _createNewMathsObject(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final nameController = TextEditingController();
+    String selectedType = 'matrix';
+    int rows = 3;
+    int cols = 3;
+
+    final result = await showDialog<Map<String, dynamic>?>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text('New Maths Object'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedType,
+                    decoration: const InputDecoration(
+                      labelText: 'Type',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'matrix', child: Text('Matrix')),
+                      DropdownMenuItem(value: 'graph', child: Text('Graph')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setState(() => selectedType = v);
+                    },
+                  ),
+                  if (selectedType == 'matrix') ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<int>(
+                            value: rows,
+                            decoration: const InputDecoration(
+                              labelText: 'Rows',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: List.generate(
+                              8,
+                              (i) => DropdownMenuItem(
+                                value: i + 1,
+                                child: Text('${i + 1}'),
+                              ),
+                            ),
+                            onChanged: (v) {
+                              if (v != null) setState(() => rows = v);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: DropdownButtonFormField<int>(
+                            value: cols,
+                            decoration: const InputDecoration(
+                              labelText: 'Cols',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: List.generate(
+                              8,
+                              (i) => DropdownMenuItem(
+                                value: i + 1,
+                                child: Text('${i + 1}'),
+                              ),
+                            ),
+                            onChanged: (v) {
+                              if (v != null) setState(() => cols = v);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    if (name.isEmpty) return;
+                    Navigator.pop(ctx, {
+                      'name': name,
+                      'type': selectedType,
+                      'rows': rows,
+                      'cols': cols,
+                    });
+                  },
+                  child: const Text('Create'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+    if (!context.mounted) return;
+
+    final workspaceId = ref.read(activeWorkspaceIdProvider) ?? '';
+    final mathsService = MathsService.instance;
+
+    late MathsObject newObj;
+    if (result['type'] == 'graph') {
+      newObj = await mathsService.createGraph(
+        workspaceId: workspaceId,
+        name: result['name'] as String,
+      );
+    } else {
+      newObj = await mathsService.createMatrix(
+        workspaceId: workspaceId,
+        name: result['name'] as String,
+        rows: result['rows'] as int,
+        cols: result['cols'] as int,
+      );
+    }
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) =>
+            MathsScreen(workspaceId: workspaceId, mathsObjectId: newObj.id),
+      ),
+    );
+  }
+
+  Future<void> _deleteMathsObject(
+    BuildContext context,
+    WidgetRef ref,
+    MathsObject obj,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Maths Object'),
+        content: Text(
+          'Are you sure you want to delete "${obj.name}"?\n\n'
+          'Any node blocks referencing this object will show as broken references.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AxiomColors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    final workspaceId = ref.read(activeWorkspaceIdProvider) ?? '';
+    await MathsService.instance.deleteMathsObject(
+      workspaceId: workspaceId,
+      objectId: obj.id,
+    );
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('"${obj.name}" deleted')));
+    // Force rebuild by invalidating
+    ref.invalidate(activeWorkspaceIdProvider);
   }
 
   Widget _buildQuickStats(

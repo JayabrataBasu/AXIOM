@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_service.dart';
+import '../services/maths_service.dart';
 import '../services/mind_map_service.dart';
+import '../models/maths.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
 import '../theme/design_tokens.dart';
@@ -579,12 +581,13 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         onDelete: () => _deleteBlock(node.id, block.id),
         workspaceId: node.workspaceId,
       ),
-      MathsRefBlock() => BlockEditorCard(
+      MathsRefBlock() => MathsRefBlockEditor(
         key: ValueKey(block.id),
-        blockType: 'Maths',
+        block: block,
+        mathsService: MathsService.instance,
+        workspaceId: node.workspaceId,
         dragIndex: index,
         onDelete: () => _deleteBlock(node.id, block.id),
-        child: const Center(child: Text('Maths Block (Coming Soon)')),
       ),
     };
 
@@ -638,6 +641,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         break;
       case BlockType.mindMapRef:
         await _addMindMapRefBlock(node);
+        break;
+      case BlockType.mathsRef:
+        await _addMathsRefBlock(node);
         break;
     }
   }
@@ -944,6 +950,235 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     ).showSnackBar(const SnackBar(content: Text('Mind map reference added')));
   }
 
+  Future<void> _addMathsRefBlock(IdeaNode node) async {
+    final mathsService = MathsService.instance;
+    final workspaceId = ref.read(activeWorkspaceIdProvider) ?? node.workspaceId;
+
+    // Load existing maths objects for this workspace
+    final mathsObjects = await mathsService.listMathsObjects(workspaceId);
+
+    if (!mounted) return;
+
+    final result = await showDialog<_MathsChoice?>(
+      context: context,
+      builder: (context) {
+        final labelController = TextEditingController();
+        String selectedType = 'matrix';
+        int rows = 3;
+        int cols = 3;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Maths Object'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (mathsObjects.isNotEmpty) ...[
+                      Text(
+                        'Existing maths objects',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 240),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: mathsObjects.length,
+                          itemBuilder: (context, index) {
+                            final obj = mathsObjects[index];
+                            final icon = obj is MatrixObject
+                                ? Icons.grid_on
+                                : Icons.show_chart;
+                            final String subtitle;
+                            if (obj is MatrixObject) {
+                              subtitle =
+                                  '${obj.data.rows}×${obj.data.cols} matrix';
+                            } else if (obj is GraphObject) {
+                              subtitle =
+                                  '${obj.data.equations.length} equations';
+                            } else {
+                              subtitle = 'unknown';
+                            }
+                            return ListTile(
+                              dense: true,
+                              leading: Icon(icon),
+                              title: Text(
+                                obj.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                '$subtitle • ${obj.createdAt.toLocal().toIso8601String().split('T').first}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              onTap: () => Navigator.pop(
+                                context,
+                                _MathsChoice(obj.id, obj.name),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const Divider(height: 24),
+                    ],
+                    Text(
+                      'Create new maths object',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: labelController,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedType,
+                      decoration: const InputDecoration(
+                        labelText: 'Type',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'matrix',
+                          child: Text('Matrix'),
+                        ),
+                        DropdownMenuItem(value: 'graph', child: Text('Graph')),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => selectedType = value);
+                      },
+                    ),
+                    if (selectedType == 'matrix') ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              value: rows,
+                              decoration: const InputDecoration(
+                                labelText: 'Rows',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: List.generate(
+                                8,
+                                (i) => DropdownMenuItem(
+                                  value: i + 1,
+                                  child: Text('${i + 1}'),
+                                ),
+                              ),
+                              onChanged: (v) {
+                                if (v != null) setState(() => rows = v);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              value: cols,
+                              decoration: const InputDecoration(
+                                labelText: 'Cols',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: List.generate(
+                                8,
+                                (i) => DropdownMenuItem(
+                                  value: i + 1,
+                                  child: Text('${i + 1}'),
+                                ),
+                              ),
+                              onChanged: (v) {
+                                if (v != null) setState(() => cols = v);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton.icon(
+                  onPressed: () {
+                    final label = labelController.text.trim();
+                    if (label.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter a name')),
+                      );
+                      return;
+                    }
+                    Navigator.pop(
+                      context,
+                      _MathsChoice(
+                        '__create__',
+                        label,
+                        type: selectedType,
+                        rows: rows,
+                        cols: cols,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Create'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    final nodesNotifier = ref.read(nodesNotifierProvider.notifier);
+
+    String objectId = result.objectId;
+    String label = result.label;
+
+    if (result.objectId == '__create__') {
+      if (result.type == 'graph') {
+        final newObj = await mathsService.createGraph(
+          workspaceId: workspaceId,
+          name: label,
+        );
+        objectId = newObj.id;
+        label = newObj.name;
+      } else {
+        final newObj = await mathsService.createMatrix(
+          workspaceId: workspaceId,
+          name: label,
+          rows: result.rows ?? 3,
+          cols: result.cols ?? 3,
+        );
+        objectId = newObj.id;
+        label = newObj.name;
+      }
+    }
+
+    await nodesNotifier.addMathsRefBlock(
+      node.id,
+      mathsObjectId: objectId,
+      label: label,
+    );
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Maths object reference added')),
+    );
+  }
+
   void _updateBlockContent(String nodeId, String blockId, String content) {
     // Debounce saves
     _saveDebounce?.cancel();
@@ -1220,4 +1455,19 @@ class _MindMapChoice {
   final String mapId;
   final String label;
   final String? templateId;
+}
+
+class _MathsChoice {
+  const _MathsChoice(
+    this.objectId,
+    this.label, {
+    this.type = 'matrix',
+    this.rows,
+    this.cols,
+  });
+  final String objectId;
+  final String label;
+  final String type;
+  final int? rows;
+  final int? cols;
 }
