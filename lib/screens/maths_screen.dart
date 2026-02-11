@@ -835,6 +835,11 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
   List<List<Offset>> _generateAllPlots(GraphData data) {
     final plots = <List<Offset>>[];
 
+    debugPrint('═══ Graph Plot Generation ═══');
+    debugPrint('Equations: ${data.equations}');
+    debugPrint('Domain: [${data.domainMin}, ${data.domainMax}]');
+    debugPrint('Range: [${data.rangeMin}, ${data.rangeMax}]');
+
     for (final eq in data.equations) {
       if (eq.trim().isEmpty) continue;
       try {
@@ -844,11 +849,20 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
           xMax: data.domainMax,
           points: data.plotPoints,
         );
-        plots.add(points.map((p) => Offset(p['x']!, p['y']!)).toList());
-      } catch (_) {
+        final offsets = points.map((p) => Offset(p['x']!, p['y']!)).toList();
+        debugPrint('Equation "$eq": Generated ${offsets.length} points');
+        if (offsets.isNotEmpty) {
+          debugPrint('  First point: ${offsets.first}, Last point: ${offsets.last}');
+        }
+        plots.add(offsets);
+      } catch (e, stack) {
+        // Log error for debugging
+        debugPrint('❌ Error plotting equation "$eq": $e');
+        debugPrint('Stack: $stack');
         plots.add([]);
       }
     }
+    debugPrint('═══════════════════════════════');
     return plots;
   }
 
@@ -937,9 +951,7 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
   @override
   Widget build(BuildContext context) {
     // Watch the provider so we rebuild when equations change
-    final mathsObjAsync = ref.watch(
-      mathsObjectProvider(widget.mathsObjectId),
-    );
+    final mathsObjAsync = ref.watch(mathsObjectProvider(widget.mathsObjectId));
 
     return mathsObjAsync.when(
       data: (mathsObj) {
@@ -1006,62 +1018,66 @@ class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
               ),
             ),
 
-        // Graph canvas
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return InteractiveViewer(
-                transformationController: _transformController,
-                boundaryMargin: const EdgeInsets.all(100),
-                minScale: 0.3,
-                maxScale: 5.0,
-                child: SizedBox(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  child: CustomPaint(
-                    painter: _GraphPainter(
-                      plots: plots,
-                      colors: curveColors,
-                      domainMin: data.domainMin,
-                      domainMax: data.domainMax,
-                      rangeMin: data.rangeMin,
-                      rangeMax: data.rangeMax,
+            // Graph canvas
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return InteractiveViewer(
+                    transformationController: _transformController,
+                    boundaryMargin: const EdgeInsets.all(100),
+                    minScale: 0.3,
+                    maxScale: 5.0,
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      height: constraints.maxHeight,
+                      child: CustomPaint(
+                        painter: _GraphPainter(
+                          plots: plots,
+                          colors: curveColors,
+                          domainMin: data.domainMin,
+                          domainMax: data.domainMax,
+                          rangeMin: data.rangeMin,
+                          rangeMax: data.rangeMax,
+                        ),
+                      ),
                     ),
+                  );
+                },
+              ),
+            ),
+
+            // Equation legend
+            if (data.equations.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.all(AxiomSpacing.sm),
+                decoration: BoxDecoration(
+                  color: AxiomColors.bg1,
+                  border: Border(
+                    top: BorderSide(color: AxiomColors.bg3, width: 1),
                   ),
                 ),
-              );
-            },
-          ),
-        ),
-
-        // Equation legend
-        if (data.equations.isNotEmpty)
-          Container(
-            padding: const EdgeInsets.all(AxiomSpacing.sm),
-            decoration: BoxDecoration(
-              color: AxiomColors.bg1,
-              border: Border(top: BorderSide(color: AxiomColors.bg3, width: 1)),
-            ),
-            child: Wrap(
-              spacing: AxiomSpacing.md,
-              children: List.generate(data.equations.length, (i) {
-                final color = curveColors[i % curveColors.length];
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(width: 14, height: 3, color: color),
-                    const SizedBox(width: 4),
-                    Text(
-                      'y = ${data.equations[i]}',
-                      style: AxiomTypography.labelSmall.copyWith(color: color),
-                    ),
-                  ],
-                );
-              }),
-            ),
-          ),
-      ],
-    );
+                child: Wrap(
+                  spacing: AxiomSpacing.md,
+                  children: List.generate(data.equations.length, (i) {
+                    final color = curveColors[i % curveColors.length];
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(width: 14, height: 3, color: color),
+                        const SizedBox(width: 4),
+                        Text(
+                          'y = ${data.equations[i]}',
+                          style: AxiomTypography.labelSmall.copyWith(
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+          ],
+        );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
@@ -1345,24 +1361,30 @@ class GraphEquationsTab extends ConsumerStatefulWidget {
 
 class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
   late List<TextEditingController> _eqControllers;
+  List<String> _lastEquations = [];
 
   @override
   void initState() {
     super.initState();
+    _lastEquations = widget.graph.data.equations;
     _initControllers();
   }
 
   void _initControllers() {
-    _eqControllers = widget.graph.data.equations
+    _eqControllers = _lastEquations
         .map((eq) => TextEditingController(text: eq))
         .toList();
   }
 
-  @override
-  void dispose() {
+  void _disposeControllers() {
     for (final c in _eqControllers) {
       c.dispose();
     }
+  }
+
+  @override
+  void dispose() {
+    _disposeControllers();
     super.dispose();
   }
 
@@ -1389,15 +1411,20 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
     );
 
     if (!mounted) return;
+
+    // Clear any existing snackbars first
+    ScaffoldMessenger.of(context).clearSnackBars();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${equations.length} equation(s) saved'),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
-          label: 'View Graph',
+          label: 'View',
           onPressed: () {
-            // Switch to the Graph tab (index 0)
             if (mounted) {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
               DefaultTabController.of(context).animateTo(0);
             }
           },
@@ -1420,8 +1447,40 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
     _saveEquations();
   }
 
+  bool _listsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Watch the provider to rebuild when equations change from elsewhere
+    final mathsObjAsync = ref.watch(
+      mathsObjectProvider(widget.mathsObjectId),
+    );
+
+    // Update controllers if the saved equations differ from what we're editing
+    mathsObjAsync.whenData((obj) {
+      if (obj is GraphObject) {
+        final savedEquations = obj.data.equations;
+        // Only update if saved equations differ and we're not currently editing
+        if (!_listsEqual(_lastEquations, savedEquations)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _lastEquations = savedEquations;
+                _disposeControllers();
+                _initControllers();
+              });
+            }
+          });
+        }
+      }
+    });
+
     return Column(
       children: [
         // Toolbar

@@ -430,64 +430,16 @@ class MathsService {
   /// Supports: numbers, x, +, -, *, /, ^, sin, cos, tan, log, exp
   static double evaluateExpression(String expr, double x) {
     try {
-      // Replace x with value
-      String processed = expr.replaceAll('x', '($x)');
+      // Replace 'x' with the value — be careful not to replace 'x' inside
+      // 'exp' by temporarily replacing function names.
+      String processed = expr.replaceAll(' ', '');
+      processed = processed.replaceAll('exp', '\u0001');
+      processed = processed.replaceAll('x', '($x)');
+      processed = processed.replaceAll('\u0001', 'exp');
 
-      // Handle functions
-      processed = processed.replaceAllMapped(
-        RegExp(r'sin\(([^)]+)\)'),
-        (m) => math.sin(double.parse(_evaluateSimple(m.group(1)!))).toString(),
-      );
-      processed = processed.replaceAllMapped(
-        RegExp(r'cos\(([^)]+)\)'),
-        (m) => math.cos(double.parse(_evaluateSimple(m.group(1)!))).toString(),
-      );
-      processed = processed.replaceAllMapped(
-        RegExp(r'tan\(([^)]+)\)'),
-        (m) => math.tan(double.parse(_evaluateSimple(m.group(1)!))).toString(),
-      );
-      processed = processed.replaceAllMapped(
-        RegExp(r'log\(([^)]+)\)'),
-        (m) => math.log(double.parse(_evaluateSimple(m.group(1)!))).toString(),
-      );
-      processed = processed.replaceAllMapped(
-        RegExp(r'exp\(([^)]+)\)'),
-        (m) => math.exp(double.parse(_evaluateSimple(m.group(1)!))).toString(),
-      );
-
-      return double.parse(_evaluateSimple(processed));
+      return _ExprParser(processed).parse();
     } catch (e) {
       return double.nan;
-    }
-  }
-
-  /// Simple expression evaluator (supports +, -, *, /, ^, parentheses)
-  static String _evaluateSimple(String expr) {
-    expr = expr.replaceAll(' ', '');
-
-    // Handle powers
-    while (expr.contains('^')) {
-      final match = RegExp(r'([0-9.]+)\^([0-9.]+)').firstMatch(expr);
-      if (match == null) break;
-      final base = double.parse(match.group(1)!);
-      final exp = double.parse(match.group(2)!);
-      final result = math.pow(base, exp);
-      expr = expr.replaceFirst(match.group(0)!, result.toString());
-    }
-
-    // Basic arithmetic evaluation (left to right for simplicity)
-    // In production, use a proper expression parser
-    final result = _evalArithmetic(expr);
-    return result.toString();
-  }
-
-  static double _evalArithmetic(String expr) {
-    // Very basic evaluator - for production use a proper parser
-    try {
-      return double.parse(expr);
-    } catch (e) {
-      // If can't parse directly, try basic operations
-      return 0.0;
     }
   }
 
@@ -512,4 +464,155 @@ class MathsService {
 
     return plotPoints;
   }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Recursive-descent expression parser
+// Supports: +, -, *, /, ^, unary minus, parentheses,
+//           sin, cos, tan, log, exp, sqrt, abs, pi, e
+// ════════════════════════════════════════════════════════════════════
+
+class _ExprParser {
+  _ExprParser(this._src);
+
+  final String _src;
+  int _pos = 0;
+
+  double parse() {
+    final result = _expr();
+    if (_pos < _src.length) {
+      throw FormatException('Unexpected character at $_pos: ${_src[_pos]}');
+    }
+    return result;
+  }
+
+  // expr = term (('+' | '-') term)*
+  double _expr() {
+    double result = _term();
+    while (_pos < _src.length) {
+      if (_match('+')) {
+        result += _term();
+      } else if (_match('-')) {
+        result -= _term();
+      } else {
+        break;
+      }
+    }
+    return result;
+  }
+
+  // term = power (('*' | '/') power)*
+  double _term() {
+    double result = _power();
+    while (_pos < _src.length) {
+      if (_match('*')) {
+        result *= _power();
+      } else if (_match('/')) {
+        result /= _power();
+      } else {
+        break;
+      }
+    }
+    return result;
+  }
+
+  // power = unary ('^' unary)*   (right-associative)
+  double _power() {
+    double base = _unary();
+    if (_match('^')) {
+      final exp = _power(); // right-associative via recursion
+      return math.pow(base, exp).toDouble();
+    }
+    return base;
+  }
+
+  // unary = '-' unary | '+' unary | atom
+  double _unary() {
+    if (_match('-')) return -_unary();
+    if (_match('+')) return _unary();
+    return _atom();
+  }
+
+  // atom = number | '(' expr ')' | function '(' expr ')' | constant
+  double _atom() {
+    // Parenthesised expression
+    if (_match('(')) {
+      final result = _expr();
+      _expect(')');
+      return result;
+    }
+
+    // Functions
+    if (_matchWord('sin')) return _funcArg(math.sin);
+    if (_matchWord('cos')) return _funcArg(math.cos);
+    if (_matchWord('tan')) return _funcArg(math.tan);
+    if (_matchWord('log')) return _funcArg(math.log);
+    if (_matchWord('ln'))  return _funcArg(math.log);
+    if (_matchWord('exp')) return _funcArg(math.exp);
+    if (_matchWord('sqrt')) return _funcArg(math.sqrt);
+    if (_matchWord('abs')) return _funcArg((v) => v.abs());
+
+    // Constants
+    if (_matchWord('pi')) return math.pi;
+    if (_pos < _src.length && _src[_pos] == 'e' &&
+        (_pos + 1 >= _src.length || !_isAlpha(_src[_pos + 1]))) {
+      _pos++;
+      return math.e;
+    }
+
+    // Number literal
+    return _number();
+  }
+
+  double _funcArg(double Function(double) fn) {
+    _expect('(');
+    final arg = _expr();
+    _expect(')');
+    return fn(arg);
+  }
+
+  double _number() {
+    final start = _pos;
+    while (_pos < _src.length &&
+        (_src[_pos].contains(RegExp(r'[0-9.]')))) {
+      _pos++;
+    }
+    if (_pos == start) {
+      throw FormatException(
+        'Expected number at $_pos: "${_src.substring(_pos)}"',
+      );
+    }
+    return double.parse(_src.substring(start, _pos));
+  }
+
+  bool _match(String ch) {
+    if (_pos < _src.length && _src[_pos] == ch) {
+      _pos++;
+      return true;
+    }
+    return false;
+  }
+
+  bool _matchWord(String word) {
+    if (_pos + word.length <= _src.length &&
+        _src.substring(_pos, _pos + word.length) == word) {
+      // Make sure it's not a prefix of a longer identifier
+      if (_pos + word.length < _src.length &&
+          _isAlpha(_src[_pos + word.length]) &&
+          word != 'e') {
+        return false;
+      }
+      _pos += word.length;
+      return true;
+    }
+    return false;
+  }
+
+  void _expect(String ch) {
+    if (!_match(ch)) {
+      throw FormatException('Expected "$ch" at $_pos');
+    }
+  }
+
+  bool _isAlpha(String ch) => ch.contains(RegExp(r'[a-zA-Z]'));
 }
