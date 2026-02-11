@@ -788,25 +788,670 @@ class _OperationResultCard extends StatelessWidget {
   }
 }
 
-// Placeholder tabs for graph functionality
-class GraphVisualizerTab extends StatelessWidget {
+// ════════════════════════════════════════════════════════════════════
+// GRAPH VISUALIZER TAB — CustomPainter-based equation rendering
+// ════════════════════════════════════════════════════════════════════
+
+class GraphVisualizerTab extends ConsumerStatefulWidget {
+  final String workspaceId;
+  final String mathsObjectId;
   final GraphObject graph;
 
-  const GraphVisualizerTab({super.key, required this.graph});
+  const GraphVisualizerTab({
+    super.key,
+    required this.workspaceId,
+    required this.mathsObjectId,
+    required this.graph,
+  });
+
+  @override
+  ConsumerState<GraphVisualizerTab> createState() => _GraphVisualizerTabState();
+}
+
+class _GraphVisualizerTabState extends ConsumerState<GraphVisualizerTab> {
+  late TransformationController _transformController;
+
+  @override
+  void initState() {
+    super.initState();
+    _transformController = TransformationController();
+  }
+
+  @override
+  void dispose() {
+    _transformController.dispose();
+    super.dispose();
+  }
+
+  /// Generate all plot data for current equations
+  List<List<Offset>> _generateAllPlots() {
+    final data = widget.graph.data;
+    final plots = <List<Offset>>[];
+
+    for (final eq in data.equations) {
+      if (eq.trim().isEmpty) continue;
+      try {
+        final points = MathsService.generatePlotPoints(
+          equation: eq,
+          xMin: data.domainMin,
+          xMax: data.domainMax,
+          points: data.plotPoints,
+        );
+        plots.add(
+          points.map((p) => Offset(p['x']!, p['y']!)).toList(),
+        );
+      } catch (_) {
+        plots.add([]);
+      }
+    }
+    return plots;
+  }
+
+  Future<void> _updateDomain(double min, double max) async {
+    final notifier = ref.read(
+      mathsObjectNotifierProvider((widget.workspaceId, widget.mathsObjectId))
+          .notifier,
+    );
+    await notifier.updateGraphData(
+      widget.graph.data.copyWith(domainMin: min, domainMax: max),
+    );
+  }
+
+  Future<void> _updateRange(double min, double max) async {
+    final notifier = ref.read(
+      mathsObjectNotifierProvider((widget.workspaceId, widget.mathsObjectId))
+          .notifier,
+    );
+    await notifier.updateGraphData(
+      widget.graph.data.copyWith(rangeMin: min, rangeMax: max),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Graph visualizer coming soon'));
+    final data = widget.graph.data;
+    final plots = _generateAllPlots();
+
+    final curveColors = [
+      AxiomColors.aqua,
+      AxiomColors.purple,
+      AxiomColors.orange,
+      AxiomColors.blue,
+      AxiomColors.red,
+      AxiomColors.green,
+    ];
+
+    return Column(
+      children: [
+        // Domain / Range controls
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AxiomSpacing.md,
+            vertical: AxiomSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: AxiomColors.bg1,
+            border: Border(
+              bottom: BorderSide(color: AxiomColors.bg3, width: 1),
+            ),
+          ),
+          child: Row(
+            children: [
+              _DomainChip(
+                label: 'x',
+                min: data.domainMin,
+                max: data.domainMax,
+                onChanged: _updateDomain,
+              ),
+              const SizedBox(width: AxiomSpacing.sm),
+              _DomainChip(
+                label: 'y',
+                min: data.rangeMin,
+                max: data.rangeMax,
+                onChanged: _updateRange,
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.center_focus_strong, size: 20),
+                tooltip: 'Reset View',
+                onPressed: () => _transformController.value = Matrix4.identity(),
+                color: AxiomColors.grey1,
+              ),
+            ],
+          ),
+        ),
+
+        // Graph canvas
+        Expanded(
+          child: InteractiveViewer(
+            transformationController: _transformController,
+            boundaryMargin: const EdgeInsets.all(100),
+            minScale: 0.3,
+            maxScale: 5.0,
+            child: CustomPaint(
+              painter: _GraphPainter(
+                plots: plots,
+                colors: curveColors,
+                domainMin: data.domainMin,
+                domainMax: data.domainMax,
+                rangeMin: data.rangeMin,
+                rangeMax: data.rangeMax,
+              ),
+              size: Size.infinite,
+            ),
+          ),
+        ),
+
+        // Equation legend
+        if (data.equations.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.all(AxiomSpacing.sm),
+            decoration: BoxDecoration(
+              color: AxiomColors.bg1,
+              border: Border(
+                top: BorderSide(color: AxiomColors.bg3, width: 1),
+              ),
+            ),
+            child: Wrap(
+              spacing: AxiomSpacing.md,
+              children: List.generate(data.equations.length, (i) {
+                final color =
+                    curveColors[i % curveColors.length];
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 14,
+                      height: 3,
+                      color: color,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'y = ${data.equations[i]}',
+                      style: AxiomTypography.labelSmall.copyWith(
+                        color: color,
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+          ),
+      ],
+    );
   }
 }
 
-class GraphEquationsTab extends StatelessWidget {
-  final GraphObject graph;
+/// Compact domain/range editor chip
+class _DomainChip extends StatelessWidget {
+  final String label;
+  final double min;
+  final double max;
+  final void Function(double min, double max) onChanged;
 
-  const GraphEquationsTab({super.key, required this.graph});
+  const _DomainChip({
+    required this.label,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Graph equations editor coming soon'));
+    return GestureDetector(
+      onTap: () async {
+        final minC = TextEditingController(text: min.toStringAsFixed(1));
+        final maxC = TextEditingController(text: max.toStringAsFixed(1));
+        final result = await showDialog<(double, double)?>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('$label range'),
+            content: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: minC,
+                    decoration: const InputDecoration(
+                      labelText: 'Min',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                      signed: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: maxC,
+                    decoration: const InputDecoration(
+                      labelText: 'Max',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                      signed: true,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final newMin = double.tryParse(minC.text);
+                  final newMax = double.tryParse(maxC.text);
+                  if (newMin != null && newMax != null && newMin < newMax) {
+                    Navigator.pop(ctx, (newMin, newMax));
+                  }
+                },
+                child: const Text('Apply'),
+              ),
+            ],
+          ),
+        );
+        if (result != null) onChanged(result.$1, result.$2);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AxiomSpacing.sm,
+          vertical: AxiomSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: AxiomColors.bg2,
+          borderRadius: BorderRadius.circular(AxiomRadius.sm),
+        ),
+        child: Text(
+          '$label: [${min.toStringAsFixed(1)}, ${max.toStringAsFixed(1)}]',
+          style: AxiomTypography.labelSmall.copyWith(color: AxiomColors.fg),
+        ),
+      ),
+    );
+  }
+}
+
+/// CustomPainter that draws the coordinate grid and equation curves
+class _GraphPainter extends CustomPainter {
+  final List<List<Offset>> plots;
+  final List<Color> colors;
+  final double domainMin, domainMax, rangeMin, rangeMax;
+
+  _GraphPainter({
+    required this.plots,
+    required this.colors,
+    required this.domainMin,
+    required this.domainMax,
+    required this.rangeMin,
+    required this.rangeMax,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Coordinate mapping
+    double toX(double val) => (val - domainMin) / (domainMax - domainMin) * w;
+    double toY(double val) => h - (val - rangeMin) / (rangeMax - rangeMin) * h;
+
+    // ── Background
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, w, h),
+      Paint()..color = const Color(0xFFFDF6E3),
+    );
+
+    // ── Grid lines (light)
+    final gridPaint = Paint()
+      ..color = const Color(0xFFE6E2CC)
+      ..strokeWidth = 0.5;
+
+    // Vertical grid
+    for (double x = domainMin.ceilToDouble(); x <= domainMax; x += 1) {
+      final px = toX(x);
+      canvas.drawLine(Offset(px, 0), Offset(px, h), gridPaint);
+    }
+    // Horizontal grid
+    for (double y = rangeMin.ceilToDouble(); y <= rangeMax; y += 1) {
+      final py = toY(y);
+      canvas.drawLine(Offset(0, py), Offset(w, py), gridPaint);
+    }
+
+    // ── Axes (bold)
+    final axisPaint = Paint()
+      ..color = const Color(0xFF5C6A72)
+      ..strokeWidth = 1.5;
+
+    // X-axis
+    if (rangeMin <= 0 && rangeMax >= 0) {
+      final y0 = toY(0);
+      canvas.drawLine(Offset(0, y0), Offset(w, y0), axisPaint);
+    }
+    // Y-axis
+    if (domainMin <= 0 && domainMax >= 0) {
+      final x0 = toX(0);
+      canvas.drawLine(Offset(x0, 0), Offset(x0, h), axisPaint);
+    }
+
+    // ── Tick labels
+    final textStyle = const TextStyle(
+      color: Color(0xFF829181),
+      fontSize: 9,
+    );
+    final xStep = _niceStep(domainMax - domainMin);
+    for (double x = (domainMin / xStep).ceilToDouble() * xStep;
+        x <= domainMax;
+        x += xStep) {
+      if (x.abs() < xStep * 0.01) continue; // skip 0
+      final tp = TextPainter(
+        text: TextSpan(text: x.toStringAsFixed(x == x.roundToDouble() ? 0 : 1), style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final px = toX(x);
+      final y0 = rangeMin <= 0 && rangeMax >= 0 ? toY(0) : h - 2;
+      tp.paint(canvas, Offset(px - tp.width / 2, y0 + 2));
+    }
+    final yStep = _niceStep(rangeMax - rangeMin);
+    for (double y = (rangeMin / yStep).ceilToDouble() * yStep;
+        y <= rangeMax;
+        y += yStep) {
+      if (y.abs() < yStep * 0.01) continue;
+      final tp = TextPainter(
+        text: TextSpan(text: y.toStringAsFixed(y == y.roundToDouble() ? 0 : 1), style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final py = toY(y);
+      final x0 = domainMin <= 0 && domainMax >= 0 ? toX(0) : 2.0;
+      tp.paint(canvas, Offset(x0 + 3, py - tp.height / 2));
+    }
+
+    // ── Curves
+    for (int i = 0; i < plots.length; i++) {
+      final pts = plots[i];
+      if (pts.length < 2) continue;
+
+      final curvePaint = Paint()
+        ..color = colors[i % colors.length]
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
+
+      final path = Path();
+      bool started = false;
+
+      for (final pt in pts) {
+        // Clip to visible range
+        if (pt.dy < rangeMin || pt.dy > rangeMax) {
+          started = false;
+          continue;
+        }
+        final sx = toX(pt.dx);
+        final sy = toY(pt.dy);
+        if (!started) {
+          path.moveTo(sx, sy);
+          started = true;
+        } else {
+          path.lineTo(sx, sy);
+        }
+      }
+      canvas.drawPath(path, curvePaint);
+    }
+  }
+
+  double _niceStep(double range) {
+    final rough = range / 10;
+    final mag = _pow10(rough.abs().floor().toString().length - 1);
+    final norm = rough / mag;
+    if (norm < 1.5) return mag.toDouble();
+    if (norm < 3.5) return 2 * mag;
+    if (norm < 7.5) return 5 * mag;
+    return 10 * mag;
+  }
+
+  int _pow10(int exp) {
+    int result = 1;
+    for (int i = 0; i < exp; i++) {
+      result *= 10;
+    }
+    return result;
+  }
+
+  @override
+  bool shouldRepaint(covariant _GraphPainter old) =>
+      old.plots != plots ||
+      old.domainMin != domainMin ||
+      old.domainMax != domainMax;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// GRAPH EQUATIONS TAB — equation input and management
+// ════════════════════════════════════════════════════════════════════
+
+class GraphEquationsTab extends ConsumerStatefulWidget {
+  final String workspaceId;
+  final String mathsObjectId;
+  final GraphObject graph;
+
+  const GraphEquationsTab({
+    super.key,
+    required this.workspaceId,
+    required this.mathsObjectId,
+    required this.graph,
+  });
+
+  @override
+  ConsumerState<GraphEquationsTab> createState() => _GraphEquationsTabState();
+}
+
+class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
+  late List<TextEditingController> _eqControllers;
+
+  @override
+  void initState() {
+    super.initState();
+    _initControllers();
+  }
+
+  void _initControllers() {
+    _eqControllers = widget.graph.data.equations
+        .map((eq) => TextEditingController(text: eq))
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    for (final c in _eqControllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _saveEquations() async {
+    final equations = _eqControllers
+        .map((c) => c.text.trim())
+        .where((eq) => eq.isNotEmpty)
+        .toList();
+
+    final notifier = ref.read(
+      mathsObjectNotifierProvider((widget.workspaceId, widget.mathsObjectId))
+          .notifier,
+    );
+    await notifier.updateGraphData(
+      widget.graph.data.copyWith(equations: equations),
+    );
+  }
+
+  void _addEquation() {
+    setState(() {
+      _eqControllers.add(TextEditingController());
+    });
+  }
+
+  void _removeEquation(int index) {
+    setState(() {
+      _eqControllers[index].dispose();
+      _eqControllers.removeAt(index);
+    });
+    _saveEquations();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Toolbar
+        Container(
+          padding: const EdgeInsets.all(AxiomSpacing.md),
+          decoration: BoxDecoration(
+            color: AxiomColors.bg1,
+            border: Border(
+              bottom: BorderSide(color: AxiomColors.bg3, width: 1),
+            ),
+          ),
+          child: Row(
+            children: [
+              Text(
+                'Equations',
+                style: AxiomTypography.heading3.copyWith(color: AxiomColors.fg),
+              ),
+              const Spacer(),
+              ElevatedButton.icon(
+                onPressed: _saveEquations,
+                icon: const Icon(Icons.check, size: 16),
+                label: const Text('Save'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AxiomColors.green,
+                  foregroundColor: AxiomColors.bg0,
+                ),
+              ),
+              const SizedBox(width: AxiomSpacing.sm),
+              IconButton(
+                onPressed: _addEquation,
+                icon: const Icon(Icons.add_circle_outline),
+                tooltip: 'Add Equation',
+                color: AxiomColors.aqua,
+              ),
+            ],
+          ),
+        ),
+
+        // Equation list
+        Expanded(
+          child: _eqControllers.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.functions,
+                        size: 48,
+                        color: AxiomColors.grey1,
+                      ),
+                      const SizedBox(height: AxiomSpacing.md),
+                      Text(
+                        'No equations yet',
+                        style: AxiomTypography.bodyMedium
+                            .copyWith(color: AxiomColors.grey1),
+                      ),
+                      const SizedBox(height: AxiomSpacing.sm),
+                      TextButton.icon(
+                        onPressed: _addEquation,
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text('Add Equation'),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(AxiomSpacing.md),
+                  itemCount: _eqControllers.length,
+                  itemBuilder: (context, index) {
+                    final curveColors = [
+                      AxiomColors.aqua,
+                      AxiomColors.purple,
+                      AxiomColors.orange,
+                      AxiomColors.blue,
+                      AxiomColors.red,
+                      AxiomColors.green,
+                    ];
+                    final color = curveColors[index % curveColors.length];
+
+                    return Padding(
+                      padding:
+                          const EdgeInsets.only(bottom: AxiomSpacing.sm),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius:
+                                  BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: AxiomSpacing.sm),
+                          Text(
+                            'y =',
+                            style: AxiomTypography.bodyMedium
+                                .copyWith(color: AxiomColors.grey1),
+                          ),
+                          const SizedBox(width: AxiomSpacing.sm),
+                          Expanded(
+                            child: TextField(
+                              controller: _eqControllers[index],
+                              style: AxiomTypography.bodyMedium,
+                              decoration: InputDecoration(
+                                hintText: 'e.g. x^2, sin(x), 2*x+1',
+                                hintStyle: AxiomTypography.bodyMedium
+                                    .copyWith(color: AxiomColors.grey2),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AxiomRadius.sm,
+                                  ),
+                                ),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: AxiomSpacing.sm,
+                                  vertical: AxiomSpacing.sm,
+                                ),
+                              ),
+                              onSubmitted: (_) => _saveEquations(),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              size: 18,
+                              color: AxiomColors.red,
+                            ),
+                            onPressed: () => _removeEquation(index),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ),
+
+        // Help hint
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AxiomSpacing.sm),
+          color: AxiomColors.bg1,
+          child: Text(
+            'Supported: x, +, -, *, /, ^, sin(), cos(), tan(), log(), exp()',
+            style: AxiomTypography.labelSmall.copyWith(
+              color: AxiomColors.grey1,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
   }
 }
