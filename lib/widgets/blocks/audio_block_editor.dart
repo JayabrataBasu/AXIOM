@@ -264,8 +264,11 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: List.generate(barCount, (index) {
         // Each bar has a different height based on a sine wave + playback progress
-        final baseHeight = 0.3 + 0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
-        final finalHeight = baseHeight + random.nextDouble() * 0.3 * (animationValue % 1.0);
+        final baseHeight =
+            0.3 +
+            0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
+        final finalHeight =
+            baseHeight + random.nextDouble() * 0.3 * (animationValue % 1.0);
         final clampedHeight = (finalHeight * 35).clamp(4.0, 35.0);
 
         return Padding(

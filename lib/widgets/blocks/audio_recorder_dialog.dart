@@ -59,12 +59,18 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _isRecording ? 'Recording…' : (_result != null ? 'Recorded clip ready' : 'Ready to record'),
+            _isRecording
+                ? 'Recording…'
+                : (_result != null ? 'Recorded clip ready' : 'Ready to record'),
             style: theme.textTheme.titleSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            _formatDuration(_isRecording ? _elapsed : Duration(milliseconds: _result?.durationMs ?? 0)),
+            _formatDuration(
+              _isRecording
+                  ? _elapsed
+                  : Duration(milliseconds: _result?.durationMs ?? 0),
+            ),
             style: theme.textTheme.displaySmall?.copyWith(fontSize: 28),
           ),
           const SizedBox(height: 16),
@@ -87,16 +93,15 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog>
             const SizedBox(height: 8),
             Text(
               _error!,
-              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+              ),
             ),
           ],
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: _handleCancel,
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: _handleCancel, child: const Text('Cancel')),
         TextButton(
           onPressed: !_isRecording && _result == null ? _startRecording : null,
           child: const Text('Start'),
@@ -191,8 +196,11 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog>
       crossAxisAlignment: CrossAxisAlignment.center,
       children: List.generate(barCount, (index) {
         // Each bar has a different height based on a sine wave
-        final baseHeight = 0.3 + 0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
-        final finalHeight = baseHeight + random.nextDouble() * 0.3 * animationValue;
+        final baseHeight =
+            0.3 +
+            0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
+        final finalHeight =
+            baseHeight + random.nextDouble() * 0.3 * animationValue;
         final clampedHeight = (finalHeight * 40).clamp(4.0, 40.0);
 
         return Padding(
