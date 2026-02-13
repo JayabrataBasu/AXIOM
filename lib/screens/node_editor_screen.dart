@@ -35,6 +35,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   String? _highlightedBlockId;
   Timer? _highlightFadeTimer;
 
+  // Text editor mode: 'markdown', 'simple', or 'rich'
+  // Text editor is now always RichTextBlockEditor
+
   @override
   void initState() {
     super.initState();
@@ -214,6 +217,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                             minHeight: 36,
                           ),
                         ),
+                        // Text editor mode selector removed - always using RichTextBlockEditor
                         IconButton(
                           icon: Icon(
                             Icons.delete_outline_rounded,
@@ -485,7 +489,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     final isHighlighted = _highlightedBlockId == block.id;
 
     final editor = switch (block) {
-      TextBlock() => TextBlockEditor(
+      TextBlock() => RichTextBlockEditor(
         key: ValueKey(block.id),
         block: block,
         dragIndex: index,
