@@ -558,7 +558,7 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           // Top row: icon + node count + delete
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
                 width: 40,
@@ -573,39 +573,38 @@ class DashboardScreen extends ConsumerWidget {
                   size: 20,
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cs.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(AxiomRadius.xs),
-                    ),
-                    child: Text(
-                      '${mindMap.nodes.length} nodes',
-                      style: AxiomTypography.labelSmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
+              const SizedBox(width: AxiomSpacing.xs),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
                   ),
-                  const SizedBox(width: 4),
-                  InkWell(
-                    onTap: () => _deleteMindMap(context, ref, mindMap),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        Icons.delete_outline,
-                        size: 18,
-                        color: cs.onSurfaceVariant.withAlpha(120),
-                      ),
-                    ),
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(AxiomRadius.xs),
                   ),
-                ],
+                  child: Text(
+                    '${mindMap.nodes.length} nodes',
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: () => _deleteMindMap(context, ref, mindMap),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: cs.onSurfaceVariant.withAlpha(120),
+                  ),
+                ),
               ),
             ],
           ),
@@ -674,7 +673,7 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedTemplateId,
+                  initialValue: selectedTemplateId,
                   decoration: const InputDecoration(
                     labelText: 'Template',
                     border: OutlineInputBorder(),
@@ -906,7 +905,7 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           // Top row: icon + type badge + delete button
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
                 width: 40,
@@ -921,39 +920,38 @@ class DashboardScreen extends ConsumerWidget {
                   size: 20,
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cs.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(AxiomRadius.xs),
-                    ),
-                    child: Text(
-                      subtitle,
-                      style: AxiomTypography.labelSmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
+              const SizedBox(width: AxiomSpacing.xs),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
                   ),
-                  const SizedBox(width: 4),
-                  InkWell(
-                    onTap: () => _deleteMathsObject(context, ref, obj),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        Icons.delete_outline,
-                        size: 18,
-                        color: cs.onSurfaceVariant.withAlpha(120),
-                      ),
-                    ),
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(AxiomRadius.xs),
                   ),
-                ],
+                  child: Text(
+                    subtitle,
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: () => _deleteMathsObject(context, ref, obj),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: cs.onSurfaceVariant.withAlpha(120),
+                  ),
+                ),
               ),
             ],
           ),
@@ -1022,7 +1020,7 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     decoration: const InputDecoration(
                       labelText: 'Type',
                       border: OutlineInputBorder(),
@@ -1041,7 +1039,7 @@ class DashboardScreen extends ConsumerWidget {
                       children: [
                         Expanded(
                           child: DropdownButtonFormField<int>(
-                            value: rows,
+                            initialValue: rows,
                             decoration: const InputDecoration(
                               labelText: 'Rows',
                               border: OutlineInputBorder(),
@@ -1061,7 +1059,7 @@ class DashboardScreen extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: DropdownButtonFormField<int>(
-                            value: cols,
+                            initialValue: cols,
                             decoration: const InputDecoration(
                               labelText: 'Cols',
                               border: OutlineInputBorder(),
