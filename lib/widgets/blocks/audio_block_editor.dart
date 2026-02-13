@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import '../../theme/design_tokens.dart';
 
@@ -18,18 +19,26 @@ class AudioBlockEditor extends StatefulWidget {
   State<AudioBlockEditor> createState() => _AudioBlockEditorState();
 }
 
-class _AudioBlockEditorState extends State<AudioBlockEditor> {
+class _AudioBlockEditorState extends State<AudioBlockEditor>
+    with TickerProviderStateMixin {
   late final AudioPlayer _player;
+  late final AnimationController _visualizerController;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _loadFailed = false;
   String _statusText = 'Loading...';
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    _visualizerController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _initialized = true;
     _initializeAudio();
   }
 
@@ -57,6 +66,10 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
       _player.onPositionChanged.listen((p) {
         if (!mounted) return;
         setState(() => _position = p);
+        // Pulse the visualizer during playback
+        if (_initialized && _isPlaying && !_visualizerController.isAnimating) {
+          _visualizerController.forward(from: 0);
+        }
       });
     } catch (e) {
       _loadFailed = true;
@@ -74,6 +87,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
 
   @override
   void dispose() {
+    _visualizerController.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -120,6 +134,28 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
               ),
             ],
           ),
+          SizedBox(height: AxiomSpacing.sm + 2),
+          // Waveform visualizer
+          if (_initialized)
+            Center(
+              child: SizedBox(
+                width: 200,
+                height: 50,
+                child: AnimatedBuilder(
+                  animation: _visualizerController,
+                  builder: (context, child) {
+                    // Use playback progress as base animation value
+                    final progress = _duration.inMilliseconds > 0
+                        ? _position.inMilliseconds / _duration.inMilliseconds
+                        : 0.0;
+                    final animValue = _isPlaying
+                        ? (progress + _visualizerController.value)
+                        : progress;
+                    return _buildWaveform(animValue);
+                  },
+                ),
+              ),
+            ),
           SizedBox(height: AxiomSpacing.sm + 2),
           // Progress indicator - Everforest styled
           StreamBuilder<Duration>(
@@ -216,5 +252,38 @@ class _AudioBlockEditorState extends State<AudioBlockEditor> {
       case PlayerState.completed:
         return 'Done';
     }
+  }
+
+  Widget _buildWaveform(double animationValue) {
+    // Create a waveform visualization with 8 bars
+    const barCount = 8;
+    final random = math.Random(42); // Deterministic randomness
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: List.generate(barCount, (index) {
+        // Each bar has a different height based on a sine wave + playback progress
+        final baseHeight = 0.3 + 0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
+        final finalHeight = baseHeight + random.nextDouble() * 0.3 * (animationValue % 1.0);
+        final clampedHeight = (finalHeight * 35).clamp(4.0, 35.0);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          child: Container(
+            width: 4,
+            height: clampedHeight,
+            decoration: BoxDecoration(
+              color: Color.lerp(
+                Colors.green[300],
+                Colors.green[700],
+                finalHeight,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        );
+      }),
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/audio_service.dart';
@@ -11,7 +12,8 @@ class AudioRecorderDialog extends StatefulWidget {
   State<AudioRecorderDialog> createState() => _AudioRecorderDialogState();
 }
 
-class _AudioRecorderDialogState extends State<AudioRecorderDialog> {
+class _AudioRecorderDialogState extends State<AudioRecorderDialog>
+    with TickerProviderStateMixin {
   final AudioService _audioService = AudioService.instance;
 
   bool _isRecording = false;
@@ -20,10 +22,21 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog> {
   AudioRecordingResult? _result;
   String? _error;
   bool _saved = false;
+  late final AnimationController _visualizerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _visualizerController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+  }
 
   @override
   void dispose() {
     _ticker?.cancel();
+    _visualizerController.dispose();
     // If user closes dialog without saving, clean up.
     if (!_saved) {
       if (_isRecording) {
@@ -53,6 +66,22 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog> {
           Text(
             _formatDuration(_isRecording ? _elapsed : Duration(milliseconds: _result?.durationMs ?? 0)),
             style: theme.textTheme.displaySmall?.copyWith(fontSize: 28),
+          ),
+          const SizedBox(height: 16),
+          // Waveform visualizer
+          Center(
+            child: SizedBox(
+              width: 200,
+              height: 60,
+              child: _isRecording
+                  ? AnimatedBuilder(
+                      animation: _visualizerController,
+                      builder: (context, child) {
+                        return _buildWaveform(_visualizerController.value);
+                      },
+                    )
+                  : _buildWaveform(0),
+            ),
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
@@ -99,6 +128,8 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog> {
         setState(() {
           _elapsed += const Duration(milliseconds: 200);
         });
+        // Pulse the visualizer
+        _visualizerController.forward(from: 0);
       });
       setState(() {
         _isRecording = true;
@@ -148,5 +179,38 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog> {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildWaveform(double animationValue) {
+    // Create a waveform visualization with 8 bars
+    const barCount = 8;
+    final random = math.Random(42); // Deterministic randomness
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: List.generate(barCount, (index) {
+        // Each bar has a different height based on a sine wave
+        final baseHeight = 0.3 + 0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
+        final finalHeight = baseHeight + random.nextDouble() * 0.3 * animationValue;
+        final clampedHeight = (finalHeight * 40).clamp(4.0, 40.0);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          child: Container(
+            width: 4,
+            height: clampedHeight,
+            decoration: BoxDecoration(
+              color: Color.lerp(
+                Colors.blue[300],
+                Colors.blue[700],
+                finalHeight,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        );
+      }),
+    );
   }
 }
