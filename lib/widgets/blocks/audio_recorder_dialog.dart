@@ -28,7 +28,7 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog>
   void initState() {
     super.initState();
     _visualizerController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
   }
@@ -186,10 +186,15 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog>
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
+  // Pre-computed random offsets for smooth, efficient animation
+  static final List<double> _randomOffsets = List.generate(12, (i) {
+    final random = math.Random(42 + i);
+    return random.nextDouble();
+  });
+
   Widget _buildWaveform(double animationValue) {
-    // Create a waveform visualization with 8 bars
-    const barCount = 8;
-    final random = math.Random(42); // Deterministic randomness
+    // Create a waveform visualization with 12 bars
+    const barCount = 12;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -200,7 +205,7 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog>
             0.3 +
             0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
         final finalHeight =
-            baseHeight + random.nextDouble() * 0.3 * animationValue;
+            baseHeight + _randomOffsets[index] * 0.3 * animationValue;
         final clampedHeight = (finalHeight * 40).clamp(4.0, 40.0);
 
         return Padding(

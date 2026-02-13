@@ -35,7 +35,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
     super.initState();
     _player = AudioPlayer();
     _visualizerController = AnimationController(
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 200),
       vsync: this,
     );
     _initialized = true;
@@ -254,10 +254,15 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
     }
   }
 
+  // Pre-computed random offsets for smooth, efficient animation
+  static final List<double> _randomOffsets = List.generate(12, (i) {
+    final random = math.Random(42 + i);
+    return random.nextDouble();
+  });
+
   Widget _buildWaveform(double animationValue) {
-    // Create a waveform visualization with 8 bars
-    const barCount = 8;
-    final random = math.Random(42); // Deterministic randomness
+    // Create a waveform visualization with 12 bars
+    const barCount = 12;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -268,7 +273,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
             0.3 +
             0.4 * math.sin((index + animationValue * 2) * math.pi / barCount);
         final finalHeight =
-            baseHeight + random.nextDouble() * 0.3 * (animationValue % 1.0);
+            baseHeight + _randomOffsets[index] * 0.3 * (animationValue % 1.0);
         final clampedHeight = (finalHeight * 35).clamp(4.0, 35.0);
 
         return Padding(
