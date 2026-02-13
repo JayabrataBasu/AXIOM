@@ -7,8 +7,9 @@ class ExprParser {
 
   double parse() {
     final result = _expr();
-    if (_pos < _src.length)
+    if (_pos < _src.length) {
       throw FormatException('Unexpected at $_pos: ${_src[_pos]}');
+    }
     return result;
   }
 
@@ -72,7 +73,9 @@ class ExprParser {
 
   double _number() {
     final s = _pos;
-    while (_pos < _src.length && '0123456789.'.contains(_src[_pos])) _pos++;
+    while (_pos < _src.length && '0123456789.'.contains(_src[_pos])) {
+      _pos++;
+    }
     if (_pos == s) throw FormatException('Expected number at $_pos');
     return double.parse(_src.substring(s, _pos));
   }

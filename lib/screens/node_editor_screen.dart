@@ -870,7 +870,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: selectedTemplateId,
+                      initialValue: selectedTemplateId,
                       decoration: const InputDecoration(
                         labelText: 'Template',
                         border: OutlineInputBorder(),
@@ -1039,7 +1039,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: selectedType,
+                      initialValue: selectedType,
                       decoration: const InputDecoration(
                         labelText: 'Type',
                         border: OutlineInputBorder(),
@@ -1062,7 +1062,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<int>(
-                              value: rows,
+                              initialValue: rows,
                               decoration: const InputDecoration(
                                 labelText: 'Rows',
                                 border: OutlineInputBorder(),
@@ -1082,7 +1082,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: DropdownButtonFormField<int>(
-                              value: cols,
+                              initialValue: cols,
                               decoration: const InputDecoration(
                                 labelText: 'Cols',
                                 border: OutlineInputBorder(),

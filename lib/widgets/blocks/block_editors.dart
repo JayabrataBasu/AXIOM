@@ -521,7 +521,38 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
   bool _isBold = false;
   bool _isItalic = false;
   bool _isUnderline = false;
+  bool _isStrikethrough = false;
   TextAlign _textAlign = TextAlign.left;
+  double _fontSize = 16.0;
+  String _fontFamily = 'Default';
+  Color? _textColor;
+  Color? _highlightColor;
+
+  static const List<String> _fontFamilies = [
+    'Default',
+    'Roboto',
+    'Arial',
+    'Times New Roman',
+    'Courier New',
+    'Georgia',
+    'Verdana',
+  ];
+
+  static const List<double> _fontSizes = [
+    10,
+    11,
+    12,
+    14,
+    16,
+    18,
+    20,
+    24,
+    28,
+    32,
+    36,
+    48,
+    72,
+  ];
 
   @override
   void initState() {
@@ -548,7 +579,117 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
   void _toggleBold() => setState(() => _isBold = !_isBold);
   void _toggleItalic() => setState(() => _isItalic = !_isItalic);
   void _toggleUnderline() => setState(() => _isUnderline = !_isUnderline);
+  void _toggleStrikethrough() =>
+      setState(() => _isStrikethrough = !_isStrikethrough);
   void _setAlignment(TextAlign align) => setState(() => _textAlign = align);
+  void _setFontSize(double size) => setState(() => _fontSize = size);
+  void _setFontFamily(String family) => setState(() => _fontFamily = family);
+  void _setTextColor(Color? color) => setState(() => _textColor = color);
+  void _setHighlightColor(Color? color) =>
+      setState(() => _highlightColor = color);
+
+  void _insertBulletPoint() {
+    final selection = _controller.selection;
+    final text = _controller.text;
+    if (selection.baseOffset >= 0) {
+      final newText =
+          text.substring(0, selection.baseOffset) +
+          '• ' +
+          text.substring(selection.baseOffset);
+      _controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: selection.baseOffset + 2),
+      );
+      widget.onContentChanged(newText);
+    }
+  }
+
+  void _insertNumberedPoint() {
+    final selection = _controller.selection;
+    final text = _controller.text;
+    if (selection.baseOffset >= 0) {
+      // Count existing numbered items
+      final lines = text.substring(0, selection.baseOffset).split('\n');
+      final lastLine = lines.isNotEmpty ? lines.last : '';
+      final match = RegExp(r'^(\d+)\.\s').firstMatch(lastLine);
+      final nextNum = match != null ? int.parse(match.group(1)!) + 1 : 1;
+
+      final newText =
+          text.substring(0, selection.baseOffset) +
+          '$nextNum. ' +
+          text.substring(selection.baseOffset);
+      _controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(
+          offset: selection.baseOffset + nextNum.toString().length + 2,
+        ),
+      );
+      widget.onContentChanged(newText);
+    }
+  }
+
+  void _showColorPicker(bool isTextColor) {
+    final cs = Theme.of(context).colorScheme;
+    final colors = [
+      null, // Reset/default
+      Colors.black,
+      Colors.red,
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.pink,
+      Colors.teal,
+      Colors.amber,
+      Colors.indigo,
+      Colors.yellow.shade700,
+      Colors.brown,
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isTextColor ? 'Text Color' : 'Highlight Color'),
+        content: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: colors.map((color) {
+            return InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                if (isTextColor) {
+                  _setTextColor(color);
+                } else {
+                  _setHighlightColor(color);
+                }
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color ?? cs.surface,
+                  border: Border.all(
+                    color: color == null ? cs.outline : Colors.transparent,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: color == null
+                    ? Icon(Icons.clear, size: 20, color: cs.onSurface)
+                    : null,
+              ),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -561,7 +702,7 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Formatting toolbar — word-processor style ──
+          // ── Formatting toolbar — MS Word style ──
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AxiomSpacing.sm,
@@ -570,33 +711,187 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
             decoration: BoxDecoration(
               color: cs.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              border: Border.all(color: cs.outlineVariant.withAlpha(30)),
             ),
-            child: Row(
+            child: Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                // Font family dropdown
+                Container(
+                  height: 30,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: cs.surface,
+                    borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                    border: Border.all(color: cs.outlineVariant.withAlpha(50)),
+                  ),
+                  child: DropdownButton<String>(
+                    value: _fontFamily,
+                    isDense: true,
+                    underline: const SizedBox(),
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurface,
+                    ),
+                    items: _fontFamilies.map((font) {
+                      return DropdownMenuItem(
+                        value: font,
+                        child: Text(font, style: TextStyle(fontSize: 12)),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) _setFontFamily(value);
+                    },
+                  ),
+                ),
+                // Font size dropdown
+                Container(
+                  height: 30,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: cs.surface,
+                    borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                    border: Border.all(color: cs.outlineVariant.withAlpha(50)),
+                  ),
+                  child: DropdownButton<double>(
+                    value: _fontSize,
+                    isDense: true,
+                    underline: const SizedBox(),
+                    style: AxiomTypography.labelSmall.copyWith(
+                      color: cs.onSurface,
+                    ),
+                    items: _fontSizes.map((size) {
+                      return DropdownMenuItem(
+                        value: size,
+                        child: Text(
+                          '${size.toInt()}',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) _setFontSize(value);
+                    },
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 20,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  color: cs.outlineVariant.withAlpha(80),
+                ),
+                // Text formatting
                 _FormatButton(
                   icon: Icons.format_bold_rounded,
                   isActive: _isBold,
                   onPressed: _toggleBold,
-                  tooltip: 'Bold',
+                  tooltip: 'Bold (Ctrl+B)',
                 ),
                 _FormatButton(
                   icon: Icons.format_italic_rounded,
                   isActive: _isItalic,
                   onPressed: _toggleItalic,
-                  tooltip: 'Italic',
+                  tooltip: 'Italic (Ctrl+I)',
                 ),
                 _FormatButton(
                   icon: Icons.format_underlined_rounded,
                   isActive: _isUnderline,
                   onPressed: _toggleUnderline,
-                  tooltip: 'Underline',
+                  tooltip: 'Underline (Ctrl+U)',
+                ),
+                _FormatButton(
+                  icon: Icons.strikethrough_s_rounded,
+                  isActive: _isStrikethrough,
+                  onPressed: _toggleStrikethrough,
+                  tooltip: 'Strikethrough',
                 ),
                 Container(
                   width: 1,
                   height: 20,
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
                   color: cs.outlineVariant.withAlpha(80),
                 ),
+                // Text color
+                Tooltip(
+                  message: 'Text color',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                    onTap: () => _showColorPicker(true),
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                            Icons.format_color_text_rounded,
+                            size: 18,
+                            color: _textColor ?? cs.onSurfaceVariant,
+                          ),
+                          Positioned(
+                            bottom: 4,
+                            child: Container(
+                              width: 16,
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: _textColor ?? cs.primary,
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // Highlight color
+                Tooltip(
+                  message: 'Highlight color',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                    onTap: () => _showColorPicker(false),
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(AxiomRadius.xs),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                            Icons.format_color_fill_rounded,
+                            size: 18,
+                            color: cs.onSurfaceVariant,
+                          ),
+                          Positioned(
+                            bottom: 4,
+                            child: Container(
+                              width: 16,
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color:
+                                    _highlightColor ?? Colors.yellow.shade300,
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 20,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  color: cs.outlineVariant.withAlpha(80),
+                ),
+                // Alignment
                 _FormatButton(
                   icon: Icons.format_align_left_rounded,
                   isActive: _textAlign == TextAlign.left,
@@ -614,6 +909,31 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
                   isActive: _textAlign == TextAlign.right,
                   onPressed: () => _setAlignment(TextAlign.right),
                   tooltip: 'Align right',
+                ),
+                _FormatButton(
+                  icon: Icons.format_align_justify_rounded,
+                  isActive: _textAlign == TextAlign.justify,
+                  onPressed: () => _setAlignment(TextAlign.justify),
+                  tooltip: 'Justify',
+                ),
+                Container(
+                  width: 1,
+                  height: 20,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  color: cs.outlineVariant.withAlpha(80),
+                ),
+                // Lists
+                _FormatButton(
+                  icon: Icons.format_list_bulleted_rounded,
+                  isActive: false,
+                  onPressed: _insertBulletPoint,
+                  tooltip: 'Bullet list',
+                ),
+                _FormatButton(
+                  icon: Icons.format_list_numbered_rounded,
+                  isActive: false,
+                  onPressed: _insertNumberedPoint,
+                  tooltip: 'Numbered list',
                 ),
                 const Spacer(),
                 // Word + character count
@@ -656,17 +976,30 @@ class _TextBlockEditorState extends State<TextBlockEditor> {
               minLines: 8,
               textAlign: _textAlign,
               style: AxiomTypography.bodyMedium.copyWith(
-                color: cs.onSurface,
+                color: _textColor ?? cs.onSurface,
+                backgroundColor: _highlightColor,
                 height: 1.8,
+                fontSize: _fontSize,
+                fontFamily: _fontFamily == 'Default' ? null : _fontFamily,
                 fontWeight: _isBold ? FontWeight.bold : FontWeight.normal,
                 fontStyle: _isItalic ? FontStyle.italic : FontStyle.normal,
-                decoration: _isUnderline ? TextDecoration.underline : null,
+                decoration: _isUnderline && _isStrikethrough
+                    ? TextDecoration.combine([
+                        TextDecoration.underline,
+                        TextDecoration.lineThrough,
+                      ])
+                    : _isUnderline
+                    ? TextDecoration.underline
+                    : _isStrikethrough
+                    ? TextDecoration.lineThrough
+                    : null,
               ),
               decoration: InputDecoration(
                 hintText: 'Start writing...',
                 hintStyle: AxiomTypography.bodyMedium.copyWith(
                   color: cs.onSurfaceVariant.withAlpha(100),
                   height: 1.8,
+                  fontSize: _fontSize,
                 ),
                 filled: false,
                 border: InputBorder.none,
