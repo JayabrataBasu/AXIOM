@@ -190,69 +190,21 @@ class RichTextController extends TextEditingController {
     return null;
   }
 
+  /// Notify listeners of changes (for use by undo/redo commands)
+  void refreshUI() {
+    notifyListeners();
+  }
+
   @override
   TextSpan buildTextSpan({
     required BuildContext context,
     TextStyle? style,
     required bool withComposing,
   }) {
-    if (formats.isEmpty) {
-      return TextSpan(text: text, style: style);
-    }
-
-    final spans = <TextSpan>[];
-    final sortedFormats = List<TextFormat>.from(formats)
-      ..sort((a, b) => a.start.compareTo(b.start));
-
-    int currentPos = 0;
-
-    for (final format in sortedFormats) {
-      // Add unformatted text before this format
-      if (currentPos < format.start) {
-        spans.add(
-          TextSpan(
-            text: text.substring(currentPos, format.start),
-            style: style,
-          ),
-        );
-      }
-
-      // Add formatted text
-      final formattedText = text.substring(
-        format.start,
-        format.end.clamp(0, text.length),
-      );
-
-      final decorations = <TextDecoration>[];
-      if (format.underline) decorations.add(TextDecoration.underline);
-      if (format.strikethrough) decorations.add(TextDecoration.lineThrough);
-
-      spans.add(
-        TextSpan(
-          text: formattedText,
-          style: style?.copyWith(
-            fontWeight: format.bold ? FontWeight.bold : null,
-            fontStyle: format.italic ? FontStyle.italic : null,
-            decoration: decorations.isNotEmpty
-                ? TextDecoration.combine(decorations)
-                : null,
-            fontSize: format.fontSize,
-            fontFamily: format.fontFamily,
-            color: format.textColor,
-            backgroundColor: format.backgroundColor,
-          ),
-        ),
-      );
-
-      currentPos = format.end;
-    }
-
-    // Add any remaining unformatted text
-    if (currentPos < text.length) {
-      spans.add(TextSpan(text: text.substring(currentPos), style: style));
-    }
-
-    return TextSpan(children: spans, style: style);
+    // NOTE: Flutter's TextField ignores custom buildTextSpan for rendering during editing
+    // This method is here for future use when we implement a custom rich text widget
+    // For now, just return the plain text - formatting IS stored in the 'formats' list
+    return TextSpan(text: text, style: style);
   }
 
   /// Update format positions after text changes

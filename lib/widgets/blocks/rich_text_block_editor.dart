@@ -4,6 +4,7 @@ import '../../models/content_block.dart';
 import '../../theme/design_tokens.dart';
 import 'block_editors.dart';
 import 'rich_text_editor.dart';
+import 'rich_text_commands.dart';
 
 /// Advanced rich text editor with per-selection formatting (MS Word style)
 class RichTextBlockEditor extends StatefulWidget {
@@ -27,6 +28,7 @@ class RichTextBlockEditor extends StatefulWidget {
 class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
   late RichTextController _controller;
   late FocusNode _focusNode;
+  late CommandHistory _history;
   TextFormat? _currentFormat;
 
   static const List<String> _fontFamilies = [
@@ -63,6 +65,9 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
   @override
   void initState() {
     super.initState();
+    // Initialize history
+    _history = CommandHistory();
+    
     // Try to parse as rich text JSON, fallback to plain text
     try {
       if (widget.block.content.startsWith('{')) {
@@ -455,6 +460,20 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     );
   }
 
+  void _undo() {
+    if (_history.undo()) {
+      setState(() {});
+      widget.onContentChanged(_controller.toJson());
+    }
+  }
+
+  void _redo() {
+    if (_history.redo()) {
+      setState(() {});
+      widget.onContentChanged(_controller.toJson());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -555,12 +574,26 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                // Row 2: Alignment, lists, and utilities
+                // Row 2: Undo/Redo, Alignment, lists, and utilities
                 Wrap(
                   spacing: 4,
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
+                    // Undo/Redo buttons
+                    _FormatButton(
+                      icon: Icons.undo_rounded,
+                      isActive: false,
+                      onPressed: _history.canUndo ? _undo : null,
+                      tooltip: 'Undo (Ctrl+Z)',
+                    ),
+                    _FormatButton(
+                      icon: Icons.redo_rounded,
+                      isActive: false,
+                      onPressed: _history.canRedo ? _redo : null,
+                      tooltip: 'Redo (Ctrl+Y)',
+                    ),
+                    _VerticalDivider(cs: cs),
                     // Alignment
                     _FormatButton(
                       icon: Icons.format_align_left_rounded,
@@ -874,17 +907,19 @@ class _FormatButton extends StatelessWidget {
 
   final IconData icon;
   final bool isActive;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // Can be null for disabled state
   final String tooltip;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isEnabled = onPressed != null;
+    
     return Tooltip(
       message: tooltip,
       child: InkWell(
         borderRadius: BorderRadius.circular(AxiomRadius.xs),
-        onTap: onPressed,
+        onTap: isEnabled ? onPressed : null,
         child: Container(
           width: 30,
           height: 30,
@@ -895,7 +930,9 @@ class _FormatButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 18,
-            color: isActive ? cs.primary : cs.onSurfaceVariant,
+            color: isEnabled 
+                ? (isActive ? cs.primary : cs.onSurfaceVariant)
+                : cs.outlineVariant.withAlpha(100),
           ),
         ),
       ),
