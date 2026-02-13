@@ -67,7 +67,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     super.initState();
     // Initialize history
     _history = CommandHistory();
-    
+
     // Try to parse as rich text JSON, fallback to plain text
     try {
       if (widget.block.content.startsWith('{')) {
@@ -682,92 +682,45 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
               borderRadius: BorderRadius.circular(AxiomRadius.sm),
               border: Border.all(color: cs.outlineVariant.withAlpha(40)),
             ),
-            child: Stack(
-              children: [
-                // Plain text editor (works reliably)
-                TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  maxLines: null,
-                  minLines: 10,
-                  textAlign: _controller.textAlign,
-                  style: AxiomTypography.bodyMedium.copyWith(
-                    color: cs.onSurface,
-                    height: 1.8,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Start writing... Select text to apply formatting.',
-                    hintStyle: AxiomTypography.bodyMedium.copyWith(
-                      color: cs.onSurfaceVariant.withAlpha(100),
-                      height: 1.8,
-                    ),
-                    filled: false,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                  ),
-                  onChanged: (text) {
-                    setState(() {}); // Update format at cursor
-                    widget.onContentChanged(_controller.toJson());
-                  },
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              maxLines: null,
+              minLines: 10,
+              textAlign: _controller.textAlign,
+              style: AxiomTypography.bodyMedium.copyWith(
+                color: cs.onSurface,
+                height: 1.8,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Start writing... Select text to apply formatting.',
+                hintStyle: AxiomTypography.bodyMedium.copyWith(
+                  color: cs.onSurfaceVariant.withAlpha(100),
+                  height: 1.8,
                 ),
-                // Format indicator badge (shows current selection has formatting applied)
-                if (_controller.selection.start != _controller.selection.end &&
-                    _controller.formats.isNotEmpty)
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cs.primary.withAlpha(200),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        '${_controller.formats.length} format(s) applied',
-                        style: AxiomTypography.labelSmall.copyWith(
-                          color: cs.onPrimary,
-                          fontSize: 9,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              onChanged: (text) {
+                setState(() {}); // Update format at cursor
+                widget.onContentChanged(_controller.toJson());
+              },
             ),
           ),
-          // Info banner: Formatting data is being stored even though it's not visually rendered
+          // Format count indicator
           if (_controller.formats.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.only(top: AxiomSpacing.sm),
-              padding: const EdgeInsets.all(AxiomSpacing.sm),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(AxiomRadius.sm),
-                border: Border.all(color: cs.primary.withAlpha(80)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: cs.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${_controller.formats.length} format span(s) saved. Rich formatting will render in exported documents.',
-                      style: AxiomTypography.bodySmall.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
-                ],
+            Padding(
+              padding: const EdgeInsets.only(top: AxiomSpacing.xs),
+              child: Text(
+                '${_controller.formats.length} format span(s) applied',
+                style: AxiomTypography.labelSmall.copyWith(
+                  color: cs.primary.withAlpha(180),
+                  fontSize: 10,
+                ),
               ),
             ),
         ],
@@ -914,7 +867,7 @@ class _FormatButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isEnabled = onPressed != null;
-    
+
     return Tooltip(
       message: tooltip,
       child: InkWell(
@@ -930,7 +883,7 @@ class _FormatButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 18,
-            color: isEnabled 
+            color: isEnabled
                 ? (isActive ? cs.primary : cs.onSurfaceVariant)
                 : cs.outlineVariant.withAlpha(100),
           ),

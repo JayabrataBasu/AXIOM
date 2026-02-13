@@ -201,10 +201,69 @@ class RichTextController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
-    // NOTE: Flutter's TextField ignores custom buildTextSpan for rendering during editing
-    // This method is here for future use when we implement a custom rich text widget
-    // For now, just return the plain text - formatting IS stored in the 'formats' list
-    return TextSpan(text: text, style: style);
+    final baseStyle = style ?? const TextStyle();
+
+    // No formats → plain text
+    if (formats.isEmpty || text.isEmpty) {
+      return TextSpan(text: text, style: baseStyle);
+    }
+
+    // Build children spans with formatting applied
+    final children = <TextSpan>[];
+    final sortedFormats = List<TextFormat>.from(formats)
+      ..sort((a, b) => a.start.compareTo(b.start));
+
+    int lastEnd = 0;
+
+    for (final format in sortedFormats) {
+      final fStart = format.start.clamp(0, text.length);
+      final fEnd = format.end.clamp(0, text.length);
+      if (fStart >= fEnd) continue;
+
+      // Plain text before this format
+      if (lastEnd < fStart) {
+        children.add(
+          TextSpan(text: text.substring(lastEnd, fStart), style: baseStyle),
+        );
+      }
+
+      // Formatted span
+      TextDecoration? decoration;
+      if (format.underline && format.strikethrough) {
+        decoration = TextDecoration.combine([
+          TextDecoration.underline,
+          TextDecoration.lineThrough,
+        ]);
+      } else if (format.underline) {
+        decoration = TextDecoration.underline;
+      } else if (format.strikethrough) {
+        decoration = TextDecoration.lineThrough;
+      }
+
+      children.add(
+        TextSpan(
+          text: text.substring(fStart, fEnd),
+          style: baseStyle.copyWith(
+            fontWeight: format.bold ? FontWeight.bold : null,
+            fontStyle: format.italic ? FontStyle.italic : null,
+            decoration: decoration,
+            fontSize: format.fontSize != 16.0 ? format.fontSize : null,
+            fontFamily: format.fontFamily,
+            color: format.textColor ?? baseStyle.color,
+            backgroundColor: format.backgroundColor,
+          ),
+        ),
+      );
+
+      lastEnd = fEnd;
+    }
+
+    // Remaining plain text
+    if (lastEnd < text.length) {
+      children.add(TextSpan(text: text.substring(lastEnd), style: baseStyle));
+    }
+
+    return TextSpan(children: children, style: baseStyle);
   }
 
   /// Update format positions after text changes

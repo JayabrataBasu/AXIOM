@@ -17,7 +17,7 @@ class FormatCommand extends EditCommand {
   final RichTextController controller;
   final TextFormat format;
   final bool isApplying; // true = apply, false = remove
-  
+
   late List<TextFormat> _previousFormats;
 
   FormatCommand({
@@ -29,7 +29,7 @@ class FormatCommand extends EditCommand {
   @override
   void execute() {
     _previousFormats = List<TextFormat>.from(controller.formats);
-    
+
     if (isApplying) {
       controller.applyFormat(format);
     } else {
@@ -44,7 +44,8 @@ class FormatCommand extends EditCommand {
   }
 
   @override
-  String get description => isApplying ? 'Apply formatting' : 'Remove formatting';
+  String get description =>
+      isApplying ? 'Apply formatting' : 'Remove formatting';
 }
 
 /// Command to change text content
@@ -54,16 +55,13 @@ class TextChangeCommand extends EditCommand {
   late String _previousText;
   late List<TextFormat> _previousFormats;
 
-  TextChangeCommand({
-    required this.controller,
-    required this.newText,
-  });
+  TextChangeCommand({required this.controller, required this.newText});
 
   @override
   void execute() {
     _previousText = controller.text;
     _previousFormats = List<TextFormat>.from(controller.formats);
-    
+
     controller.text = newText;
   }
 
@@ -82,7 +80,7 @@ class TextChangeCommand extends EditCommand {
 class CommandHistory {
   final List<EditCommand> _undoStack = [];
   final List<EditCommand> _redoStack = [];
-  
+
   static const int maxHistorySize = 100;
 
   /// Execute a command and add it to history
@@ -90,7 +88,7 @@ class CommandHistory {
     command.execute();
     _undoStack.add(command);
     _redoStack.clear(); // Clear redo stack when new command executed
-    
+
     // Limit history size to prevent memory bloat
     if (_undoStack.length > maxHistorySize) {
       _undoStack.removeAt(0);
@@ -100,7 +98,7 @@ class CommandHistory {
   /// Undo the last command
   bool undo() {
     if (_undoStack.isEmpty) return false;
-    
+
     final command = _undoStack.removeLast();
     command.undo();
     _redoStack.add(command);
@@ -110,7 +108,7 @@ class CommandHistory {
   /// Redo the last undone command
   bool redo() {
     if (_redoStack.isEmpty) return false;
-    
+
     final command = _redoStack.removeLast();
     command.execute();
     _undoStack.add(command);
