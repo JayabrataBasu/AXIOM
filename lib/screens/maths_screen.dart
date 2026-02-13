@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1365,7 +1364,6 @@ class GraphEquationsTab extends ConsumerStatefulWidget {
 class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
   late List<TextEditingController> _eqControllers;
   List<String> _lastEquations = [];
-  Timer? _debounceTimer;
   bool _isSelfSaving = false;
 
   @override
@@ -1389,12 +1387,11 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
     _disposeControllers();
     super.dispose();
   }
 
-  /// Core save logic — updates provider, invalidates cache, optionally shows snackbar.
+  /// Save equations when user explicitly presses Save button or Enter key
   Future<void> _saveEquations({bool showSnackbar = false}) async {
     final equations = _eqControllers
         .map((c) => c.text.trim())
@@ -1441,14 +1438,6 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
         ),
       );
     }
-  }
-
-  /// Debounced auto-save — called on every keystroke
-  void _onEquationChanged() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 600), () {
-      _saveEquations();
-    });
   }
 
   void _addEquation() {
@@ -1612,7 +1601,6 @@ class _GraphEquationsTabState extends ConsumerState<GraphEquationsTab> {
                                   vertical: AxiomSpacing.sm,
                                 ),
                               ),
-                              onChanged: (_) => _onEquationChanged(),
                               onSubmitted: (_) =>
                                   _saveEquations(showSnackbar: true),
                             ),
