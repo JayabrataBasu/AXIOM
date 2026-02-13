@@ -9,7 +9,7 @@ class TextFormat {
   final bool italic;
   final bool underline;
   final bool strikethrough;
-  final double fontSize;
+  final double? fontSize;
   final String? fontFamily;
   final Color? textColor;
   final Color? backgroundColor;
@@ -21,7 +21,7 @@ class TextFormat {
     this.italic = false,
     this.underline = false,
     this.strikethrough = false,
-    this.fontSize = 16.0,
+    this.fontSize,
     this.fontFamily,
     this.textColor,
     this.backgroundColor,
@@ -40,6 +40,7 @@ class TextFormat {
     Color? backgroundColor,
     bool clearTextColor = false,
     bool clearBackgroundColor = false,
+    bool clearFontSize = false,
   }) {
     return TextFormat(
       start: start ?? this.start,
@@ -48,7 +49,7 @@ class TextFormat {
       italic: italic ?? this.italic,
       underline: underline ?? this.underline,
       strikethrough: strikethrough ?? this.strikethrough,
-      fontSize: fontSize ?? this.fontSize,
+      fontSize: clearFontSize ? null : (fontSize ?? this.fontSize),
       fontFamily: fontFamily ?? this.fontFamily,
       textColor: clearTextColor ? null : (textColor ?? this.textColor),
       backgroundColor: clearBackgroundColor
@@ -73,6 +74,11 @@ class TextFormat {
   }
 
   factory TextFormat.fromJson(Map<String, dynamic> json) {
+    // Legacy data saved fontSize: 16.0 as default even when user didn't
+    // set it. Treat 16.0 as "no override" (null) to match base style.
+    final rawFontSize = (json['fontSize'] as num?)?.toDouble();
+    final fontSize = (rawFontSize == 16.0) ? null : rawFontSize;
+
     return TextFormat(
       start: json['start'] as int,
       end: json['end'] as int,
@@ -80,7 +86,7 @@ class TextFormat {
       italic: json['italic'] as bool? ?? false,
       underline: json['underline'] as bool? ?? false,
       strikethrough: json['strikethrough'] as bool? ?? false,
-      fontSize: json['fontSize'] as double? ?? 16.0,
+      fontSize: fontSize,
       fontFamily: json['fontFamily'] as String?,
       textColor: json['textColor'] != null
           ? Color(json['textColor'] as int)
@@ -247,9 +253,9 @@ class RichTextController extends TextEditingController {
             fontWeight: format.bold ? FontWeight.bold : null,
             fontStyle: format.italic ? FontStyle.italic : null,
             decoration: decoration,
-            fontSize: format.fontSize != 16.0 ? format.fontSize : null,
+            fontSize: format.fontSize,
             fontFamily: format.fontFamily,
-            color: format.textColor ?? baseStyle.color,
+            color: format.textColor,
             backgroundColor: format.backgroundColor,
           ),
         ),
@@ -375,11 +381,32 @@ class RichTextController extends TextEditingController {
   /// Deserialize from JSON
   static RichTextController fromJson(String jsonStr) {
     final json = jsonDecode(jsonStr) as Map<String, dynamic>;
+    final rawFormats = (json['formats'] as List)
+        .map((f) => TextFormat.fromJson(f as Map<String, dynamic>))
+        .toList();
+
+    // Clean up legacy / ghost format spans.
+    // 1. Drop spans with zero formatting (everything at defaults).
+    // 2. Drop spans whose ONLY non-default property is fontSize
+    //    (these are artefacts from the old editor that baked the
+    //    toolbar-default size into every span and break rendering).
+    final cleanFormats = rawFormats.where((f) {
+      final hasBoolFormatting =
+          f.bold || f.italic || f.underline || f.strikethrough;
+      final hasTextStyle =
+          f.fontFamily != null ||
+          f.textColor != null ||
+          f.backgroundColor != null;
+      // Keep spans that have real formatting (bold/italic/underline/
+      // strikethrough) or non-size styling (family/color).
+      // Font-size-only spans are dropped — the base text style already
+      // provides the correct default size.
+      return hasBoolFormatting || hasTextStyle;
+    }).toList();
+
     final controller = RichTextController(
       text: json['text'] as String,
-      formats: (json['formats'] as List)
-          .map((f) => TextFormat.fromJson(f as Map<String, dynamic>))
-          .toList(),
+      formats: cleanFormats,
     );
     controller.textAlign = TextAlign.values[json['textAlign'] as int? ?? 0];
     return controller;

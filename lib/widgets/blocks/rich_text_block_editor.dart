@@ -138,38 +138,56 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
       return;
     }
 
-    final currentFormat =
-        _currentFormat ??
-        TextFormat(start: selection.start, end: selection.end);
+    // Read current boolean states from the existing format (if any),
+    // but do NOT carry fontSize / fontFamily / colors — those should
+    // only change when the user explicitly uses the size / font / color
+    // controls.  This prevents accidental font-size propagation.
+    final existing = _currentFormat;
+    final bool curBold = existing?.bold ?? false;
+    final bool curItalic = existing?.italic ?? false;
+    final bool curUnderline = existing?.underline ?? false;
+    final bool curStrikethrough = existing?.strikethrough ?? false;
 
     TextFormat newFormat;
     switch (formatType) {
       case 'bold':
-        newFormat = currentFormat.copyWith(
+        newFormat = TextFormat(
           start: selection.start,
           end: selection.end,
-          bold: !(currentFormat.bold),
+          bold: !curBold,
+          italic: curItalic,
+          underline: curUnderline,
+          strikethrough: curStrikethrough,
         );
         break;
       case 'italic':
-        newFormat = currentFormat.copyWith(
+        newFormat = TextFormat(
           start: selection.start,
           end: selection.end,
-          italic: !(currentFormat.italic),
+          bold: curBold,
+          italic: !curItalic,
+          underline: curUnderline,
+          strikethrough: curStrikethrough,
         );
         break;
       case 'underline':
-        newFormat = currentFormat.copyWith(
+        newFormat = TextFormat(
           start: selection.start,
           end: selection.end,
-          underline: !(currentFormat.underline),
+          bold: curBold,
+          italic: curItalic,
+          underline: !curUnderline,
+          strikethrough: curStrikethrough,
         );
         break;
       case 'strikethrough':
-        newFormat = currentFormat.copyWith(
+        newFormat = TextFormat(
           start: selection.start,
           end: selection.end,
-          strikethrough: !(currentFormat.strikethrough),
+          bold: curBold,
+          italic: curItalic,
+          underline: curUnderline,
+          strikethrough: !curStrikethrough,
         );
         break;
       default:
@@ -184,15 +202,19 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final selection = _controller.selection;
     if (!selection.isValid || selection.start == selection.end) return;
 
-    final currentFormat =
-        _currentFormat ??
-        TextFormat(start: selection.start, end: selection.end);
-
+    final existing = _currentFormat;
     _controller.applyFormat(
-      currentFormat.copyWith(
+      TextFormat(
         start: selection.start,
         end: selection.end,
+        bold: existing?.bold ?? false,
+        italic: existing?.italic ?? false,
+        underline: existing?.underline ?? false,
+        strikethrough: existing?.strikethrough ?? false,
         fontSize: size,
+        fontFamily: existing?.fontFamily,
+        textColor: existing?.textColor,
+        backgroundColor: existing?.backgroundColor,
       ),
     );
     widget.onContentChanged(_controller.toJson());
@@ -202,15 +224,19 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final selection = _controller.selection;
     if (!selection.isValid || selection.start == selection.end) return;
 
-    final currentFormat =
-        _currentFormat ??
-        TextFormat(start: selection.start, end: selection.end);
-
+    final existing = _currentFormat;
     _controller.applyFormat(
-      currentFormat.copyWith(
+      TextFormat(
         start: selection.start,
         end: selection.end,
+        bold: existing?.bold ?? false,
+        italic: existing?.italic ?? false,
+        underline: existing?.underline ?? false,
+        strikethrough: existing?.strikethrough ?? false,
+        fontSize: existing?.fontSize,
         fontFamily: family == 'Default' ? null : family,
+        textColor: existing?.textColor,
+        backgroundColor: existing?.backgroundColor,
       ),
     );
     widget.onContentChanged(_controller.toJson());
@@ -220,29 +246,21 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final selection = _controller.selection;
     if (!selection.isValid || selection.start == selection.end) return;
 
-    final currentFormat =
-        _currentFormat ??
-        TextFormat(start: selection.start, end: selection.end);
-
-    if (isText) {
-      _controller.applyFormat(
-        currentFormat.copyWith(
-          start: selection.start,
-          end: selection.end,
-          textColor: color,
-          clearTextColor: color == null,
-        ),
-      );
-    } else {
-      _controller.applyFormat(
-        currentFormat.copyWith(
-          start: selection.start,
-          end: selection.end,
-          backgroundColor: color,
-          clearBackgroundColor: color == null,
-        ),
-      );
-    }
+    final existing = _currentFormat;
+    _controller.applyFormat(
+      TextFormat(
+        start: selection.start,
+        end: selection.end,
+        bold: existing?.bold ?? false,
+        italic: existing?.italic ?? false,
+        underline: existing?.underline ?? false,
+        strikethrough: existing?.strikethrough ?? false,
+        fontSize: existing?.fontSize,
+        fontFamily: existing?.fontFamily,
+        textColor: isText ? color : existing?.textColor,
+        backgroundColor: isText ? existing?.backgroundColor : color,
+      ),
+    );
     widget.onContentChanged(_controller.toJson());
   }
 
@@ -482,7 +500,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final bool isItalic = _currentFormat?.italic ?? false;
     final bool isUnderline = _currentFormat?.underline ?? false;
     final bool isStrikethrough = _currentFormat?.strikethrough ?? false;
-    final double fontSize = _currentFormat?.fontSize ?? 16.0;
+    final double fontSize = _currentFormat?.fontSize ?? 14;
     final String fontFamily = _currentFormat?.fontFamily ?? 'Default';
 
     return BlockEditorCard(
