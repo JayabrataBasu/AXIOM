@@ -196,6 +196,19 @@ class RichTextController extends TextEditingController {
     return null;
   }
 
+  /// Compute the maximum font size in a character range.
+  /// Used to ensure line height accommodates all glyphs in the line.
+  double _getMaxFontSizeInRange(int rangeStart, int rangeEnd) {
+    double maxSize = 14.0; // Default base font size
+    for (final format in formats) {
+      if (format.end <= rangeStart || format.start >= rangeEnd) continue;
+      if (format.fontSize != null && format.fontSize! > maxSize) {
+        maxSize = format.fontSize!;
+      }
+    }
+    return maxSize;
+  }
+
   /// Notify listeners of changes (for use by undo/redo commands)
   void refreshUI() {
     notifyListeners();
@@ -208,6 +221,7 @@ class RichTextController extends TextEditingController {
     required bool withComposing,
   }) {
     final baseStyle = style ?? const TextStyle();
+    final baseFontSize = baseStyle.fontSize ?? 14.0;
 
     // No formats → plain text
     if (formats.isEmpty || text.isEmpty) {
@@ -228,12 +242,20 @@ class RichTextController extends TextEditingController {
 
       // Plain text before this format
       if (lastEnd < fStart) {
+        // Compute height for plain text segment based on surrounding context
+        final maxSizeInLine = _getMaxFontSizeInRange(lastEnd, fStart);
+        final heightScaleNeeded = maxSizeInLine / baseFontSize;
         children.add(
-          TextSpan(text: text.substring(lastEnd, fStart), style: baseStyle),
+          TextSpan(
+            text: text.substring(lastEnd, fStart),
+            style: baseStyle.copyWith(
+              height: heightScaleNeeded > 1.0 ? heightScaleNeeded : 1.0,
+            ),
+          ),
         );
       }
 
-      // Formatted span
+      // Formatted span with proper height scaling for baseline alignment
       TextDecoration? decoration;
       if (format.underline && format.strikethrough) {
         decoration = TextDecoration.combine([
@@ -246,6 +268,11 @@ class RichTextController extends TextEditingController {
         decoration = TextDecoration.lineThrough;
       }
 
+      // Compute height multiplier based on font size ratio
+      // This ensures text of different sizes on the same line share a baseline
+      final fontSize = format.fontSize ?? baseFontSize;
+      final heightScaleForFormat = fontSize / baseFontSize;
+
       children.add(
         TextSpan(
           text: text.substring(fStart, fEnd),
@@ -253,10 +280,13 @@ class RichTextController extends TextEditingController {
             fontWeight: format.bold ? FontWeight.bold : null,
             fontStyle: format.italic ? FontStyle.italic : null,
             decoration: decoration,
-            fontSize: format.fontSize,
+            fontSize: fontSize,
             fontFamily: format.fontFamily,
             color: format.textColor,
             backgroundColor: format.backgroundColor,
+            // Apply height scaling to ensure baseline alignment
+            // and prevent large text from overlapping smaller text
+            height: heightScaleForFormat > 1.0 ? heightScaleForFormat : 1.0,
           ),
         ),
       );
@@ -266,7 +296,16 @@ class RichTextController extends TextEditingController {
 
     // Remaining plain text
     if (lastEnd < text.length) {
-      children.add(TextSpan(text: text.substring(lastEnd), style: baseStyle));
+      final maxSizeInLine = _getMaxFontSizeInRange(lastEnd, text.length);
+      final heightScaleNeeded = maxSizeInLine / baseFontSize;
+      children.add(
+        TextSpan(
+          text: text.substring(lastEnd),
+          style: baseStyle.copyWith(
+            height: heightScaleNeeded > 1.0 ? heightScaleNeeded : 1.0,
+          ),
+        ),
+      );
     }
 
     return TextSpan(children: children, style: baseStyle);
