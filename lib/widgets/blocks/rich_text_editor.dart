@@ -272,8 +272,15 @@ class RichTextController extends TextEditingController {
     return TextSpan(children: children, style: baseStyle);
   }
 
-  /// Update format positions after text changes
+  /// Update format positions after text changes.
+  /// [changeStart] and [changeEnd] define the range in the OLD text that
+  /// was replaced.  [delta] is newLen - oldLen.
   void _updateFormatPositions(int changeStart, int changeEnd, int delta) {
+    // Guard: clamp inputs to sane ranges to prevent garbage propagation
+    final maxOld = (text.length - delta).clamp(0, 1 << 30);
+    changeStart = changeStart.clamp(0, maxOld);
+    changeEnd = changeEnd.clamp(changeStart, maxOld);
+
     final updatedFormats = <TextFormat>[];
 
     for (final format in formats) {
@@ -327,41 +334,55 @@ class RichTextController extends TextEditingController {
 
   TextEditingValue? _previousValue;
 
+  /// Public entry point for external callers (e.g. paragraph editor)
+  /// that know exactly what changed and need format positions updated.
+  void updateFormatsForChange(int changeStart, int changeEnd, int delta) {
+    _updateFormatPositions(changeStart, changeEnd, delta);
+  }
+
   @override
   set value(TextEditingValue newValue) {
     if (_previousValue != null && newValue.text != _previousValue!.text) {
-      final oldText = _previousValue!.text;
       final newText = newValue.text;
       final oldSelection = _previousValue!.selection;
       final newSelection = newValue.selection;
 
       // Calculate what changed
-      final oldLen = oldText.length;
+      final oldLen = _previousValue!.text.length;
       final newLen = newText.length;
       final delta = newLen - oldLen;
 
       if (delta != 0) {
-        int changeStart;
-        int changeEnd;
+        // Only run format adjustment when we have valid selection metadata
+        // to compute the change position.  If newSelection is invalid
+        // (e.g. caller set .text directly), skip — the caller is
+        // responsible for updating format positions via
+        // updateFormatsForChange().
+        if (newSelection.isValid && newSelection.baseOffset >= 0) {
+          int changeStart;
+          int changeEnd;
 
-        if (oldSelection.isValid && oldSelection.start != oldSelection.end) {
-          // Had a selection - it was replaced
-          changeStart = oldSelection.start;
-          changeEnd = oldSelection.end;
-        } else {
-          // Point insertion/deletion
-          if (delta > 0) {
-            // Insertion
-            changeStart = newSelection.baseOffset - delta;
-            changeEnd = changeStart;
+          if (oldSelection.isValid && oldSelection.start != oldSelection.end) {
+            // Had a selection - it was replaced
+            changeStart = oldSelection.start;
+            changeEnd = oldSelection.end;
           } else {
-            // Deletion
-            changeStart = newSelection.baseOffset;
-            changeEnd = changeStart - delta;
+            // Point insertion/deletion
+            if (delta > 0) {
+              // Insertion
+              changeStart = (newSelection.baseOffset - delta).clamp(0, oldLen);
+              changeEnd = changeStart;
+            } else {
+              // Deletion
+              changeStart = newSelection.baseOffset.clamp(0, newLen);
+              changeEnd = (changeStart - delta).clamp(0, oldLen);
+            }
           }
-        }
 
-        _updateFormatPositions(changeStart, changeEnd, delta);
+          _updateFormatPositions(changeStart, changeEnd, delta);
+        }
+        // else: caller bypassed selection → they must call
+        // updateFormatsForChange() themselves.
       }
     }
 

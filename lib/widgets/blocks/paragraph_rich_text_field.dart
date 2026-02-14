@@ -144,6 +144,11 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         );
         _paraControllers.add(ctrl);
 
+        // Listen to selection changes and sync to document
+        ctrl.addListener(() {
+          _updateDocumentSelection(i);
+        });
+
         final fn = FocusNode();
         fn.addListener(() {
           if (fn.hasFocus) {
@@ -188,9 +193,13 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
     return m;
   }
 
-  // ── Paragraphs → document sync, this is the MOST IMPORTANT RAHHH!!! ──────────────────────────────────
+  // ── Paragraphs → document sync ──────────────────────────────────
 
-  /// Reconstruct flat text from paragraph controllers and push to document.
+  /// Reconstruct flat text from paragraph controllers and push to
+  /// document controller.  We set controller.value (not .text) so
+  /// that the value setter in RichTextController receives a valid
+  /// selection and can compute correct changeStart/changeEnd for
+  /// _updateFormatPositions.  This prevents format bleed.
   void _syncToDocument() {
     if (_isSyncing) return;
     _isSyncing = true;
@@ -202,29 +211,54 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       }
       final newText = buffer.toString();
 
-      // Update the document controller without triggering _onDocumentChanged
+      // Compute the global cursor position from the active paragraph
+      final activeIdx = _activeParagraphIndex.clamp(
+        0,
+        _paraControllers.length - 1,
+      );
+      final activeCtrl = _paraControllers[activeIdx];
+      final localSel = activeCtrl.selection;
+
+      int globalBase;
+      int globalExtent;
+      if (localSel.isValid) {
+        globalBase =
+            (activeCtrl.paragraphOffset +
+                    localSel.baseOffset.clamp(0, activeCtrl.text.length))
+                .clamp(0, newText.length);
+        globalExtent =
+            (activeCtrl.paragraphOffset +
+                    localSel.extentOffset.clamp(0, activeCtrl.text.length))
+                .clamp(0, newText.length);
+      } else {
+        globalBase = newText.length;
+        globalExtent = newText.length;
+      }
+
+      // Set value with proper selection so the value setter can compute
+      // correct format position adjustments.
       widget.controller.removeListener(_onDocumentChanged);
-      widget.controller.text = newText;
+      widget.controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection(
+          baseOffset: globalBase,
+          extentOffset: globalExtent,
+        ),
+      );
       widget.controller.addListener(_onDocumentChanged);
 
-      // Recompute format offsets since paragraph lengths may have changed
-      _recalculateFormatOffsets();
+      // Only rebuild if text structure changed (paragraph count).
+      // Selection updates are handled by _updateDocumentSelection,
+      // not by syncing back to the document.
+      final newParaCount = newText.split('\n').length;
+      if (newParaCount != _paraControllers.length) {
+        _rebuildParagraphs();
+      }
 
       widget.onChanged(newText);
     } finally {
       _isSyncing = false;
     }
-  }
-
-  /// Recalculate the global offsets of all format spans based on current
-  /// paragraph layout.  This is needed after text edits change paragraph
-  /// lengths, so that the flat format-span model stays consistent.
-  void _recalculateFormatOffsets() {
-    // We don't modify format positions here — format positions are managed
-    // by RichTextController's value setter (_updateFormatPositions).
-    // This method just triggers a rebuild so paragraphs pick up the
-    // updated format positions.
-    _rebuildParagraphs();
   }
 
   void _disposeParagraphs() {
@@ -256,7 +290,15 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         oldText.substring(0, globalOffset) +
         '\n' +
         oldText.substring(globalOffset);
-    widget.controller.text = newText;
+
+    // Explicitly update format positions: inserting 1 char at globalOffset
+    widget.controller.updateFormatsForChange(globalOffset, globalOffset, 1);
+
+    // Set value with proper selection (cursor at start of new paragraph)
+    widget.controller.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: globalOffset + 1),
+    );
 
     widget.controller.addListener(_onDocumentChanged);
 
@@ -291,7 +333,23 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
     final newText =
         oldText.substring(0, globalOffset) +
         oldText.substring(globalOffset + 1);
-    widget.controller.text = newText;
+
+    // Explicitly update format positions: deleting 1 char (\n) at globalOffset
+    widget.controller.updateFormatsForChange(
+      globalOffset,
+      globalOffset + 1,
+      -1,
+    );
+
+    // Set value with proper selection (cursor at merge point)
+    final globalCursor = (prevCtrl.paragraphOffset + cursorInPrev).clamp(
+      0,
+      newText.length,
+    );
+    widget.controller.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: globalCursor),
+    );
 
     widget.controller.addListener(_onDocumentChanged);
 
@@ -325,7 +383,23 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
     final newText =
         oldText.substring(0, globalOffset) +
         oldText.substring(globalOffset + 1);
-    widget.controller.text = newText;
+
+    // Explicitly update format positions: deleting 1 char (\n) at globalOffset
+    widget.controller.updateFormatsForChange(
+      globalOffset,
+      globalOffset + 1,
+      -1,
+    );
+
+    // Set value with proper selection
+    final globalCursor = (curCtrl.paragraphOffset + cursorPos).clamp(
+      0,
+      newText.length,
+    );
+    widget.controller.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: globalCursor),
+    );
 
     widget.controller.addListener(_onDocumentChanged);
 
