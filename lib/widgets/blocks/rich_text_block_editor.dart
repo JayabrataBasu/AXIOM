@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../models/content_block.dart';
 import '../../theme/design_tokens.dart';
 import 'block_editors.dart';
+import 'paragraph_rich_text_field.dart';
 import 'rich_text_editor.dart';
 import 'rich_text_commands.dart';
 
@@ -688,58 +689,39 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
             ),
           ),
           const SizedBox(height: AxiomSpacing.sm),
-          // ── Rich text editor field ──
-          DefaultTextHeightBehavior(
-            textHeightBehavior: const TextHeightBehavior(
-              leadingDistribution: TextLeadingDistribution.even,
+          // ── Paragraph-based rich text editor field ──
+          // Each paragraph (\n-delimited) renders with its own
+          // StrutStyle scaled to the max font size in that paragraph,
+          // giving Word-like line-height expansion and baseline alignment.
+          Container(
+            constraints: const BoxConstraints(minHeight: 200),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AxiomSpacing.lg,
+              vertical: AxiomSpacing.md,
             ),
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 200),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AxiomSpacing.lg,
-                vertical: AxiomSpacing.md,
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(AxiomRadius.sm),
+              border: Border.all(color: cs.outlineVariant.withAlpha(40)),
+            ),
+            child: ParagraphRichTextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              textAlign: _controller.textAlign,
+              minLines: 10,
+              baseStyle: AxiomTypography.bodyMedium.copyWith(
+                color: cs.onSurface,
+                height: 1.8,
               ),
-              decoration: BoxDecoration(
-                color: cs.surface,
-                borderRadius: BorderRadius.circular(AxiomRadius.sm),
-                border: Border.all(color: cs.outlineVariant.withAlpha(40)),
+              hintStyle: AxiomTypography.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant.withAlpha(100),
+                height: 1.8,
               ),
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                maxLines: null,
-                minLines: 10,
-                textAlign: _controller.textAlign,
-                // Use StrutStyle to establish consistent baseline metrics
-                // forceStrutHeight ensures all lines use the same height
-                strutStyle: const StrutStyle(
-                  fontSize: 14,
-                  height: 1.8,
-                  leading: 0.1,
-                  forceStrutHeight: true,
-                ),
-                style: AxiomTypography.bodyMedium.copyWith(
-                  color: cs.onSurface,
-                  height: 1.8,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Start writing... Select text to apply formatting.',
-                  hintStyle: AxiomTypography.bodyMedium.copyWith(
-                    color: cs.onSurfaceVariant.withAlpha(100),
-                    height: 1.8,
-                  ),
-                  filled: false,
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                ),
-                onChanged: (text) {
-                  setState(() {}); // Update format at cursor
-                  widget.onContentChanged(_controller.toJson());
-                },
-              ),
+              hintText: 'Start writing... Select text to apply formatting.',
+              onChanged: (text) {
+                setState(() {}); // Update format at cursor
+                widget.onContentChanged(_controller.toJson());
+              },
             ),
           ),
           // Format count indicator
