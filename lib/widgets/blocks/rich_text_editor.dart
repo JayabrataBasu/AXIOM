@@ -103,7 +103,10 @@ class RichTextController extends TextEditingController {
   List<TextFormat> formats = [];
   TextAlign textAlign = TextAlign.left;
 
-  RichTextController({super.text, this.formats = const []});
+  RichTextController({super.text, this.formats = const []}) {
+    // Initialize _previousValue so the first keystroke is tracked
+    _previousValue = value;
+  }
 
   /// Apply formatting to the current selection
   void applyFormat(TextFormat newFormat) {
@@ -140,12 +143,17 @@ class RichTextController extends TextEditingController {
     notifyListeners();
   }
 
-  /// Merge adjacent formats that have identical styling
+  /// Merge adjacent or overlapping formats that have identical styling,
+  /// and remove zero-length format spans.
   List<TextFormat> _mergeAdjacentFormats(List<TextFormat> formats) {
     if (formats.isEmpty) return formats;
 
+    // Remove zero-length formats first
+    final nonEmpty = formats.where((f) => f.end > f.start).toList();
+    if (nonEmpty.isEmpty) return [];
+
     // Sort by start position first
-    final sorted = List<TextFormat>.from(formats)
+    final sorted = List<TextFormat>.from(nonEmpty)
       ..sort((a, b) => a.start.compareTo(b.start));
 
     final merged = <TextFormat>[sorted.first];
@@ -154,24 +162,30 @@ class RichTextController extends TextEditingController {
       final current = sorted[i];
       final last = merged.last;
 
-      // Check if adjacent and have same styling
-      if (last.end == current.start &&
-          last.bold == current.bold &&
-          last.italic == current.italic &&
-          last.underline == current.underline &&
-          last.strikethrough == current.strikethrough &&
-          last.fontSize == current.fontSize &&
-          last.fontFamily == current.fontFamily &&
-          last.textColor == current.textColor &&
-          last.backgroundColor == current.backgroundColor) {
-        // Merge by extending the last format
-        merged[merged.length - 1] = last.copyWith(end: current.end);
+      // Check if adjacent OR overlapping and have same styling
+      if (last.end >= current.start &&
+          _hasSameProperties(last, current)) {
+        // Merge by extending to the further end
+        final newEnd = current.end > last.end ? current.end : last.end;
+        merged[merged.length - 1] = last.copyWith(end: newEnd);
       } else {
         merged.add(current);
       }
     }
 
     return merged;
+  }
+
+  /// Check if two formats have identical styling properties (ignoring position).
+  static bool _hasSameProperties(TextFormat a, TextFormat b) {
+    return a.bold == b.bold &&
+        a.italic == b.italic &&
+        a.underline == b.underline &&
+        a.strikethrough == b.strikethrough &&
+        a.fontSize == b.fontSize &&
+        a.fontFamily == b.fontFamily &&
+        a.textColor == b.textColor &&
+        a.backgroundColor == b.backgroundColor;
   }
 
   /// Clear all formatting from selection
@@ -185,15 +199,45 @@ class RichTextController extends TextEditingController {
     notifyListeners();
   }
 
-  /// Get the format at cursor position (for toolbar state)
+  /// Get the merged format at cursor position (for toolbar state).
+  /// Merges ALL overlapping formats so the toolbar reflects the true
+  /// composite style (e.g. bold from one span + fontSize from another).
   TextFormat? getFormatAtCursor() {
     final pos = selection.baseOffset;
+    final overlapping = <TextFormat>[];
     for (final format in formats) {
       if (pos >= format.start && pos < format.end) {
-        return format;
+        overlapping.add(format);
       }
     }
-    return null;
+    if (overlapping.isEmpty) return null;
+    if (overlapping.length == 1) return overlapping.first;
+
+    // Merge: OR logic for booleans, first-non-null for optionals
+    return TextFormat(
+      start: overlapping.map((f) => f.start).reduce((a, b) => a < b ? a : b),
+      end: overlapping.map((f) => f.end).reduce((a, b) => a > b ? a : b),
+      bold: overlapping.any((f) => f.bold),
+      italic: overlapping.any((f) => f.italic),
+      underline: overlapping.any((f) => f.underline),
+      strikethrough: overlapping.any((f) => f.strikethrough),
+      fontSize: overlapping
+          .map((f) => f.fontSize)
+          .whereType<double>()
+          .firstOrNull,
+      fontFamily: overlapping
+          .map((f) => f.fontFamily)
+          .whereType<String>()
+          .firstOrNull,
+      textColor: overlapping
+          .map((f) => f.textColor)
+          .whereType<Color>()
+          .firstOrNull,
+      backgroundColor: overlapping
+          .map((f) => f.backgroundColor)
+          .whereType<Color>()
+          .firstOrNull,
+    );
   }
 
   /// Notify listeners of changes (for use by undo/redo commands)
@@ -334,15 +378,28 @@ class RichTextController extends TextEditingController {
 
   TextEditingValue? _previousValue;
 
+  /// When true, the value setter will NOT auto-update format positions.
+  /// This prevents double-updates when paragraph_rich_text_field already
+  /// called updateFormatsForChange() explicitly before setting value.
+  bool _suppressAutoFormatUpdate = false;
+
   /// Public entry point for external callers (e.g. paragraph editor)
   /// that know exactly what changed and need format positions updated.
+  /// Also suppresses the automatic format update in the value setter
+  /// so that formats are only updated once.
   void updateFormatsForChange(int changeStart, int changeEnd, int delta) {
     _updateFormatPositions(changeStart, changeEnd, delta);
+    _suppressAutoFormatUpdate = true;
   }
 
   @override
   set value(TextEditingValue newValue) {
-    if (_previousValue != null && newValue.text != _previousValue!.text) {
+    if (_suppressAutoFormatUpdate) {
+      // Caller already updated format positions explicitly via
+      // updateFormatsForChange() — skip automatic detection.
+      _suppressAutoFormatUpdate = false;
+    } else if (_previousValue != null &&
+        newValue.text != _previousValue!.text) {
       final newText = newValue.text;
       final oldSelection = _previousValue!.selection;
       final newSelection = newValue.selection;
@@ -362,7 +419,8 @@ class RichTextController extends TextEditingController {
           int changeStart;
           int changeEnd;
 
-          if (oldSelection.isValid && oldSelection.start != oldSelection.end) {
+          if (oldSelection.isValid &&
+              oldSelection.start != oldSelection.end) {
             // Had a selection - it was replaced
             changeStart = oldSelection.start;
             changeEnd = oldSelection.end;
@@ -370,7 +428,8 @@ class RichTextController extends TextEditingController {
             // Point insertion/deletion
             if (delta > 0) {
               // Insertion
-              changeStart = (newSelection.baseOffset - delta).clamp(0, oldLen);
+              changeStart =
+                  (newSelection.baseOffset - delta).clamp(0, oldLen);
               changeEnd = changeStart;
             } else {
               // Deletion
