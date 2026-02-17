@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math' as math;
 
 class ExprParser {
@@ -20,8 +21,9 @@ class ExprParser {
         r += _term();
       } else if (_m('-')) {
         r -= _term();
-      } else
+      } else {
         break;
+      }
     }
     return r;
   }
@@ -33,8 +35,9 @@ class ExprParser {
         r *= _power();
       } else if (_m('/')) {
         r /= _power();
-      } else
+      } else {
         break;
+      }
     }
     return r;
   }
@@ -118,15 +121,15 @@ double eval(String expr, double x) {
 }
 
 void main() {
-  print('x^2 at x=-10: ${eval("x^2", -10)}  (expect 100)');
-  print('x^2 at x=5:   ${eval("x^2", 5)}    (expect 25)');
-  print('2*x+3 at x=4: ${eval("2*x+3", 4)}  (expect 11)');
-  print('2x+3 at x=4:  ${eval("2x+3", 4)}   (expect 11, implicit *)');
-  print('2x^3 at x=2:  ${eval("2x^3", 2)}   (expect 16, implicit *)');
-  print('3sin(x) at x=0: ${eval("3sin(x)", 0)} (expect 0, implicit *)');
-  print('sin(x) at x=0: ${eval("sin(x)", 0)} (expect 0)');
-  print('sin(x) at x=pi/2: ${eval("sin(x)", math.pi / 2)} (expect ~1)');
-  print('x^3 at x=-2:  ${eval("x^3", -2)}   (expect -8)');
-  print('sqrt(x) at x=9: ${eval("sqrt(x)", 9)} (expect 3)');
-  print('(x+1)*(x-1) at x=5: ${eval("(x+1)*(x-1)", 5)} (expect 24)');
+  log('x^2 at x=-10: ${eval("x^2", -10)}  (expect 100)');
+  log('x^2 at x=5:   ${eval("x^2", 5)}    (expect 25)');
+  log('2*x+3 at x=4: ${eval("2*x+3", 4)}  (expect 11)');
+  log('2x+3 at x=4:  ${eval("2x+3", 4)}   (expect 11, implicit *)');
+  log('2x^3 at x=2:  ${eval("2x^3", 2)}   (expect 16, implicit *)');
+  log('3sin(x) at x=0: ${eval("3sin(x)", 0)} (expect 0, implicit *)');
+  log('sin(x) at x=0: ${eval("sin(x)", 0)} (expect 0)');
+  log('sin(x) at x=pi/2: ${eval("sin(x)", math.pi / 2)} (expect ~1)');
+  log('x^3 at x=-2:  ${eval("x^3", -2)}   (expect -8)');
+  log('sqrt(x) at x=9: ${eval("sqrt(x)", 9)} (expect 3)');
+  log('(x+1)*(x-1) at x=5: ${eval("(x+1)*(x-1)", 5)} (expect 24)');
 }

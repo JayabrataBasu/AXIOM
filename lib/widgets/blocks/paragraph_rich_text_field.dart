@@ -287,9 +287,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
     // Build new text
     final oldText = widget.controller.text;
     final newText =
-        oldText.substring(0, globalOffset) +
-        '\n' +
-        oldText.substring(globalOffset);
+        '${oldText.substring(0, globalOffset)}\n${oldText.substring(globalOffset)}';
 
     // Explicitly update format positions: inserting 1 char at globalOffset
     widget.controller.updateFormatsForChange(globalOffset, globalOffset, 1);

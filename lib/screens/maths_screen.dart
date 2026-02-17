@@ -61,7 +61,7 @@ class _MathsScreenState extends ConsumerState<MathsScreen>
             style: AxiomTypography.heading2,
           ),
           loading: () => const Text('Loading...'),
-          error: (_, __) => const Text('Error'),
+          error: (_, _) => const Text('Error'),
         ),
         bottom: mathsObjectAsync.maybeWhen(
           data: (obj) {

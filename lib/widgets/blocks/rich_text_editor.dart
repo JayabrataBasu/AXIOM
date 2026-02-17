@@ -68,8 +68,8 @@ class TextFormat {
       'strikethrough': strikethrough,
       'fontSize': fontSize,
       'fontFamily': fontFamily,
-      'textColor': textColor?.value,
-      'backgroundColor': backgroundColor?.value,
+      'textColor': textColor?.toARGB32(),
+      'backgroundColor': backgroundColor?.toARGB32(),
     };
   }
 
