@@ -136,7 +136,14 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {
-          _currentFormat = _controller.getFormatAtCursor();
+          // If there's a pending format, show it in the toolbar.
+          // But if the user moved the cursor (selection changed
+          // without typing), clear the pending format.
+          if (_controller.pendingFormat != null) {
+            _currentFormat = _controller.pendingFormat;
+          } else {
+            _currentFormat = _controller.getFormatAtCursor();
+          }
         });
       }
     });
@@ -168,14 +175,35 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
 
   void _applyToggleFormat(String formatType) {
     final selection = _controller.selection;
-    if (!selection.isValid || selection.start == selection.end) {
-      // Show hint to select text
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select text to format'),
-          duration: Duration(seconds: 1),
-        ),
-      );
+    if (!selection.isValid) return;
+
+    if (selection.start == selection.end) {
+      // Collapsed cursor – set pending format for next typed text (Word-like)
+      final base =
+          _controller.pendingFormat ??
+          _controller.getFormatAtCursor() ??
+          TextFormat(start: 0, end: 0);
+      TextFormat pending;
+      switch (formatType) {
+        case 'bold':
+          pending = base.copyWith(bold: !base.bold);
+          break;
+        case 'italic':
+          pending = base.copyWith(italic: !base.italic);
+          break;
+        case 'underline':
+          pending = base.copyWith(underline: !base.underline);
+          break;
+        case 'strikethrough':
+          pending = base.copyWith(strikethrough: !base.strikethrough);
+          break;
+        default:
+          return;
+      }
+      _controller.pendingFormat = pending;
+      setState(() {
+        _currentFormat = pending;
+      });
       return;
     }
 
@@ -196,6 +224,10 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
           italic: curItalic,
           underline: curUnderline,
           strikethrough: curStrikethrough,
+          fontSize: merged.fontSize,
+          fontFamily: merged.fontFamily,
+          textColor: merged.textColor,
+          backgroundColor: merged.backgroundColor,
         );
         break;
       case 'italic':
@@ -206,6 +238,10 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
           italic: !curItalic,
           underline: curUnderline,
           strikethrough: curStrikethrough,
+          fontSize: merged.fontSize,
+          fontFamily: merged.fontFamily,
+          textColor: merged.textColor,
+          backgroundColor: merged.backgroundColor,
         );
         break;
       case 'underline':
@@ -216,6 +252,10 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
           italic: curItalic,
           underline: !curUnderline,
           strikethrough: curStrikethrough,
+          fontSize: merged.fontSize,
+          fontFamily: merged.fontFamily,
+          textColor: merged.textColor,
+          backgroundColor: merged.backgroundColor,
         );
         break;
       case 'strikethrough':
@@ -226,19 +266,37 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
           italic: curItalic,
           underline: curUnderline,
           strikethrough: !curStrikethrough,
+          fontSize: merged.fontSize,
+          fontFamily: merged.fontFamily,
+          textColor: merged.textColor,
+          backgroundColor: merged.backgroundColor,
         );
         break;
       default:
         return;
     }
 
+    _controller.pendingFormat = null; // Clear pending after real apply
     _controller.applyFormat(newFormat);
     widget.onContentChanged(_controller.toJson());
   }
 
   void _applyFontSize(double size) {
     final selection = _controller.selection;
-    if (!selection.isValid || selection.start == selection.end) return;
+    if (!selection.isValid) return;
+
+    if (selection.start == selection.end) {
+      // Collapsed cursor – set pending format
+      final base =
+          _controller.pendingFormat ??
+          _controller.getFormatAtCursor() ??
+          TextFormat(start: 0, end: 0);
+      _controller.pendingFormat = base.copyWith(fontSize: size);
+      setState(() {
+        _currentFormat = _controller.pendingFormat;
+      });
+      return;
+    }
 
     // Scan ALL formats in the selection to preserve existing properties
     final merged = _getMergedFormatInRange(selection.start, selection.end);
@@ -261,7 +319,22 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
 
   void _applyFontFamily(String family) {
     final selection = _controller.selection;
-    if (!selection.isValid || selection.start == selection.end) return;
+    if (!selection.isValid) return;
+
+    if (selection.start == selection.end) {
+      // Collapsed cursor – set pending format
+      final base =
+          _controller.pendingFormat ??
+          _controller.getFormatAtCursor() ??
+          TextFormat(start: 0, end: 0);
+      _controller.pendingFormat = base.copyWith(
+        fontFamily: family == 'Default' ? null : family,
+      );
+      setState(() {
+        _currentFormat = _controller.pendingFormat;
+      });
+      return;
+    }
 
     // Scan ALL formats in the selection to preserve existing properties
     final merged = _getMergedFormatInRange(selection.start, selection.end);
@@ -284,7 +357,22 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
 
   void _applyColor(Color? color, bool isText) {
     final selection = _controller.selection;
-    if (!selection.isValid || selection.start == selection.end) return;
+    if (!selection.isValid) return;
+
+    if (selection.start == selection.end) {
+      // Collapsed cursor – set pending format
+      final base =
+          _controller.pendingFormat ??
+          _controller.getFormatAtCursor() ??
+          TextFormat(start: 0, end: 0);
+      _controller.pendingFormat = isText
+          ? base.copyWith(textColor: color)
+          : base.copyWith(backgroundColor: color);
+      setState(() {
+        _currentFormat = _controller.pendingFormat;
+      });
+      return;
+    }
 
     // Scan ALL formats in the selection to preserve existing properties
     final merged = _getMergedFormatInRange(selection.start, selection.end);

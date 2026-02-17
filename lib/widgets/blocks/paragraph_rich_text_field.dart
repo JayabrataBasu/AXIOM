@@ -517,7 +517,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
     final strutStyle = StrutStyle(
       fontSize: maxFs,
       height: 1.6,
-      forceStrutHeight: true,
+      forceStrutHeight: false,
       leading: 0.2,
     );
 
@@ -772,8 +772,6 @@ class _ParagraphController extends TextEditingController {
         decoration = TextDecoration.lineThrough;
       }
 
-      final fontSize = format.fontSize ?? baseFontSize;
-
       children.add(
         TextSpan(
           text: text.substring(fStart, fEnd),
@@ -781,7 +779,7 @@ class _ParagraphController extends TextEditingController {
             fontWeight: format.bold ? FontWeight.bold : null,
             fontStyle: format.italic ? FontStyle.italic : null,
             decoration: decoration,
-            fontSize: fontSize,
+            fontSize: format.fontSize,
             fontFamily: format.fontFamily,
             color: format.textColor,
             backgroundColor: format.backgroundColor,

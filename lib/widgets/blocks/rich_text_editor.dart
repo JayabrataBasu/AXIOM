@@ -74,10 +74,7 @@ class TextFormat {
   }
 
   factory TextFormat.fromJson(Map<String, dynamic> json) {
-    // Legacy data saved fontSize: 16.0 as default even when user didn't
-    // set it. Treat 16.0 as "no override" (null) to match base style.
-    final rawFontSize = (json['fontSize'] as num?)?.toDouble();
-    final fontSize = (rawFontSize == 16.0) ? null : rawFontSize;
+    final fontSize = (json['fontSize'] as num?)?.toDouble();
 
     return TextFormat(
       start: json['start'] as int,
@@ -102,6 +99,12 @@ class TextFormat {
 class RichTextController extends TextEditingController {
   List<TextFormat> formats = [];
   TextAlign textAlign = TextAlign.left;
+
+  /// When non-null, the next typed characters will inherit this format.
+  /// This enables Word-like behaviour: user sets bold (or font size, etc.)
+  /// with a collapsed cursor, then starts typing — the new text gets
+  /// that format applied automatically.
+  TextFormat? pendingFormat;
 
   RichTextController({super.text, this.formats = const []}) {
     // Initialize _previousValue so the first keystroke is tracked
@@ -440,6 +443,22 @@ class RichTextController extends TextEditingController {
         // else: caller bypassed selection → they must call
         // updateFormatsForChange() themselves.
       }
+    }
+
+    // ── Apply pending format for newly typed characters ──
+    if (pendingFormat != null &&
+        _previousValue != null &&
+        newValue.text.length > _previousValue!.text.length) {
+      final delta = newValue.text.length - _previousValue!.text.length;
+      final insertEnd = newValue.selection.baseOffset;
+      final insertStart = insertEnd - delta;
+      if (insertStart >= 0) {
+        formats.add(
+          pendingFormat!.copyWith(start: insertStart, end: insertEnd),
+        );
+        formats = _mergeAdjacentFormats(formats);
+      }
+      // Keep pendingFormat active so consecutive keystrokes inherit it
     }
 
     _previousValue = newValue;
