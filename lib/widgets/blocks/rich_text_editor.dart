@@ -163,8 +163,7 @@ class RichTextController extends TextEditingController {
       final last = merged.last;
 
       // Check if adjacent OR overlapping and have same styling
-      if (last.end >= current.start &&
-          _hasSameProperties(last, current)) {
+      if (last.end >= current.start && _hasSameProperties(last, current)) {
         // Merge by extending to the further end
         final newEnd = current.end > last.end ? current.end : last.end;
         merged[merged.length - 1] = last.copyWith(end: newEnd);
@@ -419,8 +418,7 @@ class RichTextController extends TextEditingController {
           int changeStart;
           int changeEnd;
 
-          if (oldSelection.isValid &&
-              oldSelection.start != oldSelection.end) {
+          if (oldSelection.isValid && oldSelection.start != oldSelection.end) {
             // Had a selection - it was replaced
             changeStart = oldSelection.start;
             changeEnd = oldSelection.end;
@@ -428,8 +426,7 @@ class RichTextController extends TextEditingController {
             // Point insertion/deletion
             if (delta > 0) {
               // Insertion
-              changeStart =
-                  (newSelection.baseOffset - delta).clamp(0, oldLen);
+              changeStart = (newSelection.baseOffset - delta).clamp(0, oldLen);
               changeEnd = changeStart;
             } else {
               // Deletion

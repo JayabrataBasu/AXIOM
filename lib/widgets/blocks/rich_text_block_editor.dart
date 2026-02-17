@@ -90,6 +90,47 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     super.dispose();
   }
 
+  /// Scan ALL formats overlapping [start, end) and merge their properties.
+  /// Uses OR logic for booleans and first-non-null for optional values.
+  /// This ensures that changing e.g. font size doesn't lose bold/italic.
+  TextFormat _getMergedFormatInRange(int start, int end) {
+    bool bold = false;
+    bool italic = false;
+    bool underline = false;
+    bool strikethrough = false;
+    double? fontSize;
+    String? fontFamily;
+    Color? textColor;
+    Color? backgroundColor;
+
+    for (final f in _controller.formats) {
+      // Check overlap: format overlaps with [start, end)
+      if (f.end > start && f.start < end) {
+        if (f.bold) bold = true;
+        if (f.italic) italic = true;
+        if (f.underline) underline = true;
+        if (f.strikethrough) strikethrough = true;
+        fontSize ??= f.fontSize;
+        fontFamily ??= f.fontFamily;
+        textColor ??= f.textColor;
+        backgroundColor ??= f.backgroundColor;
+      }
+    }
+
+    return TextFormat(
+      start: start,
+      end: end,
+      bold: bold,
+      italic: italic,
+      underline: underline,
+      strikethrough: strikethrough,
+      fontSize: fontSize,
+      fontFamily: fontFamily,
+      textColor: textColor,
+      backgroundColor: backgroundColor,
+    );
+  }
+
   void _updateCurrentFormat() {
     // Use post-frame callback to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -138,15 +179,12 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
       return;
     }
 
-    // Read current boolean states from the existing format (if any),
-    // but do NOT carry fontSize / fontFamily / colors — those should
-    // only change when the user explicitly uses the size / font / color
-    // controls.  This prevents accidental font-size propagation.
-    final existing = _currentFormat;
-    final bool curBold = existing?.bold ?? false;
-    final bool curItalic = existing?.italic ?? false;
-    final bool curUnderline = existing?.underline ?? false;
-    final bool curStrikethrough = existing?.strikethrough ?? false;
+    // Scan ALL formats in the selection range to get merged state.
+    final merged = _getMergedFormatInRange(selection.start, selection.end);
+    final bool curBold = merged.bold;
+    final bool curItalic = merged.italic;
+    final bool curUnderline = merged.underline;
+    final bool curStrikethrough = merged.strikethrough;
 
     TextFormat newFormat;
     switch (formatType) {
@@ -202,19 +240,20 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final selection = _controller.selection;
     if (!selection.isValid || selection.start == selection.end) return;
 
-    final existing = _currentFormat;
+    // Scan ALL formats in the selection to preserve existing properties
+    final merged = _getMergedFormatInRange(selection.start, selection.end);
     _controller.applyFormat(
       TextFormat(
         start: selection.start,
         end: selection.end,
-        bold: existing?.bold ?? false,
-        italic: existing?.italic ?? false,
-        underline: existing?.underline ?? false,
-        strikethrough: existing?.strikethrough ?? false,
+        bold: merged.bold,
+        italic: merged.italic,
+        underline: merged.underline,
+        strikethrough: merged.strikethrough,
         fontSize: size,
-        fontFamily: existing?.fontFamily,
-        textColor: existing?.textColor,
-        backgroundColor: existing?.backgroundColor,
+        fontFamily: merged.fontFamily,
+        textColor: merged.textColor,
+        backgroundColor: merged.backgroundColor,
       ),
     );
     widget.onContentChanged(_controller.toJson());
@@ -224,19 +263,20 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final selection = _controller.selection;
     if (!selection.isValid || selection.start == selection.end) return;
 
-    final existing = _currentFormat;
+    // Scan ALL formats in the selection to preserve existing properties
+    final merged = _getMergedFormatInRange(selection.start, selection.end);
     _controller.applyFormat(
       TextFormat(
         start: selection.start,
         end: selection.end,
-        bold: existing?.bold ?? false,
-        italic: existing?.italic ?? false,
-        underline: existing?.underline ?? false,
-        strikethrough: existing?.strikethrough ?? false,
-        fontSize: existing?.fontSize,
+        bold: merged.bold,
+        italic: merged.italic,
+        underline: merged.underline,
+        strikethrough: merged.strikethrough,
+        fontSize: merged.fontSize,
         fontFamily: family == 'Default' ? null : family,
-        textColor: existing?.textColor,
-        backgroundColor: existing?.backgroundColor,
+        textColor: merged.textColor,
+        backgroundColor: merged.backgroundColor,
       ),
     );
     widget.onContentChanged(_controller.toJson());
@@ -246,19 +286,20 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final selection = _controller.selection;
     if (!selection.isValid || selection.start == selection.end) return;
 
-    final existing = _currentFormat;
+    // Scan ALL formats in the selection to preserve existing properties
+    final merged = _getMergedFormatInRange(selection.start, selection.end);
     _controller.applyFormat(
       TextFormat(
         start: selection.start,
         end: selection.end,
-        bold: existing?.bold ?? false,
-        italic: existing?.italic ?? false,
-        underline: existing?.underline ?? false,
-        strikethrough: existing?.strikethrough ?? false,
-        fontSize: existing?.fontSize,
-        fontFamily: existing?.fontFamily,
-        textColor: isText ? color : existing?.textColor,
-        backgroundColor: isText ? existing?.backgroundColor : color,
+        bold: merged.bold,
+        italic: merged.italic,
+        underline: merged.underline,
+        strikethrough: merged.strikethrough,
+        fontSize: merged.fontSize,
+        fontFamily: merged.fontFamily,
+        textColor: isText ? color : merged.textColor,
+        backgroundColor: isText ? merged.backgroundColor : color,
       ),
     );
     widget.onContentChanged(_controller.toJson());
