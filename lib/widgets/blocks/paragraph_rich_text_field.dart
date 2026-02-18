@@ -343,8 +343,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
     // Propagate formatting to the new line: capture the format at the
     // cursor (or the active pendingFormat) so the new empty paragraph
     // inherits the current style (Word-like Enter behaviour).
-    widget.controller.pendingFormat ??=
-        widget.controller.getFormatAtCursor();
+    widget.controller.pendingFormat ??= widget.controller.getFormatAtCursor();
 
     widget.controller.removeListener(_onDocumentChanged);
 

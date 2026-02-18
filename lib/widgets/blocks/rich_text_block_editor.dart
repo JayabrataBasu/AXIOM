@@ -474,9 +474,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     // Use a single value setter call to avoid double format-position updates
     _controller.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(
-        offset: offset + char.length,
-      ),
+      selection: TextSelection.collapsed(offset: offset + char.length),
     );
     widget.onContentChanged(_controller.toJson());
   }
