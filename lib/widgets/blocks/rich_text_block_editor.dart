@@ -79,7 +79,6 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
       _controller = RichTextController(text: widget.block.content);
     }
     _focusNode = FocusNode();
-    _lastKnownTextLength = _controller.text.length;
     _controller.addListener(_updateCurrentFormat);
   }
 
@@ -132,25 +131,15 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     );
   }
 
-  /// Track text length to distinguish text-changes from selection-only moves.
-  int _lastKnownTextLength = 0;
-
   void _updateCurrentFormat() {
     // Use post-frame callback to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final currentLen = _controller.text.length;
-        final textChanged = currentLen != _lastKnownTextLength;
-        _lastKnownTextLength = currentLen;
-
         setState(() {
-          if (_controller.pendingFormat != null && !textChanged) {
-            // Selection moved without typing — clear pending format
-            // so the user gets the format at the new cursor position.
-            _controller.pendingFormat = null;
-            _currentFormat = _controller.getFormatAtCursor();
-          } else if (_controller.pendingFormat != null) {
-            // Text changed while pending format active — keep it
+          if (_controller.pendingFormat != null) {
+            // Keep pending format active until explicitly changed.
+            // This allows formatting to continue for all subsequent
+            // typed characters (Word-like insertion behavior).
             _currentFormat = _controller.pendingFormat;
           } else {
             _currentFormat = _controller.getFormatAtCursor();
