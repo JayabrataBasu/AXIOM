@@ -235,9 +235,32 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         globalExtent = newText.length;
       }
 
-      // Set value with proper selection so the value setter can compute
-      // correct format position adjustments.
+      // Compute change and explicitly update format positions before
+      // setting the value. This is more reliable than the auto-detection
+      // in the value setter, which depends on _previousValue ordering.
+      final oldText = widget.controller.text;
+      final oldLen = oldText.length;
+      final newLen = newText.length;
+      final delta = newLen - oldLen;
+
       widget.controller.removeListener(_onDocumentChanged);
+
+      if (delta != 0) {
+        // Determine change position from the global cursor.
+        int changeStart;
+        int changeEnd;
+        if (delta > 0) {
+          // Insertion: new chars end at globalBase
+          changeStart = (globalBase - delta).clamp(0, oldLen);
+          changeEnd = changeStart;
+        } else {
+          // Deletion: chars removed before globalBase
+          changeStart = globalBase.clamp(0, newLen);
+          changeEnd = (changeStart - delta).clamp(0, oldLen);
+        }
+        widget.controller.updateFormatsForChange(changeStart, changeEnd, delta);
+      }
+
       widget.controller.value = TextEditingValue(
         text: newText,
         selection: TextSelection(
@@ -253,11 +276,46 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       final newParaCount = newText.split('\n').length;
       if (newParaCount != _paraControllers.length) {
         _rebuildParagraphs();
+      } else {
+        // Paragraph count unchanged — still refresh localFormats to pick
+        // up any format spans added by the value setter (e.g. pendingFormat).
+        _refreshLocalFormats();
       }
 
       widget.onChanged(newText);
     } finally {
       _isSyncing = false;
+    }
+  }
+
+  /// Lightweight refresh: re-slice document-level formats into each
+  /// paragraph controller's localFormats and update maxFontSize.
+  /// This does NOT dispose or re-create paragraph controllers —
+  /// it only updates the format data they render with.
+  void _refreshLocalFormats() {
+    final text = widget.controller.text;
+    final paragraphs = text.split('\n');
+    int offset = 0;
+    for (int i = 0; i < _paraControllers.length && i < paragraphs.length; i++) {
+      final paraText = paragraphs[i];
+      final paraStart = offset;
+      final paraEnd = offset + paraText.length;
+
+      final localFormats = _sliceFormats(
+        widget.controller.formats,
+        paraStart,
+        paraEnd,
+      );
+      final maxFontSize = _maxFontSizeInFormats(localFormats, _baseFontSize);
+
+      _paraControllers[i].update(
+        paraText,
+        localFormats,
+        paraStart,
+        maxFontSize,
+      );
+
+      offset = paraEnd + 1; // +1 for \n
     }
   }
 
@@ -281,6 +339,12 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
 
     // Insert \n into the document at the global offset
     final globalOffset = ctrl.paragraphOffset + cursorPos;
+
+    // Propagate formatting to the new line: capture the format at the
+    // cursor (or the active pendingFormat) so the new empty paragraph
+    // inherits the current style (Word-like Enter behaviour).
+    widget.controller.pendingFormat ??=
+        widget.controller.getFormatAtCursor();
 
     widget.controller.removeListener(_onDocumentChanged);
 

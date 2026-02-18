@@ -79,6 +79,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
       _controller = RichTextController(text: widget.block.content);
     }
     _focusNode = FocusNode();
+    _lastKnownTextLength = _controller.text.length;
     _controller.addListener(_updateCurrentFormat);
   }
 
@@ -131,15 +132,25 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     );
   }
 
+  /// Track text length to distinguish text-changes from selection-only moves.
+  int _lastKnownTextLength = 0;
+
   void _updateCurrentFormat() {
     // Use post-frame callback to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        final currentLen = _controller.text.length;
+        final textChanged = currentLen != _lastKnownTextLength;
+        _lastKnownTextLength = currentLen;
+
         setState(() {
-          // If there's a pending format, show it in the toolbar.
-          // But if the user moved the cursor (selection changed
-          // without typing), clear the pending format.
-          if (_controller.pendingFormat != null) {
+          if (_controller.pendingFormat != null && !textChanged) {
+            // Selection moved without typing — clear pending format
+            // so the user gets the format at the new cursor position.
+            _controller.pendingFormat = null;
+            _currentFormat = _controller.getFormatAtCursor();
+          } else if (_controller.pendingFormat != null) {
+            // Text changed while pending format active — keep it
             _currentFormat = _controller.pendingFormat;
           } else {
             _currentFormat = _controller.getFormatAtCursor();
@@ -300,6 +311,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
 
     // Scan ALL formats in the selection to preserve existing properties
     final merged = _getMergedFormatInRange(selection.start, selection.end);
+    _controller.pendingFormat = null; // Clear pending after real apply
     _controller.applyFormat(
       TextFormat(
         start: selection.start,
@@ -338,6 +350,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
 
     // Scan ALL formats in the selection to preserve existing properties
     final merged = _getMergedFormatInRange(selection.start, selection.end);
+    _controller.pendingFormat = null; // Clear pending after real apply
     _controller.applyFormat(
       TextFormat(
         start: selection.start,
@@ -376,6 +389,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
 
     // Scan ALL formats in the selection to preserve existing properties
     final merged = _getMergedFormatInRange(selection.start, selection.end);
+    _controller.pendingFormat = null; // Clear pending after real apply
     _controller.applyFormat(
       TextFormat(
         start: selection.start,
@@ -435,13 +449,17 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
         return;
     }
 
-    _controller.text =
+    final newText =
         _controller.text.substring(0, selection.start) +
         transformed +
         _controller.text.substring(selection.end);
-    _controller.selection = TextSelection(
-      baseOffset: selection.start,
-      extentOffset: selection.start + transformed.length,
+    // Use a single value setter call to avoid double format-position updates
+    _controller.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection(
+        baseOffset: selection.start,
+        extentOffset: selection.start + transformed.length,
+      ),
     );
     widget.onContentChanged(_controller.toJson());
   }
@@ -449,12 +467,16 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
   void _insertSpecialChar(String char) {
     final selection = _controller.selection;
     final offset = selection.baseOffset;
-    _controller.text =
+    final newText =
         _controller.text.substring(0, offset) +
         char +
         _controller.text.substring(offset);
-    _controller.selection = TextSelection.collapsed(
-      offset: offset + char.length,
+    // Use a single value setter call to avoid double format-position updates
+    _controller.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(
+        offset: offset + char.length,
+      ),
     );
     widget.onContentChanged(_controller.toJson());
   }
