@@ -44,6 +44,7 @@ class _MathsRefBlockEditorState extends State<MathsRefBlockEditor> {
 
     return BlockEditorCard(
       key: ValueKey(widget.block.id),
+      blockId: widget.block.id,
       blockType: 'Maths',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,

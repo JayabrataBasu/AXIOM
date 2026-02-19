@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/audio_service.dart';
 import '../services/maths_service.dart';
 import '../services/mind_map_service.dart';
+import '../services/preferences_service.dart';
 import '../models/maths.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
@@ -32,6 +34,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   late TextEditingController _nodeNameController;
   late FocusNode _nodeNameFocusNode;
   late BlockCollapseController _blockCollapseController;
+  String? _collapseStateNodeId;
   String? _activeNodeId;
   String? _highlightedBlockId;
   Timer? _highlightFadeTimer;
@@ -45,6 +48,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     _nodeNameController = TextEditingController();
     _nodeNameFocusNode = FocusNode();
     _blockCollapseController = BlockCollapseController();
+    _blockCollapseController.addListener(_onCollapsedStateChanged);
     _highlightedBlockId = widget.highlightBlockId;
 
     // Start fade-out timer for highlight (visible for 3 seconds)
@@ -90,9 +94,58 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     _nameDebounce?.cancel();
     _nodeNameController.dispose();
     _nodeNameFocusNode.dispose();
+    _blockCollapseController.removeListener(_onCollapsedStateChanged);
     _blockCollapseController.dispose();
     _highlightFadeTimer?.cancel();
     super.dispose();
+  }
+
+  String _collapsedBlocksPrefsKey(String nodeId) =>
+      'node_collapsed_blocks:$nodeId';
+
+  Future<void> _loadCollapsedStateForNode(String nodeId) async {
+    final raw = await PreferencesService.instance.getString(
+      _collapsedBlocksPrefsKey(nodeId),
+    );
+    if (!mounted || _collapseStateNodeId != nodeId) return;
+
+    if (raw == null || raw.isEmpty) {
+      _blockCollapseController.setCollapsedBlocks(<String>{});
+      return;
+    }
+
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        _blockCollapseController.setCollapsedBlocks(
+          decoded.whereType<String>().toSet(),
+        );
+      } else {
+        _blockCollapseController.setCollapsedBlocks(<String>{});
+      }
+    } catch (_) {
+      _blockCollapseController.setCollapsedBlocks(<String>{});
+    }
+  }
+
+  void _ensureCollapseStateForNode(IdeaNode node) {
+    if (_collapseStateNodeId == node.id) return;
+    _collapseStateNodeId = node.id;
+    unawaited(_loadCollapsedStateForNode(node.id));
+  }
+
+  void _onCollapsedStateChanged() {
+    final nodeId = _collapseStateNodeId;
+    if (nodeId == null) return;
+    final encoded = jsonEncode(
+      _blockCollapseController.collapsedBlockIds.toList(),
+    );
+    unawaited(
+      PreferencesService.instance.setString(
+        _collapsedBlocksPrefsKey(nodeId),
+        encoded,
+      ),
+    );
   }
 
   @override
@@ -136,6 +189,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
             ),
           );
         }
+
+        _ensureCollapseStateForNode(node);
+        _blockCollapseController.pruneTo(node.blocks.map((b) => b.id));
 
         _syncNodeNameController(node);
 
@@ -229,7 +285,9 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                           tooltip: 'Collapse all blocks',
                           onPressed: node.blocks.isEmpty
                               ? null
-                              : () => _blockCollapseController.collapseAll(),
+                              : () => _blockCollapseController.collapseAll(
+                                  node.blocks.map((b) => b.id),
+                                ),
                           constraints: const BoxConstraints(
                             minWidth: 36,
                             minHeight: 36,
@@ -579,6 +637,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
       MathBlock() => BlockEditorCard(
         key: ValueKey(block.id),
+        blockId: block.id,
         blockType: 'Math',
         dragIndex: index,
         onDelete: () => _deleteBlock(node.id, block.id),
@@ -589,6 +648,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
       AudioBlock() => BlockEditorCard(
         key: ValueKey(block.id),
+        blockId: block.id,
         blockType: 'Audio',
         dragIndex: index,
         onDelete: () => _deleteBlock(node.id, block.id),
@@ -599,6 +659,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
       WorkspaceRefBlock() => BlockEditorCard(
         key: ValueKey(block.id),
+        blockId: block.id,
         blockType: 'Workspace',
         dragIndex: index,
         onDelete: () => _deleteBlock(node.id, block.id),
@@ -609,6 +670,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
       ToolBlock() => BlockEditorCard(
         key: ValueKey(block.id),
+        blockId: block.id,
         blockType: 'Tool',
         dragIndex: index,
         onDelete: () => _deleteBlock(node.id, block.id),

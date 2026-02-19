@@ -341,31 +341,62 @@ class BlockTypeSelector extends StatelessWidget {
 // BLOCK EDITOR CARD — Clean wrapper for all block editors
 // ═══════════════════════════════════════════════════════════════════
 
-/// Command payload for block collapse broadcasts.
-class BlockCollapseCommand {
-  const BlockCollapseCommand({required this.commandId, required this.collapse});
+/// Controller for per-block collapse state in a node editor.
+/// Supports both individual toggles and bulk collapse/expand operations.
+class BlockCollapseController extends ChangeNotifier {
+  final Set<String> _collapsedBlockIds = <String>{};
 
-  final int commandId;
-  final bool collapse;
-}
+  Set<String> get collapsedBlockIds => Set.unmodifiable(_collapsedBlockIds);
 
-/// Broadcast controller for collapse/expand-all actions in a node editor.
-class BlockCollapseController extends ValueNotifier<BlockCollapseCommand> {
-  BlockCollapseController()
-    : super(const BlockCollapseCommand(commandId: 0, collapse: false));
+  bool isCollapsed(String blockId) => _collapsedBlockIds.contains(blockId);
 
-  void collapseAll() {
-    value = BlockCollapseCommand(
-      commandId: value.commandId + 1,
-      collapse: true,
-    );
+  void toggle(String blockId) {
+    if (_collapsedBlockIds.contains(blockId)) {
+      _collapsedBlockIds.remove(blockId);
+    } else {
+      _collapsedBlockIds.add(blockId);
+    }
+    notifyListeners();
+  }
+
+  void setCollapsed(String blockId, bool collapse) {
+    final changed = collapse
+        ? _collapsedBlockIds.add(blockId)
+        : _collapsedBlockIds.remove(blockId);
+    if (changed) notifyListeners();
+  }
+
+  void collapseAll(Iterable<String> blockIds) {
+    final before = _collapsedBlockIds.length;
+    _collapsedBlockIds.addAll(blockIds);
+    if (_collapsedBlockIds.length != before) {
+      notifyListeners();
+    }
   }
 
   void expandAll() {
-    value = BlockCollapseCommand(
-      commandId: value.commandId + 1,
-      collapse: false,
-    );
+    if (_collapsedBlockIds.isEmpty) return;
+    _collapsedBlockIds.clear();
+    notifyListeners();
+  }
+
+  void setCollapsedBlocks(Set<String> blockIds) {
+    final sameLength = _collapsedBlockIds.length == blockIds.length;
+    final sameContent = sameLength && _collapsedBlockIds.containsAll(blockIds);
+    if (sameContent) return;
+    _collapsedBlockIds
+      ..clear()
+      ..addAll(blockIds);
+    notifyListeners();
+  }
+
+  void pruneTo(Iterable<String> validBlockIds) {
+    final valid = validBlockIds.toSet();
+    final before = _collapsedBlockIds.length;
+    _collapsedBlockIds.removeWhere((id) => !valid.contains(id));
+    if (_collapsedBlockIds.length != before) {
+      notifyListeners();
+    }
   }
 }
 
@@ -390,6 +421,7 @@ class BlockCollapseScope extends InheritedNotifier<BlockCollapseController> {
 class BlockEditorCard extends StatefulWidget {
   const BlockEditorCard({
     super.key,
+    required this.blockId,
     required this.blockType,
     required this.dragIndex,
     required this.onDelete,
@@ -398,6 +430,7 @@ class BlockEditorCard extends StatefulWidget {
     this.collapsedPreview,
   });
 
+  final String blockId;
   final String blockType;
   final int dragIndex;
   final VoidCallback onDelete;
@@ -413,7 +446,6 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
   bool _isCollapsed = false;
   BlockCollapseController? _collapseController;
   VoidCallback? _collapseListener;
-  int _lastHandledCommandId = 0;
 
   @override
   void didChangeDependencies() {
@@ -427,16 +459,22 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
 
     _collapseController = controller;
     if (_collapseController != null) {
+      _isCollapsed = _collapseController!.isCollapsed(widget.blockId);
       _collapseListener = () {
-        final command = _collapseController!.value;
-        if (command.commandId == _lastHandledCommandId) return;
-        _lastHandledCommandId = command.commandId;
         if (!mounted) return;
         setState(() {
-          _isCollapsed = command.collapse;
+          _isCollapsed = _collapseController!.isCollapsed(widget.blockId);
         });
       };
       _collapseController!.addListener(_collapseListener!);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant BlockEditorCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.blockId != widget.blockId && _collapseController != null) {
+      _isCollapsed = _collapseController!.isCollapsed(widget.blockId);
     }
   }
 
@@ -549,9 +587,13 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
                       color: cs.onSurfaceVariant,
                     ),
                     onPressed: () {
-                      setState(() {
-                        _isCollapsed = !_isCollapsed;
-                      });
+                      if (_collapseController != null) {
+                        _collapseController!.toggle(widget.blockId);
+                      } else {
+                        setState(() {
+                          _isCollapsed = !_isCollapsed;
+                        });
+                      }
                     },
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
@@ -689,6 +731,7 @@ class _HeadingBlockEditorState extends State<HeadingBlockEditor> {
     final isMobile = AxiomBreakpoints.isMobile(context);
 
     return BlockEditorCard(
+      blockId: widget.block.id,
       blockType: 'H${widget.block.level}',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
@@ -887,6 +930,7 @@ class _BulletListBlockEditorState extends State<BulletListBlockEditor> {
     final cs = Theme.of(context).colorScheme;
 
     return BlockEditorCard(
+      blockId: widget.block.id,
       blockType: 'List',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
@@ -1026,6 +1070,7 @@ class _CodeBlockEditorState extends State<CodeBlockEditor> {
     final cs = Theme.of(context).colorScheme;
 
     return BlockEditorCard(
+      blockId: widget.block.id,
       blockType: 'Code',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
@@ -1277,6 +1322,7 @@ class _QuoteBlockEditorState extends State<QuoteBlockEditor> {
     final cs = Theme.of(context).colorScheme;
 
     return BlockEditorCard(
+      blockId: widget.block.id,
       blockType: 'Quote',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,

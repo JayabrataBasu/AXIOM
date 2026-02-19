@@ -101,6 +101,9 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
   void _rebuildParagraphs() {
     final text = widget.controller.text;
     final paragraphs = text.split('\n');
+    widget.controller.ensureParagraphAlignmentLength(
+      fallback: widget.textAlign,
+    );
 
     // Dispose excess controllers
     while (_paraControllers.length > paragraphs.length) {
@@ -361,6 +364,15 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       selection: TextSelection.collapsed(offset: globalOffset + 1),
     );
 
+    // New paragraph inherits alignment from the source paragraph.
+    final sourceAlign = widget.controller.alignmentForParagraph(paragraphIndex);
+    widget.controller.ensureParagraphAlignmentLength(
+      fallback: widget.textAlign,
+    );
+    if (paragraphIndex + 1 < widget.controller.paragraphAlignments.length) {
+      widget.controller.paragraphAlignments[paragraphIndex + 1] = sourceAlign;
+    }
+
     widget.controller.addListener(_onDocumentChanged);
 
     // Rebuild paragraphs
@@ -412,6 +424,12 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       selection: TextSelection.collapsed(offset: globalCursor),
     );
 
+    // Removing a paragraph boundary merges two paragraphs; drop the removed
+    // paragraph's alignment entry to keep indexes in sync.
+    if (paragraphIndex < widget.controller.paragraphAlignments.length) {
+      widget.controller.paragraphAlignments.removeAt(paragraphIndex);
+    }
+
     widget.controller.addListener(_onDocumentChanged);
 
     _rebuildParagraphs();
@@ -461,6 +479,13 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       text: newText,
       selection: TextSelection.collapsed(offset: globalCursor),
     );
+
+    // Deleting end-of-paragraph merges with next paragraph; remove next
+    // paragraph's alignment entry.
+    final removeIndex = paragraphIndex + 1;
+    if (removeIndex < widget.controller.paragraphAlignments.length) {
+      widget.controller.paragraphAlignments.removeAt(removeIndex);
+    }
 
     widget.controller.addListener(_onDocumentChanged);
 
@@ -566,7 +591,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
           minHeight: widget.minLines * (widget.baseStyle.fontSize ?? 14) * 1.8,
         ),
         child: Column(
-          crossAxisAlignment: _alignmentToCross(widget.textAlign),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (int i = 0; i < _paraControllers.length; i++)
               _buildParagraphField(i, cs),
@@ -579,6 +604,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
   Widget _buildParagraphField(int index, ColorScheme cs) {
     final ctrl = _paraControllers[index];
     final maxFs = ctrl.maxFontSize;
+    final paragraphAlign = widget.controller.alignmentForParagraph(index);
     final activeFormat =
         widget.controller.pendingFormat ??
         widget.controller.getFormatAtCursor();
@@ -609,7 +635,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         minLines: 1,
         cursorHeight: cursorHeight,
         cursorWidth: 2,
-        textAlign: widget.textAlign,
+        textAlign: paragraphAlign,
         strutStyle: strutStyle,
         style: widget.baseStyle.copyWith(
           // Ensure height is consistent for baseline alignment
@@ -682,24 +708,24 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
 
     // Arrow Up at first line → move to previous paragraph
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-      // Heuristic: if cursor is on the first line (offset < ~80 chars or
-      // we can compute using TextPainter), move to prev paragraph
-      // For simplicity, check if cursor is in the first visual line
-      _handleArrowUp(paragraphIndex, cursorPos);
-      return;
+      final moved = _handleArrowUp(paragraphIndex, cursorPos);
+      if (moved) return;
     }
 
     // Arrow Down at last line → move to next paragraph
     if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-      _handleArrowDown(paragraphIndex, cursorPos);
-      return;
+      final moved = _handleArrowDown(paragraphIndex, cursorPos);
+      if (moved) return;
     }
   }
 
-  void _handleArrowUp(int paragraphIndex, int cursorPos) {
-    if (paragraphIndex <= 0) return;
+  bool _handleArrowUp(int paragraphIndex, int cursorPos) {
+    if (paragraphIndex <= 0) return false;
     // Use a TextPainter to check if cursor is on the first visual line
     final ctrl = _paraControllers[paragraphIndex];
+    final paragraphAlign = widget.controller.alignmentForParagraph(
+      paragraphIndex,
+    );
     final painter = TextPainter(
       text: ctrl.buildTextSpan(
         context: context,
@@ -707,7 +733,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         withComposing: false,
       ),
       textDirection: TextDirection.ltr,
-      textAlign: widget.textAlign,
+      textAlign: paragraphAlign,
     );
     // Use a reasonable max width
     painter.layout(maxWidth: MediaQuery.of(context).size.width - 100);
@@ -721,14 +747,20 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       final firstLineBottom = firstLineMetrics.first.height;
       if (caretOffset.dy < firstLineBottom) {
         _moveToPreviousParagraph(paragraphIndex, cursorPos);
+        painter.dispose();
+        return true;
       }
     }
     painter.dispose();
+    return false;
   }
 
-  void _handleArrowDown(int paragraphIndex, int cursorPos) {
-    if (paragraphIndex >= _paraControllers.length - 1) return;
+  bool _handleArrowDown(int paragraphIndex, int cursorPos) {
+    if (paragraphIndex >= _paraControllers.length - 1) return false;
     final ctrl = _paraControllers[paragraphIndex];
+    final paragraphAlign = widget.controller.alignmentForParagraph(
+      paragraphIndex,
+    );
     final painter = TextPainter(
       text: ctrl.buildTextSpan(
         context: context,
@@ -736,7 +768,7 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         withComposing: false,
       ),
       textDirection: TextDirection.ltr,
-      textAlign: widget.textAlign,
+      textAlign: paragraphAlign,
     );
     painter.layout(maxWidth: MediaQuery.of(context).size.width - 100);
     final caretOffset = painter.getOffsetForCaret(
@@ -748,21 +780,12 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       final lastLineTop = painter.height - lines.last.height;
       if (caretOffset.dy >= lastLineTop) {
         _moveToNextParagraph(paragraphIndex, cursorPos);
+        painter.dispose();
+        return true;
       }
     }
     painter.dispose();
-  }
-
-  CrossAxisAlignment _alignmentToCross(TextAlign align) {
-    switch (align) {
-      case TextAlign.center:
-        return CrossAxisAlignment.center;
-      case TextAlign.right:
-      case TextAlign.end:
-        return CrossAxisAlignment.end;
-      default:
-        return CrossAxisAlignment.start;
-    }
+    return false;
   }
 }
 

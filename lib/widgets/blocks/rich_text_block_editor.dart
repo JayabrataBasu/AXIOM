@@ -402,9 +402,40 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
   }
 
   void _setAlignment(TextAlign align) {
+    final selection = _controller.selection;
+    final textLen = _controller.text.length;
+
+    if (!selection.isValid) {
+      _controller.setAlignmentForOffset(textLen, align);
+    } else {
+      final start = selection.start.clamp(0, textLen);
+      final end = selection.end.clamp(0, textLen);
+      final minOffset = start < end ? start : end;
+      final maxOffset = start < end ? end : start;
+
+      if (minOffset == maxOffset) {
+        // Collapsed cursor: apply to current paragraph only.
+        _controller.setAlignmentForOffset(minOffset, align);
+      } else {
+        // Multi-char selection: apply to every touched paragraph.
+        // If selection ends exactly at a paragraph boundary, treat it as
+        // belonging to the previous paragraph.
+        final endForParagraph = maxOffset > 0 ? maxOffset - 1 : maxOffset;
+        final startParagraph = _controller.paragraphIndexForOffset(minOffset);
+        final endParagraph = _controller.paragraphIndexForOffset(
+          endForParagraph,
+        );
+
+        for (int i = startParagraph; i <= endParagraph; i++) {
+          _controller.setAlignmentForParagraph(i, align);
+        }
+      }
+    }
+
     setState(() {
-      _controller.textAlign = align;
+      _controller.textAlign = align; // fallback default for new paragraphs
     });
+    widget.onContentChanged(_controller.toJson());
   }
 
   void _transformCase(String transform) {
@@ -642,6 +673,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
     final String fontFamily = _currentFormat?.fontFamily ?? 'Default';
 
     return BlockEditorCard(
+      blockId: widget.block.id,
       blockType: 'Rich Text',
       dragIndex: widget.dragIndex,
       onDelete: widget.onDelete,
@@ -676,7 +708,7 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
                       value: fontSize,
                       items: _fontSizes,
                       onChanged: _applyFontSize,
-                      width: 60,
+                      width: 68,
                       displayText: (val) => '${val.toInt()}',
                     ),
                     _VerticalDivider(cs: cs),
@@ -753,25 +785,57 @@ class _RichTextBlockEditorState extends State<RichTextBlockEditor> {
                     // Alignment
                     _FormatButton(
                       icon: Icons.format_align_left_rounded,
-                      isActive: _controller.textAlign == TextAlign.left,
+                      isActive:
+                          _controller.alignmentForParagraph(
+                            _controller.paragraphIndexForOffset(
+                              _controller.selection.isValid
+                                  ? _controller.selection.baseOffset
+                                  : _controller.text.length,
+                            ),
+                          ) ==
+                          TextAlign.left,
                       onPressed: () => _setAlignment(TextAlign.left),
                       tooltip: 'Align left',
                     ),
                     _FormatButton(
                       icon: Icons.format_align_center_rounded,
-                      isActive: _controller.textAlign == TextAlign.center,
+                      isActive:
+                          _controller.alignmentForParagraph(
+                            _controller.paragraphIndexForOffset(
+                              _controller.selection.isValid
+                                  ? _controller.selection.baseOffset
+                                  : _controller.text.length,
+                            ),
+                          ) ==
+                          TextAlign.center,
                       onPressed: () => _setAlignment(TextAlign.center),
                       tooltip: 'Center',
                     ),
                     _FormatButton(
                       icon: Icons.format_align_right_rounded,
-                      isActive: _controller.textAlign == TextAlign.right,
+                      isActive:
+                          _controller.alignmentForParagraph(
+                            _controller.paragraphIndexForOffset(
+                              _controller.selection.isValid
+                                  ? _controller.selection.baseOffset
+                                  : _controller.text.length,
+                            ),
+                          ) ==
+                          TextAlign.right,
                       onPressed: () => _setAlignment(TextAlign.right),
                       tooltip: 'Align right',
                     ),
                     _FormatButton(
                       icon: Icons.format_align_justify_rounded,
-                      isActive: _controller.textAlign == TextAlign.justify,
+                      isActive:
+                          _controller.alignmentForParagraph(
+                            _controller.paragraphIndexForOffset(
+                              _controller.selection.isValid
+                                  ? _controller.selection.baseOffset
+                                  : _controller.text.length,
+                            ),
+                          ) ==
+                          TextAlign.justify,
                       onPressed: () => _setAlignment(TextAlign.justify),
                       tooltip: 'Justify',
                     ),
@@ -904,7 +968,7 @@ class _DropdownControl<T> extends StatelessWidget {
     return Container(
       height: 30,
       width: width,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(AxiomRadius.xs),
@@ -914,6 +978,7 @@ class _DropdownControl<T> extends StatelessWidget {
         value: value,
         isDense: true,
         isExpanded: true,
+        iconSize: 16,
         underline: const SizedBox(),
         style: AxiomTypography.labelSmall.copyWith(color: cs.onSurface),
         items: items.map((item) {

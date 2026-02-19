@@ -99,6 +99,7 @@ class TextFormat {
 class RichTextController extends TextEditingController {
   List<TextFormat> formats = [];
   TextAlign textAlign = TextAlign.left;
+  List<TextAlign> paragraphAlignments = [];
 
   /// When non-null, the next typed characters will inherit this format.
   /// This enables Word-like behaviour: user sets bold (or font size, etc.)
@@ -109,6 +110,53 @@ class RichTextController extends TextEditingController {
   RichTextController({super.text, this.formats = const []}) {
     // Initialize _previousValue so the first keystroke is tracked
     _previousValue = value;
+  }
+
+  /// Ensure paragraph alignments list matches current paragraph count.
+  /// New paragraphs inherit [fallback] alignment.
+  void ensureParagraphAlignmentLength({TextAlign? fallback}) {
+    final targetCount = text.split('\n').length;
+    final fill = fallback ?? textAlign;
+    if (paragraphAlignments.length < targetCount) {
+      paragraphAlignments.addAll(
+        List<TextAlign>.filled(targetCount - paragraphAlignments.length, fill),
+      );
+      return;
+    }
+    if (paragraphAlignments.length > targetCount) {
+      paragraphAlignments = paragraphAlignments.take(targetCount).toList();
+    }
+  }
+
+  int paragraphIndexForOffset(int offset) {
+    final safe = offset.clamp(0, text.length);
+    int index = 0;
+    for (int i = 0; i < safe; i++) {
+      if (text.codeUnitAt(i) == 10) index++; // '\n'
+    }
+    return index;
+  }
+
+  TextAlign alignmentForParagraph(int paragraphIndex) {
+    if (paragraphIndex >= 0 && paragraphIndex < paragraphAlignments.length) {
+      return paragraphAlignments[paragraphIndex];
+    }
+    return textAlign;
+  }
+
+  void setAlignmentForParagraph(int paragraphIndex, TextAlign align) {
+    ensureParagraphAlignmentLength();
+    if (paragraphIndex < 0 || paragraphIndex >= paragraphAlignments.length) {
+      return;
+    }
+    if (paragraphAlignments[paragraphIndex] == align) return;
+    paragraphAlignments[paragraphIndex] = align;
+    notifyListeners();
+  }
+
+  void setAlignmentForOffset(int offset, TextAlign align) {
+    final paragraphIndex = paragraphIndexForOffset(offset);
+    setAlignmentForParagraph(paragraphIndex, align);
   }
 
   /// Apply formatting to the current selection
@@ -471,6 +519,7 @@ class RichTextController extends TextEditingController {
       'text': text,
       'formats': formats.map((f) => f.toJson()).toList(),
       'textAlign': textAlign.index,
+      'paragraphAlignments': paragraphAlignments.map((a) => a.index).toList(),
     });
   }
 
@@ -499,6 +548,19 @@ class RichTextController extends TextEditingController {
       formats: cleanFormats,
     );
     controller.textAlign = TextAlign.values[json['textAlign'] as int? ?? 0];
+    final rawAlignments = (json['paragraphAlignments'] as List?)
+        ?.whereType<num>()
+        .map((n) => n.toInt())
+        .toList();
+    if (rawAlignments != null && rawAlignments.isNotEmpty) {
+      controller.paragraphAlignments = rawAlignments.map((idx) {
+        if (idx < 0 || idx >= TextAlign.values.length) {
+          return controller.textAlign;
+        }
+        return TextAlign.values[idx];
+      }).toList();
+    }
+    controller.ensureParagraphAlignmentLength();
     return controller;
   }
 }
