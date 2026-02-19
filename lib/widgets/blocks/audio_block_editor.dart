@@ -240,7 +240,8 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
             ? Duration(milliseconds: widget.durationMs)
             : _duration;
 
-        final atEnd = duration.inMilliseconds > 0 &&
+        final atEnd =
+            duration.inMilliseconds > 0 &&
             _position.inMilliseconds >= duration.inMilliseconds - 150;
 
         // If paused mid-track, resume. Otherwise start/restart from beginning.

@@ -519,6 +519,9 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
       extentOffset: globalExtent.clamp(0, widget.controller.text.length),
     );
     widget.controller.addListener(_onDocumentChanged);
+
+    // Refresh cursor visuals (height follows active format at cursor).
+    if (mounted) setState(() {});
   }
 
   // ── Build ───────────────────────────────────────────────────────
@@ -533,6 +536,8 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         focusNode: widget.focusNode,
         maxLines: null,
         minLines: widget.minLines,
+        cursorHeight: _baseFontSize * 1.35,
+        cursorWidth: 2,
         style: widget.baseStyle,
         decoration: InputDecoration(
           hintText: widget.hintText,
@@ -574,6 +579,16 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
   Widget _buildParagraphField(int index, ColorScheme cs) {
     final ctrl = _paraControllers[index];
     final maxFs = ctrl.maxFontSize;
+    final activeFormat =
+        widget.controller.pendingFormat ??
+        widget.controller.getFormatAtCursor();
+    final activeCursorFontSize = activeFormat?.fontSize ?? _baseFontSize;
+    final cursorHeight =
+        ((index == _activeParagraphIndex
+                    ? activeCursorFontSize
+                    : _baseFontSize) *
+                1.35)
+            .clamp(14.0, 120.0);
 
     // StrutStyle scaled to the largest font in THIS paragraph alone and alone only
     // This forces the line height to accommodate the tallest glyph
@@ -592,6 +607,8 @@ class _ParagraphRichTextFieldState extends State<ParagraphRichTextField> {
         focusNode: _paraFocusNodes[index],
         maxLines: null,
         minLines: 1,
+        cursorHeight: cursorHeight,
+        cursorWidth: 2,
         textAlign: widget.textAlign,
         strutStyle: strutStyle,
         style: widget.baseStyle.copyWith(

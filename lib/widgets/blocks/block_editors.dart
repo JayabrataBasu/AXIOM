@@ -351,6 +351,7 @@ class BlockEditorCard extends StatefulWidget {
     required this.onDelete,
     required this.child,
     this.trailing,
+    this.collapsedPreview,
   });
 
   final String blockType;
@@ -358,12 +359,15 @@ class BlockEditorCard extends StatefulWidget {
   final VoidCallback onDelete;
   final Widget child;
   final Widget? trailing;
+  final Widget? collapsedPreview;
 
   @override
   State<BlockEditorCard> createState() => _BlockEditorCardState();
 }
 
 class _BlockEditorCardState extends State<BlockEditorCard> {
+  bool _isCollapsed = false;
+
   void _confirmDelete(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     showDialog(
@@ -454,6 +458,33 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
                   widget.trailing!,
                 ],
                 const Spacer(),
+                Tooltip(
+                  message: _isCollapsed ? 'Expand block' : 'Collapse block',
+                  child: IconButton(
+                    icon: Icon(
+                      _isCollapsed
+                          ? Icons.keyboard_arrow_down_rounded
+                          : Icons.keyboard_arrow_up_rounded,
+                      size: 20,
+                      color: cs.onSurfaceVariant,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isCollapsed = !_isCollapsed;
+                      });
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    style: IconButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AxiomRadius.sm),
+                      ),
+                    ),
+                  ),
+                ),
                 // Delete button
                 Tooltip(
                   message:
@@ -481,9 +512,31 @@ class _BlockEditorCardState extends State<BlockEditorCard> {
             ),
           ),
           // Block content — generous padding
-          Padding(
-            padding: const EdgeInsets.all(AxiomSpacing.md),
-            child: widget.child,
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 180),
+            crossFadeState: _isCollapsed
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            firstChild: Padding(
+              padding: const EdgeInsets.all(AxiomSpacing.md),
+              child: widget.child,
+            ),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AxiomSpacing.md,
+                AxiomSpacing.sm,
+                AxiomSpacing.md,
+                AxiomSpacing.md,
+              ),
+              child:
+                  widget.collapsedPreview ??
+                  Text(
+                    'Collapsed',
+                    style: AxiomTypography.bodySmall.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+            ),
           ),
         ],
       ),
