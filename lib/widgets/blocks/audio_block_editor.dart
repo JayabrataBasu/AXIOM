@@ -26,6 +26,7 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
+  PlayerState _playerState = PlayerState.stopped;
   bool _loadFailed = false;
   String _statusText = 'Loading...';
   bool _initialized = false;
@@ -47,14 +48,27 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
       if (widget.audioFile.isEmpty) {
         throw Exception('No audio file path provided');
       }
+      // Keep source attached after completion so replay is reliable.
+      await _player.setReleaseMode(ReleaseMode.stop);
       await _player.setSourceDeviceFile(widget.audioFile);
 
       // Listen for player state changes.
       _player.onPlayerStateChanged.listen((state) {
         if (!mounted) return;
         setState(() {
+          _playerState = state;
           _isPlaying = state == PlayerState.playing;
           _statusText = _getStatusText(state);
+        });
+      });
+
+      _player.onPlayerComplete.listen((_) {
+        if (!mounted) return;
+        setState(() {
+          _playerState = PlayerState.completed;
+          _isPlaying = false;
+          _position = _duration;
+          _statusText = _getStatusText(PlayerState.completed);
         });
       });
 
@@ -222,7 +236,28 @@ class _AudioBlockEditorState extends State<AudioBlockEditor>
       if (_isPlaying) {
         await _player.pause();
       } else {
-        await _player.resume();
+        final duration = _duration == Duration.zero
+            ? Duration(milliseconds: widget.durationMs)
+            : _duration;
+
+        final atEnd = duration.inMilliseconds > 0 &&
+            _position.inMilliseconds >= duration.inMilliseconds - 150;
+
+        // If paused mid-track, resume. Otherwise start/restart from beginning.
+        if (_playerState == PlayerState.paused && !atEnd) {
+          await _player.resume();
+        } else {
+          await _player.stop();
+          await _player.play(
+            DeviceFileSource(widget.audioFile),
+            position: Duration.zero,
+          );
+          if (mounted) {
+            setState(() {
+              _position = Duration.zero;
+            });
+          }
+        }
       }
     } catch (e) {
       if (mounted) {
