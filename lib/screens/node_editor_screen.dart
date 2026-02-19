@@ -31,6 +31,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
   Timer? _nameDebounce;
   late TextEditingController _nodeNameController;
   late FocusNode _nodeNameFocusNode;
+  late BlockCollapseController _blockCollapseController;
   String? _activeNodeId;
   String? _highlightedBlockId;
   Timer? _highlightFadeTimer;
@@ -43,6 +44,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     super.initState();
     _nodeNameController = TextEditingController();
     _nodeNameFocusNode = FocusNode();
+    _blockCollapseController = BlockCollapseController();
     _highlightedBlockId = widget.highlightBlockId;
 
     // Start fade-out timer for highlight (visible for 3 seconds)
@@ -88,6 +90,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     _nameDebounce?.cancel();
     _nodeNameController.dispose();
     _nodeNameFocusNode.dispose();
+    _blockCollapseController.dispose();
     _highlightFadeTimer?.cancel();
     super.dispose();
   }
@@ -212,6 +215,36 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                           ),
                           tooltip: 'Add link',
                           onPressed: () => _showAddLinkDialog(node),
+                          constraints: const BoxConstraints(
+                            minWidth: 36,
+                            minHeight: 36,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.unfold_less_rounded,
+                            color: cs.onSurfaceVariant,
+                            size: 20,
+                          ),
+                          tooltip: 'Collapse all blocks',
+                          onPressed: node.blocks.isEmpty
+                              ? null
+                              : () => _blockCollapseController.collapseAll(),
+                          constraints: const BoxConstraints(
+                            minWidth: 36,
+                            minHeight: 36,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.unfold_more_rounded,
+                            color: cs.onSurfaceVariant,
+                            size: 20,
+                          ),
+                          tooltip: 'Expand all blocks',
+                          onPressed: node.blocks.isEmpty
+                              ? null
+                              : () => _blockCollapseController.expandAll(),
                           constraints: const BoxConstraints(
                             minWidth: 36,
                             minHeight: 36,
@@ -392,20 +425,23 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                 ),
               // Block list
               Expanded(
-                child: node.blocks.isEmpty
-                    ? _buildEmptyState(theme, node)
-                    : ReorderableListView.builder(
-                        padding: const EdgeInsets.all(AxiomSpacing.md),
-                        itemCount: node.blocks.length,
-                        buildDefaultDragHandles: false,
-                        onReorder: (oldIndex, newIndex) {
-                          _reorderBlocks(node, oldIndex, newIndex);
-                        },
-                        itemBuilder: (context, index) {
-                          final block = node.blocks[index];
-                          return _buildBlockEditor(node, block, index);
-                        },
-                      ),
+                child: BlockCollapseScope(
+                  controller: _blockCollapseController,
+                  child: node.blocks.isEmpty
+                      ? _buildEmptyState(theme, node)
+                      : ReorderableListView.builder(
+                          padding: const EdgeInsets.all(AxiomSpacing.md),
+                          itemCount: node.blocks.length,
+                          buildDefaultDragHandles: false,
+                          onReorder: (oldIndex, newIndex) {
+                            _reorderBlocks(node, oldIndex, newIndex);
+                          },
+                          itemBuilder: (context, index) {
+                            final block = node.blocks[index];
+                            return _buildBlockEditor(node, block, index);
+                          },
+                        ),
+                ),
               ),
             ],
           ),

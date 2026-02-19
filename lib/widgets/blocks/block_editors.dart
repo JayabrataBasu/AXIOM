@@ -341,6 +341,50 @@ class BlockTypeSelector extends StatelessWidget {
 // BLOCK EDITOR CARD — Clean wrapper for all block editors
 // ═══════════════════════════════════════════════════════════════════
 
+/// Command payload for block collapse broadcasts.
+class BlockCollapseCommand {
+  const BlockCollapseCommand({required this.commandId, required this.collapse});
+
+  final int commandId;
+  final bool collapse;
+}
+
+/// Broadcast controller for collapse/expand-all actions in a node editor.
+class BlockCollapseController extends ValueNotifier<BlockCollapseCommand> {
+  BlockCollapseController()
+    : super(const BlockCollapseCommand(commandId: 0, collapse: false));
+
+  void collapseAll() {
+    value = BlockCollapseCommand(
+      commandId: value.commandId + 1,
+      collapse: true,
+    );
+  }
+
+  void expandAll() {
+    value = BlockCollapseCommand(
+      commandId: value.commandId + 1,
+      collapse: false,
+    );
+  }
+}
+
+/// Inherited scope that lets every [BlockEditorCard] in the subtree react
+/// to collapse/expand-all commands.
+class BlockCollapseScope extends InheritedNotifier<BlockCollapseController> {
+  const BlockCollapseScope({
+    super.key,
+    required BlockCollapseController controller,
+    required super.child,
+  }) : super(notifier: controller);
+
+  static BlockCollapseController? maybeOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<BlockCollapseScope>()
+        ?.notifier;
+  }
+}
+
 /// Base card wrapper for block editors.
 /// Clean M3 card: surfaceContainerLow body, subtle header, rounded corners.
 class BlockEditorCard extends StatefulWidget {
@@ -367,6 +411,42 @@ class BlockEditorCard extends StatefulWidget {
 
 class _BlockEditorCardState extends State<BlockEditorCard> {
   bool _isCollapsed = false;
+  BlockCollapseController? _collapseController;
+  VoidCallback? _collapseListener;
+  int _lastHandledCommandId = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = BlockCollapseScope.maybeOf(context);
+    if (controller == _collapseController) return;
+
+    if (_collapseController != null && _collapseListener != null) {
+      _collapseController!.removeListener(_collapseListener!);
+    }
+
+    _collapseController = controller;
+    if (_collapseController != null) {
+      _collapseListener = () {
+        final command = _collapseController!.value;
+        if (command.commandId == _lastHandledCommandId) return;
+        _lastHandledCommandId = command.commandId;
+        if (!mounted) return;
+        setState(() {
+          _isCollapsed = command.collapse;
+        });
+      };
+      _collapseController!.addListener(_collapseListener!);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_collapseController != null && _collapseListener != null) {
+      _collapseController!.removeListener(_collapseListener!);
+    }
+    super.dispose();
+  }
 
   void _confirmDelete(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
